@@ -9,13 +9,17 @@ class TestPoint(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Testing Info
-    measured_test_value = db.Column(db.Float(16))
-    nominal_test_value = db.Column(db.Float(16))
+    # Signal Injection Info:
+    # - The raw value injected into a signal chain by a piece of calibration equipment
+    # ex. A decade box injects 100.00 ohms into an RTD measurement channel
+    measured_injection_value = db.Column(db.Float(16))
+    nominal_injection_value = db.Column(db.Float(16))
 
-    # Channel Info
-    measured_value = db.Column(db.Float(16))
-    nominal_value = db.Column(db.Float(16))
+    # Channel Test Info
+    # - The value tested in the channel's final engineering units that is shown on the DAS display
+    # ex. With 100.00 ohms injected, the channel's test point would be 0 degC read on a display
+    measured_test_value = db.Column(db.Float(16))
+    nominal_test_value = db.Column(db.Float(16))    
 
     # Extra Info
     measured_error = db.Column(db.Float(8))
@@ -35,7 +39,7 @@ class TestPoint(db.Model):
 
     # Calculates the measured error from a signal injection
     def calc_error(self):
-        return self.nominal_value - self.measured_value
+        return self.nominal_test_value - self.measured_test_value
 
 
     # Calculates the maximum error for a measurement based on the error type
@@ -57,17 +61,17 @@ class TestPoint(db.Model):
         # Returns an error based on the measured/read value being evaluated
         # ex. max_error of 0.1 %RDG is equivalent to 0.015 Hz at a measured value of 15 Hz
         elif error_type == ErrorType.PERCENT_READING:
-            return self.measured_value * (max_error / 100)
+            return self.measured_test_value * (max_error / 100)
 
 
     # Calculates the lower limit of an acceptable measurement
     def lower_limit(self):
-        return self.nominal_value - self.calc_max_error()
+        return self.nominal_test_value - self.calc_max_error()
 
 
     # Calculates the upper limit of an acceptable measurement
     def upper_limit(self):
-        return self.nominal_value + self.calc_max_error()
+        return self.nominal_test_value + self.calc_max_error()
 
 
 class Channel(db.Model):
@@ -88,8 +92,8 @@ class Channel(db.Model):
     error_type = db.Column(db.String(8))
 
     # Testing Info
-    min_test_range = db.Column(db.Float(16))
-    max_test_range = db.Column(db.Float(16))
+    min_injection_range = db.Column(db.Float(16))
+    max_injection_range = db.Column(db.Float(16))
     test_units = db.Column(db.String(16))
 
     # Foreign Keys
@@ -107,15 +111,15 @@ class Channel(db.Model):
     def num_testpoints(self):
         return len(self.testpoints)
 
-    def measured_range(self):
+    def measurement_range(self):
         return self.max_range - self.min_range
 
-    def test_range(self):
-        return self.max_test_range - self.min_test_range
+    def injection_range(self):
+        return self.max_injection_range - self.min_injection_range
 
-    def build_testpoint_list(self, num_testpoints, testpoint_list_type, nominal_test_values, nominal_values):
+    def build_testpoint_list(self, num_testpoints, testpoint_list_type, nominal_injection_value_list, nominal_test_value_list):
         
-        # Checker variable
+        # Checker variables
         num_added = 0
 
         # Builds a list of testpoints defined by the user when a new channel is created
@@ -123,8 +127,8 @@ class Channel(db.Model):
             for i in range(num_testpoints):
                 testpoint = TestPoint(
                     channel_id = self.id,
-                    nominal_test_value = nominal_test_values[i],
-                    nominal_value = nominal_values[i]
+                    nominal_injection_value = nominal_injection_value_list[i],
+                    nominal_test_value = nominal_test_value_list[i]
                 )
                 self.testpoints.append(testpoint)
                 num_added +=1
@@ -132,11 +136,36 @@ class Channel(db.Model):
         # Builds a default list of testpoints with an equal distance between the points
         elif testpoint_list_type == TestPointListType.STANDARD:
 
-            # Calculates the nominal test values for the signal injection points
-            test_range = self.test_range()
+            # Calculates the nominal signal injection values
+            injection_range = self.injection_range()
+            delta = injection_range / (num_testpoints - 1)
+            nominal_injection_values = [self.min_injection_range]
+            for i in range(1, num_testpoints):
+                nominal_injection_values.append(nominal_injection_value_list[i-1] + delta)
+
+            # Calculates the nominal test values for the channel's measurement points
+            measurement_range = self.measurement_range()
+            delta = measurement_range / (num_testpoints - 1)
+            nominal_test_values = [self.min_range]
+            for i in range(1, num_testpoints):
+                nominal_test_values.append(nominal_test_value_list[i-1] + delta)
+
+            # Generate each TestPoint and add them to the channel
+            for i in range(num_testpoints):
+                testpoint = TestPoint(
+                    channel_id = self.id,
+                    nominal_injection_value = nominal_injection_values[i],
+                    nominal_test_value = nominal_test_values[i]
+                )
+                self.testpoints.append(testpoint)
+                num_added += 1
+        
+        num_leftover = num_testpoints - num_added
+        if num_leftover > 0:
+            print(f'Error building TestPoint value list. Only {num_testpoints - num_leftover}/{num_testpoints} added successfully.')
+        else:
+            print(f'Successfully built TestPoint value list with {num_testpoints} points.')
             
-
-
 
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
