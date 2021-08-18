@@ -1,8 +1,10 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import ValidationError, DataRequired, Length
-from app.models import User, Client
+from wtforms import StringField, SubmitField, IntegerField, SelectField
+from wtforms.validators import ValidationError, DataRequired
+from app.models import User, Client, Project
 
+# Constants
+CUSTOM_SELECT_FIELD_KW = {'class': 'custom-select'}
 
 class EditProfileForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -31,3 +33,15 @@ class AddClientForm(FlaskForm):
         name = Client.query.filter_by(name=name.data).first()
         if name is not None:
             raise ValidationError('Client name already exists. Please choose another.')
+
+class AddProjectForm(FlaskForm):
+    name = StringField('Project Name', validators=[DataRequired()])
+    number = IntegerField('Project Number', validators=[DataRequired()])
+    client = SelectField('Client', render_kw=CUSTOM_SELECT_FIELD_KW, validators=[DataRequired()])
+    submit = SubmitField('Add Project')
+
+    # Custom validator for ensuring a unique project number is chosen
+    def validate_number(self, number):
+        number = Project.query.filter_by(number=number.data).first()
+        if number is not None:
+            raise ValidationError('Project number already exists. Please choose another.')

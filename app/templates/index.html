@@ -4,15 +4,22 @@
 {% block app_content %}
     <h1>Home Page:</h1>
     <br>
-    <table>
+    <table class="table table-hover">
         <tr>
             <td>
                 <button type="button" class="btn btn-primary">
                     <a style="color:#FFFFFF;" href="{{ url_for('main.add_client') }}">Add Client</a>
                 </button>
+                {{ summary["clients"] }}
             </td>
-            <td>{{ summary["clients"] }}</td>
         </tr>
-    </table>          
-
+        <tr>
+            <td>
+                <button type="button" class="btn btn-primary">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_project') }}">Add Project</a>
+                </button>
+                {{ summary["projects"] }}
+            </td>
+        </tr>
+    </table>     
 {% endblock %}
