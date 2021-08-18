@@ -2,8 +2,8 @@ from flask import render_template, url_for, request, current_app, redirect, flas
 from flask_login import current_user, login_required
 from app import db
 from app.main import bp
-from app.models import User
-from app.main.forms import EditProfileForm
+from app.models import User, Client
+from app.main.forms import EditProfileForm, AddClientForm
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -40,3 +40,21 @@ def edit_profile():
         form.username.data = current_user.username
 
     return render_template('edit_profile.html', title='Edit Profile', form=form)
+
+
+@bp.route('/add_client', methods=['POST'])
+@login_required
+def add_client():
+
+    form = AddClientForm()
+
+    if form.validate_on_submit():
+
+        # Add the new client to the database
+        client = Client(name=form.name.data)
+        db.session.add(client)
+        db.session.commit()
+        flash(f'Client {client.name} has been added to the database.')
+        return redirect(url_for('main.index'))
+
+    return render_template('add_client.html', title='Add Client', form=form)
