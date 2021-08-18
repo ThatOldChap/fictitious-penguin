@@ -4,7 +4,15 @@
     <table class="table table-hover">
         <tr>
             <td width="256px"><img src="{{ user.avatar(256) }}"></td>
-            <td><h1>{{ 'User' }}: {{ user.username }}</h1></td>
+            <tr>
+                <td><h1>{{ 'Username' }}: {{ user.username }}</h1></td>
+            </tr>
+            <tr>
+                {% if user == current_user %}
+                <td><p><a href="{{ url_for('main.edit_profile') }}">{{ 'Edit your profile' }}</a></p></td>
+                {% endif %}
+            </tr>
+            
         </tr>
     </table>
 {% endblock %}

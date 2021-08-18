@@ -1,15 +1,6 @@
 {% extends "base.html" %}
 {% import 'bootstrap/form.html' as wtf %}
 
-{# Note about migrating from flask-bootstrap to bootstrap-flask #}
-{#     
-    Before: {% import 'bootstrap/wtf.html' as wtf %}
-    After:  {% import 'bootstrap/form.html' as wtf %}
-
-    Before: {{ wtf.quick_form(form) }}
-    After:  {{ wtf.render_form(form) }}    
-#}
-
 {% block app_content %}
     <h1>{{ 'Sign In' }}</h1>
     <div class="row">
