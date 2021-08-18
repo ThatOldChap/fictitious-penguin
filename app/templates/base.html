@@ -42,16 +42,16 @@
                         <span class="sr-only">(current)</span>
                     </a>
                 </li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('main.projects') }}">Projects</a></li>        
+                {# <li class="nav-item"><a class="nav-link" href="{{ url_for('main.projects') }}">Projects</a></li> #}
             </ul>
             {# Right-hand side Navbar #}
             <ul class="nav navbar-nav navbar-right">
                 {# Changes the navbar items based on whether a registered user is logged in #}
                 {% if current_user.is_anonymous %}
-                    <li><a href="{{ url_for('auth.login') }}">{{ 'Login' }}</a></li>
+                    <li class="nav-item"><a href="{{ url_for('auth.login') }}" class="nav-link">{{ 'Login' }}</a></li>
                 {% else %}
-                    <li><a href="{{ url_for('main.user', username=current_user.username) }}">{{ 'Profile' }}</a></li>
-                    <li><a href="{{ url_for('auth.logout') }}">{{ 'Logout' }}</a></li>
+                    <li class="nav-item"><a href="{{ url_for('main.user', username=current_user.username) }}" class="nav-link">{{ 'Profile' }}</a></li>
+                    <li class="nav-item"><a href="{{ url_for('auth.logout') }}" class="nav-link">{{ 'Logout' }}</a></li>
                 {% endif %}
             </ul>
         </div>

@@ -129,5 +129,6 @@ dmypy.json
 .pyre/
 
 # Custom
-icats.log
+logs/
+icats.log*
 app.db
