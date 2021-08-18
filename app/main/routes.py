@@ -9,7 +9,12 @@ from app.main.forms import EditProfileForm, AddClientForm
 @bp.route('/index', methods=['GET', 'POST'])
 def index():
 
-    return render_template('index.html', title='Home')
+    summary = {}
+
+    clients = Client.query.all()
+    summary["clients"] = clients
+
+    return render_template('index.html', title='Home', summary=summary)
 
 
 @bp.route('/user/<username>')
@@ -42,7 +47,7 @@ def edit_profile():
     return render_template('edit_profile.html', title='Edit Profile', form=form)
 
 
-@bp.route('/add_client', methods=['POST'])
+@bp.route('/add_client', methods=['GET', 'POST'])
 @login_required
 def add_client():
 
@@ -54,7 +59,7 @@ def add_client():
         client = Client(name=form.name.data)
         db.session.add(client)
         db.session.commit()
-        flash(f'Client {client.name} has been added to the database.')
+        flash(f'Client "{client.name}" has been added to the database.')
         return redirect(url_for('main.index'))
 
     return render_template('add_client.html', title='Add Client', form=form)
