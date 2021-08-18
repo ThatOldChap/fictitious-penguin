@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <table class="table table-hover">
+        <tr>
+            <td width="256px"><img src="{{ user.avatar(256) }}"></td>
+            <td><h1>{{ 'User' }}: {{ user.username }}</h1></td>
+        </tr>
+    </table>
+{% endblock %}
