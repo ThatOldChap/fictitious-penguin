@@ -70,7 +70,7 @@ def add_client():
         flash(f'Client "{client.name}" has been added to the database.')
         return redirect(url_for('main.index'))
 
-    return render_template('add_client.html', title='Add Client', form=form)
+    return render_template('add_item.html', title='Add Client', form=form, item='Client')
 
 
 @bp.route('/add_project', methods=['GET', 'POST'])
@@ -96,7 +96,7 @@ def add_project():
         flash(f'Project "{project.name}" has been added to the database.')
         return redirect(url_for('main.index'))
 
-    return render_template('add_project.html', title='Add Project', form=form)
+    return render_template('add_item.html', title='Add Project', form=form, item='Project')
 
 
 @bp.route('/add_job', methods=['GET', 'POST'])
@@ -123,4 +123,4 @@ def add_job():
         flash(f'Job "{job.stage} {job.phase}" has been added to the {job.project.name} project.')
         return redirect(url_for('main.index'))
 
-    return render_template('add_job.html', title='Add Job', form=form)
+    return render_template('add_item.html', title='Add Job', form=form, item='Job')
