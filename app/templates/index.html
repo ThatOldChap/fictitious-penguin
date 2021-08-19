@@ -36,7 +36,10 @@
             <td>
                 <button type="button" class="btn btn-primary">
                     <a style="color:#FFFFFF;" href="{{ url_for('main.add_group', job_id=1) }}">Add Group</a>
-                </button>                
+                </button>
+                <button type="button" class="btn btn-info">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.groups', job_id=1) }}">View Groups</a>
+                </button>         
                 {{ summary["groups"] }}
             </td>
         </tr>

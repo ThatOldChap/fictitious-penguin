@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div>
+        <h1>Group List:</h1>
+        <table class="table table-hover table-bordered align-middle">
+            <thead>
+                <tr class="table-primary text-center align-middle">
+                    <th class="align-middle">Name</th>
+                    <th class="align-middle">Last Updated</th>
+                    <th class="align-middle">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in groups %}
+                    {% include 'group.html' %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
