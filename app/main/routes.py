@@ -2,8 +2,8 @@ from flask import render_template, url_for, request, current_app, redirect, flas
 from flask_login import current_user, login_required
 from app import db
 from app.main import bp
-from app.models import User, Client, Project, Job
-from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm
+from app.models import User, Client, Project, Job, Group
+from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm
 from app.main.forms import EMPTY_SELECT_CHOICE
 
 @bp.route('/', methods=['GET', 'POST'])
@@ -20,6 +20,9 @@ def index():
 
     jobs = Job.query.all()
     summary["jobs"] = jobs
+
+    groups = Group.query.all()
+    summary["groups"] = groups
 
     return render_template('index.html', title='Home', summary=summary)
 
@@ -59,8 +62,10 @@ def edit_profile():
 @login_required
 def add_client():
 
+    # Create the form
     form = AddClientForm()
 
+    # User has added a new client
     if form.validate_on_submit():
 
         # Add the new client to the database
@@ -99,6 +104,14 @@ def add_project():
     return render_template('add_item.html', title='Add Project', form=form, item='Project')
 
 
+@bp.route('/jobs', methods=['GET', 'POST'])
+def jobs():
+
+    jobs = Job.query.all()
+
+    return render_template('jobs.html', title='Jobs List', jobs=jobs)
+
+
 @bp.route('/add_job', methods=['GET', 'POST'])
 def add_job():
 
@@ -124,3 +137,28 @@ def add_job():
         return redirect(url_for('main.index'))
 
     return render_template('add_item.html', title='Add Job', form=form, item='Job')
+
+
+@bp.route('/job/<job_id>/add_group', methods=['GET', 'POST'])
+def add_group(job_id):
+
+    # Create the form
+    form = AddGroupForm()
+
+    # Add the job_id from which the new group was requested by the user to be added to
+    form.job_id.data = job_id
+
+    # User has added a new group to an existing job
+    if form.validate_on_submit():
+
+        # Add the new group to the database
+        group = Group(
+            name=form.name.data,
+            job_id=form.job_id.data
+        )
+        db.session.add(group)
+        db.session.commit()
+        flash(f'Group "{group.name}" has been added to the {group.job.stage} {group.job.phase} job for the {group.job.project.name} project.')
+        return redirect(url_for('main.index'))
+
+    return render_template('add_item.html', title='New Group', form=form, item="Group")

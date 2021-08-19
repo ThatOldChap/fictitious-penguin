@@ -26,7 +26,18 @@
                 <button type="button" class="btn btn-primary">
                     <a style="color:#FFFFFF;" href="{{ url_for('main.add_job') }}">Add Job</a>
                 </button>
+                <button type="button" class="btn btn-info">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.jobs') }}">View Jobs</a>
+                </button>
                 {{ summary["jobs"] }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button type="button" class="btn btn-primary">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_group', job_id=1) }}">Add Group</a>
+                </button>                
+                {{ summary["groups"] }}
             </td>
         </tr>
     </table>     

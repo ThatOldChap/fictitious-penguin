@@ -1,0 +1,20 @@
+{% block app_content %}
+<tr class="text-center">
+    <td class="align-middle">{{ job.project.client.name }}</td>
+    <td class="align-middle">{{ job.project.number }}</td>
+    <td class="align-middle">{{ job.project.name }}</td>
+    <td class="align-middle">{{ job.stage }}</td>
+    <td class="align-middle">{{ job.phase }}</td>
+    <td class="align-middle">{{ moment(job.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
+    <td class="align-middle">
+        {# Button for seeing a list of all its groups #}
+        <button type="button" class="btn btn-info">Group List
+            {#<a style="color:#FFFFFF;" href="{{ url_for('main.groups', job_id=job.id) }}">Group List</a>#}
+        </button>
+        {# Button for adding a new group to the job #}
+        <button type="button" class="btn btn-success">
+            <a style="color:#FFFFFF;" href="{{ url_for('main.add_group', job_id=job.id) }}">Add Group</a>
+        </button>
+    </td>
+</tr>
+{% endblock %}

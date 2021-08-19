@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, IntegerField, SelectField
+from wtforms import StringField, SubmitField, IntegerField, SelectField, HiddenField
 from wtforms.validators import ValidationError, DataRequired
 from app.models import User, Client, Project
 from app.utils import JobStage, JobPhase
@@ -63,3 +63,8 @@ class AddJobForm(FlaskForm):
     phase = SelectField('Project Phase', choices=JOB_PHASE_CHOICES, render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
     submit = SubmitField('Add Job')
 
+
+class AddGroupForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    job_id = HiddenField('Job ID')
+    submit = SubmitField('Add New Group')

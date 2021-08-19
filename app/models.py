@@ -202,6 +202,7 @@ class Job(db.Model):
     # Relationships
     groups = db.relationship('Group', backref='job', lazy='dynamic')
 
+
     def __repr__(self):
         return f'<Job: {self.stage} {self.phase} for the {self.project.name} project>'
 
