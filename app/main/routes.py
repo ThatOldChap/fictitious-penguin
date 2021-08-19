@@ -104,14 +104,6 @@ def add_project():
     return render_template('add_item.html', title='Add Project', form=form, item='Project')
 
 
-@bp.route('/jobs', methods=['GET', 'POST'])
-def jobs():
-
-    jobs = Job.query.all()
-
-    return render_template('jobs.html', title='Jobs List', jobs=jobs)
-
-
 @bp.route('/add_job', methods=['GET', 'POST'])
 def add_job():
 
@@ -139,6 +131,14 @@ def add_job():
     return render_template('add_item.html', title='Add Job', form=form, item='Job')
 
 
+@bp.route('/jobs', methods=['GET', 'POST'])
+def jobs():
+
+    jobs = Job.query.all()
+
+    return render_template('jobs.html', title='Job List', jobs=jobs)
+
+
 @bp.route('/job/<job_id>/add_group', methods=['GET', 'POST'])
 def add_group(job_id):
 
@@ -162,3 +162,10 @@ def add_group(job_id):
         return redirect(url_for('main.index'))
 
     return render_template('add_item.html', title='New Group', form=form, item="Group")
+
+@bp.route('/job/<job_id>/groups', methods=['GET', 'POST'])
+def groups(job_id):
+
+    groups = Group.query.filter_by(job_id=job_id).all()
+
+    return render_template('groups.html', title='Group List', groups=groups)
