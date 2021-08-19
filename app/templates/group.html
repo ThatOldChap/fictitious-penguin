@@ -5,11 +5,11 @@
     <td class="align-middle">
         {# Button for seeing a list of all the group's channels #}
         <button type="button" class="btn btn-info">Channel List
-            {#<a style="color:#FFFFFF;" href="{{ url_for('main.channels', group_id=group.id) }}">Channel List</a>#}
+            <a style="color:#FFFFFF;" href="{{ url_for('main.channels', group_id=group.id) }}">Channel List</a>
         </button>
         {# Button for adding a new channel to the group #}
         <button type="button" class="btn btn-success">Add Channel
-            {#<a style="color:#FFFFFF;" href="{{ url_for('main.add_channel', group_id=group.id) }}">Add Channel</a>#}
+            <a style="color:#FFFFFF;" href="{{ url_for('main.add_channel', group_id=group.id) }}">Add Channel</a>
         </button>
     </td>
 </tr>

@@ -15,7 +15,7 @@ class MeasurementType(enum.Enum):
     TEMPERATURE = "Temperature"
     PRESSURE = "Pressure"
 
-class EngineeringUnits(enum.Enum):
+class EngUnits(enum.Enum):
     VOLTS = "V"
     MILLIAMPS = "mA"
     DEGREES_CELSIUS = "degC"

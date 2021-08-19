@@ -3,8 +3,9 @@ from flask_login import current_user, login_required
 from app import db
 from app.main import bp
 from app.models import User, Client, Project, Job, Group
-from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm
+from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm
 from app.main.forms import EMPTY_SELECT_CHOICE
+from app.utils import TestPointListType
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -169,3 +170,23 @@ def groups(job_id):
     groups = Group.query.filter_by(job_id=job_id).all()
 
     return render_template('groups.html', title='Group List', groups=groups)
+
+
+@bp.route('/group/<group_id>/add_channel', methods=['GET', 'POST'])
+def add_channel(group_id):
+
+    # Create the form
+    form = AddChannelForm()
+
+    # Add the group_id from which the new channel was requested by the user to be added to
+    form.group_id.data = group_id
+
+    if form.validate_on_submit():
+
+        # Get the additional info from the form for channel creation
+        testpoint_list_type = form.testpoint_list_type.data
+        testpoint_list = form.testpoint_list.data
+
+        # Create the new channel
+
+    

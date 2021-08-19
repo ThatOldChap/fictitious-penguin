@@ -1,16 +1,26 @@
+from flask.templating import render_template
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, SelectField, HiddenField
+from wtforms.fields.core import FloatField
+from wtforms.i18n import DefaultTranslations
 from wtforms.validators import ValidationError, DataRequired
+from wtforms.widgets.core import Select
 from app.models import User, Client, Project
-from app.utils import JobStage, JobPhase
+from app.utils import JobStage, JobPhase, MeasurementType, EngUnits, ErrorType, TestPointListType
 
 # FormField class constants
 CUSTOM_SELECT_CLASS = {'class': 'custom-select'}
+CUSTOM_FORM_CLASS = {'class': 'form-control'}
 
 # SelectField choice constants
 EMPTY_SELECT_CHOICE = [("", 'Select...')]
 JOB_PHASE_CHOICES = EMPTY_SELECT_CHOICE + [(phase.value, phase.value) for phase in JobPhase]
 JOB_STAGE_CHOICES = EMPTY_SELECT_CHOICE + [(stage.value, stage.value) for stage in JobStage]
+MEASUREMENT_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(t.value, t.value) for t in MeasurementType]
+ENG_UNITS_CHOICES = EMPTY_SELECT_CHOICE + [(units.value, units.value) for units in EngUnits]
+ERROR_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(e.value, e.value) for e in ErrorType]
+NUM_TESTPOINT_CHOICES = EMPTY_SELECT_CHOICE + [(i, i) for i in range(1, 11)]
+TESTPOINT_LIST_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(t.value, t.value) for t in TestPointListType]
 
 
 class EditProfileForm(FlaskForm):
@@ -68,3 +78,41 @@ class AddGroupForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     job_id = HiddenField('Job ID')
     submit = SubmitField('Add New Group')
+
+
+class AddChannelForm(FlaskForm):
+    # Basic Channel Info
+    name = StringField('Name', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    group_id = HiddenField('Group ID')
+
+    # Measurement Info
+    measurement_type = SelectField('Type', render_kw=CUSTOM_SELECT_CLASS,
+        choices=MEASUREMENT_TYPE_CHOICES, validators=[DataRequired()])
+    measurement_units = SelectField('Eng. Units', render_kw=CUSTOM_SELECT_CLASS,
+        choices=ENG_UNITS_CHOICES, validators=[DataRequired()])
+    min_range = FloatField('Minimum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    max_range = FloatField('Maximum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    full_scale_range = FloatField('Full Scale Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+
+    # Tolerance Info
+    max_error = FloatField('Maximum Error', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    error_type = SelectField('Error Type', render_kw=CUSTOM_SELECT_CLASS,
+        choices=ERROR_TYPE_CHOICES, validators=[DataRequired()])
+
+    # Signal Injection Info
+    min_injection_range = FloatField('Minimum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    max_injection_range = FloatField('Maximum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    injection_units = SelectField('Eng. Units', render_kw=CUSTOM_SELECT_CLASS,
+        choices=ENG_UNITS_CHOICES, validators=[DataRequired()])
+
+    # Testpoint List Info
+    num_testpoints = SelectField('# of TestPoints', render_kw=CUSTOM_SELECT_CLASS,
+        choices=NUM_TESTPOINT_CHOICES, validators=[DataRequired()])
+    testpoint_list_type = SelectField('TestPoint List Type', render_kw=CUSTOM_SELECT_CLASS,
+        choices=TESTPOINT_LIST_TYPE_CHOICES, validators=[DataRequired()])
+    
+    
+
+
+
+    # TODO: Custom validator to allow for zero values in FloatField

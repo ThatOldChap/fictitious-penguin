@@ -96,10 +96,10 @@ class Channel(db.Model):
     max_error = db.Column(db.Float(8))
     error_type = db.Column(db.String(8))
 
-    # Testing Info
+    # Signal Injection Info
     min_injection_range = db.Column(db.Float(16))
     max_injection_range = db.Column(db.Float(16))
-    test_units = db.Column(db.String(16))
+    injection_units = db.Column(db.String(16))
 
     # Foreign Keys
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
