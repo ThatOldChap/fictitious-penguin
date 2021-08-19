@@ -1,7 +1,7 @@
 from flask.templating import render_template
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, SelectField, HiddenField
-from wtforms.fields.core import FloatField
+from wtforms.fields.core import FieldList, FloatField, FormField
 from wtforms.i18n import DefaultTranslations
 from wtforms.validators import ValidationError, DataRequired
 from wtforms.widgets.core import Select
@@ -11,6 +11,7 @@ from app.utils import JobStage, JobPhase, MeasurementType, EngUnits, ErrorType, 
 # FormField class constants
 CUSTOM_SELECT_CLASS = {'class': 'custom-select'}
 CUSTOM_FORM_CLASS = {'class': 'form-control'}
+PRIMARY_SUBMIT_BUTTON_CLASS = {'class': 'btn btn-primary'}
 
 # SelectField choice constants
 EMPTY_SELECT_CHOICE = [("", 'Select...')]
@@ -80,6 +81,11 @@ class AddGroupForm(FlaskForm):
     submit = SubmitField('Add New Group')
 
 
+class AddTestPointForm(FlaskForm):
+    injection_value = FloatField('Injection Value', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    test_value = FloatField('Test Value', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+
+
 class AddChannelForm(FlaskForm):
     # Basic Channel Info
     name = StringField('Name', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
@@ -110,9 +116,12 @@ class AddChannelForm(FlaskForm):
         choices=NUM_TESTPOINT_CHOICES, validators=[DataRequired()])
     testpoint_list_type = SelectField('TestPoint List Type', render_kw=CUSTOM_SELECT_CLASS,
         choices=TESTPOINT_LIST_TYPE_CHOICES, validators=[DataRequired()])
-    
-    
+    testpoint_list = FieldList(FormField(AddTestPointForm))
 
-
+    submit = SubmitField('Add Channel', render_kw=PRIMARY_SUBMIT_BUTTON_CLASS)
 
     # TODO: Custom validator to allow for zero values in FloatField
+
+    # Pauses the creation of the form to allow for the additional, dynamically added fields to be added
+    # Note: Without the pass, the addition of the dynamic fields invalidates the form
+    pass
