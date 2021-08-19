@@ -203,7 +203,7 @@ class Job(db.Model):
     groups = db.relationship('Group', backref='job', lazy='dynamic')
 
     def __repr__(self):
-        return f'<Job {self.stage} {self.phase} for Project {self.project_id}>'
+        return f'<Job: {self.stage} {self.phase} for the {self.project.name} project>'
 
     def project(self):
         return Project.query.filter_by(id=self.project_id).first()

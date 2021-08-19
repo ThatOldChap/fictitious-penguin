@@ -21,5 +21,13 @@
                 {{ summary["projects"] }}
             </td>
         </tr>
+        <tr>
+            <td>
+                <button type="button" class="btn btn-primary">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_job') }}">Add Job</a>
+                </button>
+                {{ summary["jobs"] }}
+            </td>
+        </tr>
     </table>     
 {% endblock %}

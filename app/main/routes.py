@@ -2,8 +2,9 @@ from flask import render_template, url_for, request, current_app, redirect, flas
 from flask_login import current_user, login_required
 from app import db
 from app.main import bp
-from app.models import User, Client, Project
-from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm
+from app.models import User, Client, Project, Job
+from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm
+from app.main.forms import EMPTY_SELECT_CHOICE
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -17,7 +18,8 @@ def index():
     projects = Project.query.all()
     summary["projects"] = projects
 
-    
+    jobs = Job.query.all()
+    summary["jobs"] = jobs
 
     return render_template('index.html', title='Home', summary=summary)
 
@@ -77,8 +79,8 @@ def add_project():
     # Create the form
     form = AddProjectForm()
 
-    # Generate the list of Client choices to populate the Client SelectField in the form
-    form.client.choices = [("", "Select Client")] + [(c.id, c.name) for c in Client.query.order_by('name')]
+    # Generate the list of SelectField choices to populate in the form
+    form.client.choices = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in Client.query.order_by('name')]
 
     # User has added a new project
     if form.validate_on_submit():
@@ -95,3 +97,30 @@ def add_project():
         return redirect(url_for('main.index'))
 
     return render_template('add_project.html', title='Add Project', form=form)
+
+
+@bp.route('/add_job', methods=['GET', 'POST'])
+def add_job():
+
+    # Create the form
+    form = AddJobForm()
+
+    # Generate the list of SelectField choices to populate in the form
+    form.client_name.choices = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in Client.query.order_by('name')]
+    form.project_number.choices = EMPTY_SELECT_CHOICE + [(p.id, p.number) for p in Project.query.order_by('number')]
+    form.project_name.choices = EMPTY_SELECT_CHOICE + [(p.id, p.name) for p in Project.query.order_by('name')]
+
+    # User has added a new job
+    if form.validate_on_submit():
+        # Add the new job to the database
+        job = Job(
+            project_id=form.project_name.data,
+            stage=form.stage.data,
+            phase=form.phase.data            
+            )
+        db.session.add(job)
+        db.session.commit()
+        flash(f'Job "{job.stage} {job.phase}" has been added to the {job.project.name} project.')
+        return redirect(url_for('main.index'))
+
+    return render_template('add_job.html', title='Add Job', form=form)
