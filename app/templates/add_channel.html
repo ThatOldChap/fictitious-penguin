@@ -14,42 +14,42 @@
                         <div class="row">
                             {# Basic Channel Information #}
                             <legend>Channel Definition</legend>
-                            <div class="col-md-5 g-2">
+                            <div class="col-md-4 g-2">
                                 {{ form.name.label.text }}
                                 {{ form.name() }}
                             </div>
                             <div class="col-md-4 g-2">
-                                {{ form.measurement_type.label.text }}
+                                {{ form.measurement_type.label }}
                                 {{ form.measurement_type() }}
                             </div>
-                            <div class="col-md-3 g-2">
-                                {{ form.measurement_units.label.text }}
+                            <div class="col-md-4 g-2">
+                                {{ form.measurement_units.label }}
                                 {{ form.measurement_units() }}
                             </div>
                         </div>
                         <div class="row">
                             {# Measurement Information #}
                             <div class="col-md-4 g-2">
-                                {{ form.min_range.label.text }}
+                                {{ form.min_range.label }}
                                 {{ form.min_range() }}
                             </div>
                             <div class="col-md-4 g-2">
-                                {{ form.max_range.label.text }}
+                                {{ form.max_range.label }}
                                 {{ form.max_range() }}
                             </div>
                             <div class="col-md-4 g-2">
-                                {{ form.full_scale_range.label.text }}
+                                {{ form.full_scale_range.label }}
                                 {{ form.full_scale_range() }}
                             </div>
                         </div>
                         <div class="row">
                             {# Tolerance Information #}
                             <div class="col-md-4 g-2">
-                                {{ form.max_error.label.text }}
+                                {{ form.max_error.label }}
                                 {{ form.max_error() }}
                             </div>
                             <div class="col-md-4 g-2">
-                                {{ form.error_type.label.text }}
+                                {{ form.error_type.label }}
                                 {{ form.error_type() }}
                             </div>
                         </div>
@@ -58,15 +58,15 @@
                             {# Signal Injection Information #}
                             <legend>Signal Injection Range</legend>
                             <div class="col-md-4 g-2">
-                                {{ form.min_injection_range.label.text }}
+                                {{ form.min_injection_range.label }}
                                 {{ form.min_injection_range() }}
                             </div>
                             <div class="col-md-4 g-2">
-                                {{ form.max_injection_range.label.text }}
+                                {{ form.max_injection_range.label }}
                                 {{ form.max_injection_range() }}
                             </div>
                             <div class="col-md-4 g-2">
-                                {{ form.injection_units.label.text }}
+                                {{ form.injection_units.label }}
                                 {{ form.injection_units() }}
                             </div>
                         </div>
@@ -75,14 +75,15 @@
                             {# TestPoint Information #}
                             <legend>TestPoint Definition</legend>
                             <div class="col-md-4 g-2">
-                                {{ form.num_testpoints.label.text }}
+                                {{ form.num_testpoints.label }}
                                 {{ form.num_testpoints() }}
                             </div>
                             <div class="col-md-4 g-2">
-                                {{ form.testpoint_list_type.label.text }}
+                                {{ form.testpoint_list_type.label }}
                                 {{ form.testpoint_list_type() }}
                             </div>
                         </div>
+                        <hr class="my-3">
                         <div class="row">
                             {# TestPoint List #}
                             <div class="col-12 g-2">
@@ -110,11 +111,167 @@
     <script>
         $(document).ready(function() {
 
-            // Create a DOM template for a TestPoint table row
-            function generateTestPointTableRow() {
-                
+            // Value Constants
+            let CSRF_TOKEN = 'csrf_token';
+            let CSRF_TOKEN_VALUE = $(`#${CSRF_TOKEN}`).val();
+
+            // Class Constants                
+            let INPUT_GROUP_CLASS = {class: 'input-group'};        
+            let ROW_CLASS = {class: 'row'};
+            let COL_MD_4_CLASS = {class: 'col-md-4'};
+            let COL_MD_12_CLASS = {class: 'col-md-12'};
+            let INPUT_GROUP_TEXT_CLASS = 'input-group-text';
+            let FORM_CLASS = 'form-control';
+
+            // Dom Element Constants
+            let DIV= '<div>';
+            let INPUT = '<input>';
+            let LABEL = '<label>';
+            let SPAN = '<span>';
+            
+            // Field Type Constants
+            let TEXT_TYPE = 'text';
+            let HIDDEN_TYPE = 'hidden';
+
+            // ID Constants
+            let TESTPOINT_LIST = 'testpoint_list';
+            let NUM_TESTPOINTS = 'num_testpoints';
+
+            // Form Field Constants
+            let INJECTION_VALUE = 'injection_value';
+            let INJECTION_UNITS = 'injection_units';
+            let INJECTION_VALUE_UNITS = 'injection_value_units';
+            let TEST_VALUE = 'test_value';
+            let TEST_UNITS = 'measurement_units';
+            let TEST_VALUE_UNITS = 'test_value_units';            
+
+            // Value Constants
+            let EMPTY_VALUE = ' ';
+            let INJECTION_VALUES_HEADER = 'Injection Values';
+            let TEST_VALUES_HEADER = 'Test Values';
+
+            // Load the initial table
+            initTestPointTable();
+
+            // Function called when the user changes the Channel's Injection Units
+            $(`#${INJECTION_UNITS}`).change(function(event) {
+
+                // Extract the new value of units from the field
+                let newUnits = event.target.value;
+
+                // Update the units on all the relevant TestPointTable fields
+                updateUnits(newUnits, INJECTION_VALUE_UNITS);
+            });
+
+            // Function called when the user changes the Channel's Test Units
+            $(`#${TEST_UNITS}`).change(function(event) {                
+
+                // Extract the new value of units from the field
+                let newUnits = event.target.value;
+
+                // Update the units on all the relevant TestPointTable fields
+                updateUnits(newUnits, TEST_VALUE_UNITS);
+            });
+
+            // Adjusts the TestPointTable's Injection Units as the user changes them in the form
+            function updateUnits(newUnits, unitsID) {
+
+                // Find all the row elements in the TestPointTable that match the type of units being updated
+                $(`[id^=${unitsID}]`).each(function(index, element) {
+                    $(element).text(newUnits);
+                });
             }
 
+            // Creates the base TestPoint table starting with 1 row
+            function initTestPointTable() {
+                
+                // Get the values to initially populate the table
+                let numTestpoints = $(`#${NUM_TESTPOINTS}`).val();                
+                
+                // Create the TestPoint table with the starting number of rows (1)
+                $(`#${TESTPOINT_LIST}`).attr({style: 'padding-left: 0px;'});
+                $(`#${TESTPOINT_LIST}`).append(
+                    createTestPointTableRow(numTestpoints, EMPTY_VALUE, EMPTY_VALUE, true)
+                );
+            }          
+
+            // Creates a TestPoint table row DOM element
+            function createTestPointTableRow(rowNum, injectionUnitsValue, testUnitsValue, hasLabels) {                
+
+                // Create the DOM elments for the form row and input groups
+                let testpointRow = $(DIV).attr(ROW_CLASS);
+                let injectionCol = $(DIV).attr(COL_MD_4_CLASS);
+                let injectionGroup = $(DIV).attr(INPUT_GROUP_CLASS);
+                let testCol = $(DIV).attr(COL_MD_4_CLASS);
+                let testGroup = $(DIV).attr(INPUT_GROUP_CLASS);                
+                
+                // Create the injection value elements and label              
+                let injectionValue = $(INPUT).attr({
+                    type: TEXT_TYPE,
+                    id: `${TESTPOINT_LIST}-${rowNum}-${INJECTION_VALUE}`,
+                    name: `${TESTPOINT_LIST}-${rowNum}-${INJECTION_VALUE}`,
+                    value: EMPTY_VALUE,
+                    class: FORM_CLASS
+                });                          
+                let injectionUnits = $(SPAN).attr({
+                    class: INPUT_GROUP_TEXT_CLASS,
+                    id: `${INJECTION_VALUE_UNITS}-${rowNum}`,
+                    name: `${INJECTION_VALUE_UNITS}-${rowNum}`,
+                    value: EMPTY_VALUE,
+                }).text(injectionUnitsValue);
+                
+                // Create the test value elements and label
+                let testValue = $(INPUT).attr({
+                    type: TEXT_TYPE,
+                    id: `${TESTPOINT_LIST}-${rowNum}-${TEST_VALUE}`,
+                    name: `${TESTPOINT_LIST}-${rowNum}-${TEST_VALUE}`,
+                    value: EMPTY_VALUE,
+                    class: FORM_CLASS
+                });                             
+                let testUnits = $(SPAN).attr({
+                    class: INPUT_GROUP_TEXT_CLASS,
+                    id: `${TEST_VALUE_UNITS}-${rowNum}`,
+                    name: `${TEST_VALUE_UNITS}-${rowNum}`,
+                    value: EMPTY_VALUE,
+                }).text(testUnitsValue);
+
+                // Create the CSRF element for each row to validate the input fields
+                let csrf = $(INPUT).attr({
+                    id: `${TESTPOINT_LIST}-${rowNum}-${CSRF_TOKEN}`,
+                    name: `${TESTPOINT_LIST}-${rowNum}-${CSRF_TOKEN}`,
+                    type: HIDDEN_TYPE,
+                    value: CSRF_TOKEN_VALUE
+                });                
+
+                // Build the testpoint row DOM element
+                injectionGroup.append(injectionValue, injectionUnits);                
+                testGroup.append(testValue, testUnits);
+                
+                // Adds labels if required
+                if (hasLabels) {
+
+                    // Creates the label elements
+                    let testValuesLabel = $(LABEL).attr({
+                        for: `${TESTPOINT_LIST}-${rowNum}-${TEST_VALUE}`
+                    }).text(TEST_VALUES_HEADER);
+
+                    let injectionValuesLabel = $(LABEL).attr({
+                        for: `${TESTPOINT_LIST}-${rowNum}-${INJECTION_VALUE}`
+                    }).text(INJECTION_VALUES_HEADER);
+
+                    // Add the label elements and input groups to the column
+                    injectionCol.append(injectionValuesLabel, injectionGroup)
+                    testCol.append(testValuesLabel, testGroup)
+
+                } else {
+                    injectionCol.append(injectionGroup)
+                    testCol.append(testGroup)
+                }  
+                
+                // Creates the final row of tespoints
+                testpointRow.append(injectionCol, testCol, csrf);
+                return testpointRow;
+            }
 
 
         });

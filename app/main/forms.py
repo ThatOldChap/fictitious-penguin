@@ -20,7 +20,7 @@ JOB_STAGE_CHOICES = EMPTY_SELECT_CHOICE + [(stage.value, stage.value) for stage 
 MEASUREMENT_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(t.value, t.value) for t in MeasurementType]
 ENG_UNITS_CHOICES = EMPTY_SELECT_CHOICE + [(units.value, units.value) for units in EngUnits]
 ERROR_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(e.value, e.value) for e in ErrorType]
-NUM_TESTPOINT_CHOICES = EMPTY_SELECT_CHOICE + [(i, i) for i in range(1, 11)]
+NUM_TESTPOINT_CHOICES = [(i, i) for i in range(1, 11)]
 TESTPOINT_LIST_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(t.value, t.value) for t in TestPointListType]
 
 
