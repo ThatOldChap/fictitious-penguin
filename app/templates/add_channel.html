@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-<body class="bg-light">
+<body class="">
     <div class="container">
         <main>
             <br>
@@ -83,7 +83,6 @@
                                 {{ form.testpoint_list_type() }}
                             </div>
                         </div>
-                        <hr class="my-3">
                         <div class="row">
                             {# TestPoint List #}
                             <div class="col-12 g-2">
@@ -102,4 +101,22 @@
         </main>    
     </div>
 </body>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    {# JQuery to deal with all the dynamic functionality of the channel creation #}
+    <script>
+        $(document).ready(function() {
+
+            // Create a DOM template for a TestPoint table row
+            function generateTestPointTableRow() {
+                
+            }
+
+
+
+        });
+    </script>
 {% endblock %}
