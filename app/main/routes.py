@@ -2,7 +2,7 @@ from flask import render_template, url_for, request, current_app, redirect, flas
 from flask_login import current_user, login_required
 from app import db
 from app.main import bp
-from app.models import User, Client, Project, Job, Group
+from app.models import User, Client, Project, Job, Group, Channel
 from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm
 from app.main.forms import EMPTY_SELECT_CHOICE
 from app.utils import TestPointListType
@@ -185,8 +185,48 @@ def add_channel(group_id):
 
         # Get the additional info from the form for channel creation
         testpoint_list_type = form.testpoint_list_type.data
-        testpoint_list = form.testpoint_list.data
+        testpoint_list_data = form.testpoint_list.data
+        num_testpoints = int(form.num_testpoints.data)
 
-        # Create the new channel
+        # Create the new channel and add it to the database
+        channel = Channel(
+            name=form.name.data,
+            group_id=form.group_id.data,
+            measurement_type=form.measurement_type.data,
+            measurement_units=form.measurement_units.data,
+            min_range=form.min_range.data,
+            max_range=form.max_range.data,
+            full_scale_range=form.full_scale_range.data,
+            max_error=form.max_error.data,
+            error_type=form.error_type.data,
+            min_injection_range=form.min_injection_range.data,
+            max_injection_range=form.max_injection_range.data,
+            injection_units=form.injection_units.data,
+        )
+        db.session.add(channel)
+        db.session.commit()
+        
+        # Extract the testpoint_list from the form data
+        injection_values = []
+        test_values = []
+        for i, values in enumerate(testpoint_list_data):
+            injection_values.append(values["injection_value"])
+            test_values.append(values["test_value"])
 
-    
+        # Build the testpoint_list for the new channel
+        channel.build_testpoint_list(num_testpoints, testpoint_list_type,
+            injection_values, test_values)
+        db.session.commit()
+        flash(f'Channel "{channel.name}" has been added to the {channel.group.name} group along with {num_testpoints} testpoints.')
+        
+        return redirect(url_for(f'main.groups, job_id={channel.group.job.id}'))
+
+    return render_template('add_channel.html', title='Add Channel', form=form)
+
+
+@bp.route('/group/<group_id>/channels', methods=['GET', 'POST'])
+def channels(group_id):
+
+    channels = Group.query.filter_by(group_id=group_id).all()
+
+    return render_template('channels.html', title='Channel List', channels=channels)

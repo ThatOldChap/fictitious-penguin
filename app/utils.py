@@ -37,5 +37,5 @@ class JobPhase(enum.Enum):
     ATP = "ATP"
 
 class TestPointListType(enum.Enum):
-    STANDARD = 0
-    CUSTOM = 1
+    STANDARD = "Standard"
+    CUSTOM = "Custom"

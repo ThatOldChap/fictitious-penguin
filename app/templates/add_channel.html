@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<body class="bg-light">
+    <div class="container">
+        <main>
+            <br>
+            <h2>Add a New Channel</h2>
+            <br>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <form action="" method="POST" name="form">
+                        {{ form.hidden_tag() }}
+                        <div class="row">
+                            {# Basic Channel Information #}
+                            <legend>Channel Definition</legend>
+                            <div class="col-md-5 g-2">
+                                {{ form.name.label.text }}
+                                {{ form.name() }}
+                            </div>
+                            <div class="col-md-4 g-2">
+                                {{ form.measurement_type.label.text }}
+                                {{ form.measurement_type() }}
+                            </div>
+                            <div class="col-md-3 g-2">
+                                {{ form.measurement_units.label.text }}
+                                {{ form.measurement_units() }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            {# Measurement Information #}
+                            <div class="col-md-4 g-2">
+                                {{ form.min_range.label.text }}
+                                {{ form.min_range() }}
+                            </div>
+                            <div class="col-md-4 g-2">
+                                {{ form.max_range.label.text }}
+                                {{ form.max_range() }}
+                            </div>
+                            <div class="col-md-4 g-2">
+                                {{ form.full_scale_range.label.text }}
+                                {{ form.full_scale_range() }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            {# Tolerance Information #}
+                            <div class="col-md-4 g-2">
+                                {{ form.max_error.label.text }}
+                                {{ form.max_error() }}
+                            </div>
+                            <div class="col-md-4 g-2">
+                                {{ form.error_type.label.text }}
+                                {{ form.error_type() }}
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <div class="row">
+                            {# Signal Injection Information #}
+                            <legend>Signal Injection Range</legend>
+                            <div class="col-md-4 g-2">
+                                {{ form.min_injection_range.label.text }}
+                                {{ form.min_injection_range() }}
+                            </div>
+                            <div class="col-md-4 g-2">
+                                {{ form.max_injection_range.label.text }}
+                                {{ form.max_injection_range() }}
+                            </div>
+                            <div class="col-md-4 g-2">
+                                {{ form.injection_units.label.text }}
+                                {{ form.injection_units() }}
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <div class="row">
+                            {# TestPoint Information #}
+                            <legend>TestPoint Definition</legend>
+                            <div class="col-md-4 g-2">
+                                {{ form.num_testpoints.label.text }}
+                                {{ form.num_testpoints() }}
+                            </div>
+                            <div class="col-md-4 g-2">
+                                {{ form.testpoint_list_type.label.text }}
+                                {{ form.testpoint_list_type() }}
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <div class="row">
+                            {# TestPoint List #}
+                            <div class="col-12 g-2">
+                                {{ form.testpoint_list() }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            {# Form Submission #}
+                            <div class="col-md-3 g-2">
+                                {{ form.submit() }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>    
+    </div>
+</body>
+{% endblock %}

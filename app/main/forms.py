@@ -94,7 +94,7 @@ class AddChannelForm(FlaskForm):
     # Measurement Info
     measurement_type = SelectField('Type', render_kw=CUSTOM_SELECT_CLASS,
         choices=MEASUREMENT_TYPE_CHOICES, validators=[DataRequired()])
-    measurement_units = SelectField('Eng. Units', render_kw=CUSTOM_SELECT_CLASS,
+    measurement_units = SelectField('Engineering Units', render_kw=CUSTOM_SELECT_CLASS,
         choices=ENG_UNITS_CHOICES, validators=[DataRequired()])
     min_range = FloatField('Minimum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
     max_range = FloatField('Maximum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
@@ -108,11 +108,11 @@ class AddChannelForm(FlaskForm):
     # Signal Injection Info
     min_injection_range = FloatField('Minimum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
     max_injection_range = FloatField('Maximum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
-    injection_units = SelectField('Eng. Units', render_kw=CUSTOM_SELECT_CLASS,
+    injection_units = SelectField('Engineering Units', render_kw=CUSTOM_SELECT_CLASS,
         choices=ENG_UNITS_CHOICES, validators=[DataRequired()])
 
     # Testpoint List Info
-    num_testpoints = SelectField('# of TestPoints', render_kw=CUSTOM_SELECT_CLASS,
+    num_testpoints = SelectField('Number of TestPoints', render_kw=CUSTOM_SELECT_CLASS,
         choices=NUM_TESTPOINT_CHOICES, validators=[DataRequired()])
     testpoint_list_type = SelectField('TestPoint List Type', render_kw=CUSTOM_SELECT_CLASS,
         choices=TESTPOINT_LIST_TYPE_CHOICES, validators=[DataRequired()])

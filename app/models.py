@@ -122,7 +122,7 @@ class Channel(db.Model):
     def injection_range(self):
         return self.max_injection_range - self.min_injection_range
 
-    def build_testpoint_list(self, num_testpoints, testpoint_list_type, nominal_injection_value_list, nominal_test_value_list):
+    def build_testpoint_list(self, num_testpoints, testpoint_list_type, injection_value_list, test_value_list):
         
         # Checker variables
         num_added = 0
@@ -132,8 +132,8 @@ class Channel(db.Model):
             for i in range(num_testpoints):
                 testpoint = TestPoint(
                     channel_id = self.id,
-                    nominal_injection_value = nominal_injection_value_list[i],
-                    nominal_test_value = nominal_test_value_list[i]
+                    injection_value = injection_value_list[i],
+                    test_value = test_value_list[i]
                 )
                 self.testpoints.append(testpoint)
                 num_added +=1
@@ -144,23 +144,23 @@ class Channel(db.Model):
             # Calculates the nominal signal injection values
             injection_range = self.injection_range()
             delta = injection_range / (num_testpoints - 1)
-            nominal_injection_values = [self.min_injection_range]
+            injection_values = [self.min_injection_range]
             for i in range(1, num_testpoints):
-                nominal_injection_values.append(nominal_injection_value_list[i-1] + delta)
+                injection_values.append(injection_value_list[i-1] + delta)
 
             # Calculates the nominal test values for the channel's measurement points
             measurement_range = self.measurement_range()
             delta = measurement_range / (num_testpoints - 1)
-            nominal_test_values = [self.min_range]
+            test_values = [self.min_range]
             for i in range(1, num_testpoints):
-                nominal_test_values.append(nominal_test_value_list[i-1] + delta)
+                test_values.append(test_value_list[i-1] + delta)
 
             # Generate each TestPoint and add them to the channel
             for i in range(num_testpoints):
                 testpoint = TestPoint(
                     channel_id = self.id,
-                    nominal_injection_value = nominal_injection_values[i],
-                    nominal_test_value = nominal_test_values[i]
+                    nominal_injection_value = injection_values[i],
+                    nominal_test_value = test_values[i]
                 )
                 self.testpoints.append(testpoint)
                 num_added += 1
