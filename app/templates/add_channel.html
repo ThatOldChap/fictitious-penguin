@@ -4,10 +4,8 @@
 <body class="">
     <div class="container">
         <main>
-            <br>
-            <h2>Add a New Channel</h2>
-            <br>
-            <div class="row g-3">
+            <h2><span><u>Add a New Channel</u></span></h2>
+            <div class="row">
                 <div class="col-md-8">
                     <form action="" method="POST" name="form">
                         {{ form.hidden_tag() }}
@@ -15,7 +13,7 @@
                             {# Basic Channel Information #}
                             <legend>Channel Definition</legend>
                             <div class="col-md-4 g-2">
-                                {{ form.name.label.text }}
+                                {{ form.name.label }}
                                 {{ form.name() }}
                             </div>
                             <div class="col-md-4 g-2">
@@ -150,8 +148,17 @@
             let INJECTION_VALUES_HEADER = 'Injection Values';
             let TEST_VALUES_HEADER = 'Test Values';
 
-            // Load the initial table
+            // Monitoring variables
+            let oldNumTestpoints = 1;
+            let currentInjectionUnits = "";
+            let currentTestUnits = "";
+
+
+            // Load the initial TestPointTable
             initTestPointTable();
+                      
+            
+
 
             // Function called when the user changes the Channel's Injection Units
             $(`#${INJECTION_UNITS}`).change(function(event) {
@@ -161,7 +168,9 @@
 
                 // Update the units on all the relevant TestPointTable fields
                 updateUnits(newUnits, INJECTION_VALUE_UNITS);
+                currentInjectionUnits = newUnits;
             });
+
 
             // Function called when the user changes the Channel's Test Units
             $(`#${TEST_UNITS}`).change(function(event) {                
@@ -171,16 +180,20 @@
 
                 // Update the units on all the relevant TestPointTable fields
                 updateUnits(newUnits, TEST_VALUE_UNITS);
+                currentTestUnits = newUnits;
             });
 
-            // Adjusts the TestPointTable's Injection Units as the user changes them in the form
-            function updateUnits(newUnits, unitsID) {
 
-                // Find all the row elements in the TestPointTable that match the type of units being updated
-                $(`[id^=${unitsID}]`).each(function(index, element) {
-                    $(element).text(newUnits);
-                });
-            }
+            // Function called when the user changes the number of TestPoints
+            $(`#${NUM_TESTPOINTS}`).change(function(event) {
+
+                // Extract the new number of TestPoints
+                newNumTestpoints = parseInt(event.target.value);
+
+                // Update the number of TestPoints in the table
+                updateTestPointTable(newNumTestpoints);
+            });  
+            
 
             // Creates the base TestPoint table starting with 1 row
             function initTestPointTable() {
@@ -272,6 +285,52 @@
                 testpointRow.append(injectionCol, testCol, csrf);
                 return testpointRow;
             }
+
+
+            // Adjusts the TestPointTable's Injection Units as the user changes them in the form
+            function updateUnits(newUnits, unitsID) {
+
+                // Find all the row elements in the TestPointTable that match the type of units being updated
+                $(`[id^=${unitsID}]`).each(function(index, element) {
+                    $(element).text(newUnits);
+                });
+            }
+
+
+            // Adjusts the TestPointTable's number of rows based on the user's selection
+            function updateTestPointTable(newNumTestpoints) {
+
+                // Monitoring variables
+                let numUpdated = 0;
+
+                // Calculates the new number of rows to be added or removed
+                let delta = newNumTestpoints - oldNumTestpoints;
+
+                if (delta > 0) {
+                    for (tp = oldNumTestpoints + 1; tp <= newNumTestpoints; tp++) {
+                        // Add a new row of TestPoints
+                        $(`#${TESTPOINT_LIST}`).append(
+                            createTestPointTableRow(tp, currentInjectionUnits, currentTestUnits, false)                            
+                        );
+                        numUpdated++;
+                    }
+                    console.log(`TestPoint table updated with ${numUpdated} additional TestPoints.`);
+
+                } else if (delta < 0) {
+                    for (tp = oldNumTestpoints; tp > newNumTestpoints; tp--) {
+                        // Remove each last row of TestPoints
+                        $(`#${TESTPOINT_LIST} .row:last-child`).remove();
+                        numUpdated++;
+                    }
+                    console.log(`TestPoint table updated with ${numUpdated} TestPoints removed.`);
+                }
+
+                // Update the new number of TestPoints
+                oldNumTestpoints = newNumTestpoints;
+            }
+            
+
+
 
 
         });
