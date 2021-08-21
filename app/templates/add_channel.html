@@ -112,6 +112,8 @@
             // Value Constants
             let CSRF_TOKEN = 'csrf_token';
             let CSRF_TOKEN_VALUE = $(`#${CSRF_TOKEN}`).val();
+            let REMOVE_DISABLE = 'REMOVE_DISABLE';
+            let ADD_DISABLE = 'ADD_DISABLE';
 
             // Class Constants                
             let INPUT_GROUP_CLASS = {class: 'input-group'};        
@@ -133,6 +135,7 @@
 
             // ID Constants
             let TESTPOINT_LIST = 'testpoint_list';
+            let TESTPOINT_LIST_TYPE = 'testpoint_list_type';
             let NUM_TESTPOINTS = 'num_testpoints';
 
             // Form Field Constants
@@ -147,17 +150,49 @@
             let EMPTY_VALUE = ' ';
             let INJECTION_VALUES_HEADER = 'Injection Values';
             let TEST_VALUES_HEADER = 'Test Values';
+            let DISABLED = 'disabled';
+            let STANDARD = 'Standard';
+            let CUSTOM = 'Custom';
 
             // Monitoring variables
             let oldNumTestpoints = 1;
             let currentInjectionUnits = "";
             let currentTestUnits = "";
+            let tableDisabled = true;
 
 
             // Load the initial TestPointTable
             initTestPointTable();
                       
             
+            // Function that disables or re-enables the user to modify the TestPointTable
+            $(`#${TESTPOINT_LIST_TYPE}`).change(function(event) {
+
+                // Get the new TestPoint List Type value
+                let newType = event.target.value;
+
+                // Determine whether to add or remove the disabled tags on the affected fields
+                action = "";
+                if (newType == CUSTOM) {
+                    // Remove all the disabled tags in the TestPointTable rows
+                    action = REMOVE_DISABLE;
+                    tableDisabled = false;
+                } else if (newType == STANDARD) {
+                    // Add disabled tags to all the TestPointTable rows
+                    action = ADD_DISABLE;
+                    tableDisabled = true;
+                }
+
+                // Perform the action on each of the input fields in the TestPointTable
+                $(`#${TESTPOINT_LIST} [id$="${INJECTION_VALUE}"]`).each(function(index, element) {
+                    id = [$(element).attr('id')];
+                    toggleFieldDisable(id, action);
+                });
+                $(`#${TESTPOINT_LIST} [id$="${TEST_VALUE}"]`).each(function(index, element) {
+                    id = [$(element).attr('id')];
+                    toggleFieldDisable(id, action);
+                });
+            })
 
 
             // Function called when the user changes the Channel's Injection Units
@@ -191,7 +226,7 @@
                 newNumTestpoints = parseInt(event.target.value);
 
                 // Update the number of TestPoints in the table
-                updateTestPointTable(newNumTestpoints);
+                updateTestPointTable(newNumTestpoints, tableDisabled);
             });  
             
 
@@ -206,6 +241,11 @@
                 $(`#${TESTPOINT_LIST}`).append(
                     createTestPointTableRow(numTestpoints, EMPTY_VALUE, EMPTY_VALUE, true)
                 );
+
+                // Disable the input fields since the TestPointTable type is Standard to start out
+                injectionValueID = `${TESTPOINT_LIST}-1-${INJECTION_VALUE}`;
+                testValueID = `${TESTPOINT_LIST}-1-${TEST_VALUE}`;
+                toggleFieldDisable([injectionValueID, testValueID], ADD_DISABLE);
             }          
 
             // Creates a TestPoint table row DOM element
@@ -218,34 +258,38 @@
                 let testCol = $(DIV).attr(COL_MD_4_CLASS);
                 let testGroup = $(DIV).attr(INPUT_GROUP_CLASS);                
                 
-                // Create the injection value elements and label              
+                // Create the injection value elements and label
+                let injectionValueID = `${TESTPOINT_LIST}-${rowNum}-${INJECTION_VALUE}`;
                 let injectionValue = $(INPUT).attr({
                     type: TEXT_TYPE,
-                    id: `${TESTPOINT_LIST}-${rowNum}-${INJECTION_VALUE}`,
-                    name: `${TESTPOINT_LIST}-${rowNum}-${INJECTION_VALUE}`,
+                    id: injectionValueID,
+                    name: injectionValueID,
                     value: EMPTY_VALUE,
-                    class: FORM_CLASS
-                });                          
+                    class: FORM_CLASS,
+                });     
+                let injectionUnitsID = `${INJECTION_VALUE_UNITS}-${rowNum}`;            
                 let injectionUnits = $(SPAN).attr({
                     class: INPUT_GROUP_TEXT_CLASS,
-                    id: `${INJECTION_VALUE_UNITS}-${rowNum}`,
-                    name: `${INJECTION_VALUE_UNITS}-${rowNum}`,
-                    value: EMPTY_VALUE,
+                    id: injectionUnitsID,
+                    name: injectionUnitsID,
+                    value: EMPTY_VALUE
                 }).text(injectionUnitsValue);
                 
                 // Create the test value elements and label
+                let testValueID = `${TESTPOINT_LIST}-${rowNum}-${TEST_VALUE}`;
                 let testValue = $(INPUT).attr({
                     type: TEXT_TYPE,
-                    id: `${TESTPOINT_LIST}-${rowNum}-${TEST_VALUE}`,
-                    name: `${TESTPOINT_LIST}-${rowNum}-${TEST_VALUE}`,
+                    id: testValueID,
+                    name: testValueID,
                     value: EMPTY_VALUE,
                     class: FORM_CLASS
-                });                             
+                });
+                let testUnitsID = `${TEST_VALUE_UNITS}-${rowNum}`;                     
                 let testUnits = $(SPAN).attr({
                     class: INPUT_GROUP_TEXT_CLASS,
-                    id: `${TEST_VALUE_UNITS}-${rowNum}`,
-                    name: `${TEST_VALUE_UNITS}-${rowNum}`,
-                    value: EMPTY_VALUE,
+                    id: testUnitsID,
+                    name: testUnitsID,
+                    value: EMPTY_VALUE
                 }).text(testUnitsValue);
 
                 // Create the CSRF element for each row to validate the input fields
@@ -279,12 +323,12 @@
                 } else {
                     injectionCol.append(injectionGroup)
                     testCol.append(testGroup)
-                }  
+                }
                 
                 // Creates the final row of tespoints
                 testpointRow.append(injectionCol, testCol, csrf);
                 return testpointRow;
-            }
+            }            
 
 
             // Adjusts the TestPointTable's Injection Units as the user changes them in the form
@@ -297,21 +341,53 @@
             }
 
 
+            // Disables form input fields for the TestPointTable
+            // function toggleFieldDisable(injectionValueID, testValueID, action) {
+            function toggleFieldDisable(fieldIDList, action) {
+                
+                // Toggle the disable attribute on each fieldID supplied
+                fieldIDList.forEach(function(fieldID) {
+                    if (action == ADD_DISABLE) {
+                        $(`#${fieldID}`).attr(DISABLED,DISABLED);    
+                    } else if (action == REMOVE_DISABLE) {
+                        $(`#${fieldID}`).removeAttr(DISABLED);
+                    }
+                });                
+            }
+
+
             // Adjusts the TestPointTable's number of rows based on the user's selection
-            function updateTestPointTable(newNumTestpoints) {
+            function updateTestPointTable(newNumTestpoints, disableFields) {
 
                 // Monitoring variables
-                let numUpdated = 0;
+                let numUpdated = 0;                
 
                 // Calculates the new number of rows to be added or removed
                 let delta = newNumTestpoints - oldNumTestpoints;
 
                 if (delta > 0) {
+
+                    // Determine whether to add or remove the disabled tags on the affected fields
+                    action = "";
+                    if (disableFields) {
+                        action = ADD_DISABLE;
+                    } else {
+                        action = REMOVE_DISABLE;
+                    }
+
+                    // Add the new rows of TestPoints
                     for (tp = oldNumTestpoints + 1; tp <= newNumTestpoints; tp++) {
-                        // Add a new row of TestPoints
+
+                        // Add the new TestPointTableRow to the DOM
                         $(`#${TESTPOINT_LIST}`).append(
-                            createTestPointTableRow(tp, currentInjectionUnits, currentTestUnits, false)                            
+                            createTestPointTableRow(tp, currentInjectionUnits, currentTestUnits, false)
                         );
+
+                        // Toggle the disable on the fields if applicable
+                        injectionValueID = `${TESTPOINT_LIST}-${tp}-${INJECTION_VALUE}`;
+                        testValueID = `${TESTPOINT_LIST}-${tp}-${TEST_VALUE}`;
+                        toggleFieldDisable([injectionValueID, testValueID], action);
+
                         numUpdated++;
                     }
                     console.log(`TestPoint table updated with ${numUpdated} additional TestPoints.`);
