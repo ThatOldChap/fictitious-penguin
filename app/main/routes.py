@@ -187,6 +187,7 @@ def add_channel(group_id):
         testpoint_list_type = form.testpoint_list_type.data
         testpoint_list_data = form.testpoint_list.data
         num_testpoints = int(form.num_testpoints.data)
+        group_id = form.group_id.data
 
         # Create the new channel and add it to the database
         channel = Channel(
@@ -209,9 +210,12 @@ def add_channel(group_id):
         # Extract the testpoint_list from the form data
         injection_values = []
         test_values = []
-        for i, values in enumerate(testpoint_list_data):
-            injection_values.append(values["injection_value"])
-            test_values.append(values["test_value"])
+
+        # Extracts the custom TestPoint data only if selected
+        if testpoint_list_type == TestPointListType.CUSTOM:
+            for i, values in enumerate(testpoint_list_data):
+                injection_values.append(values["injection_value"])
+                test_values.append(values["test_value"])
 
         # Build the testpoint_list for the new channel
         channel.build_testpoint_list(num_testpoints, testpoint_list_type,
@@ -219,7 +223,11 @@ def add_channel(group_id):
         db.session.commit()
         flash(f'Channel "{channel.name}" has been added to the {channel.group.name} group along with {num_testpoints} testpoints.')
         
-        return redirect(url_for(f'main.groups, job_id={channel.group.job.id}'))
+        return redirect(url_for(f'main.groups', job_id=channel.group.job.id))
+
+    # Display the errors if there are any
+    if len(form.errors.items()) > 0:
+        print(form.errors.items())
 
     return render_template('add_channel.html', title='Add Channel', form=form)
 

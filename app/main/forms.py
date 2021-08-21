@@ -82,8 +82,8 @@ class AddGroupForm(FlaskForm):
 
 
 class AddTestPointForm(FlaskForm):
-    injection_value = FloatField('Injection Value', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
-    test_value = FloatField('Test Value', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    injection_value = FloatField('Injection Value', render_kw=CUSTOM_FORM_CLASS)
+    test_value = FloatField('Test Value', render_kw=CUSTOM_FORM_CLASS)
 
 
 class AddChannelForm(FlaskForm):
@@ -124,4 +124,4 @@ class AddChannelForm(FlaskForm):
 
     # Pauses the creation of the form to allow for the additional, dynamically added fields to be added
     # Note: Without the pass, the addition of the dynamic fields invalidates the form
-    pass
+    # pass

@@ -146,14 +146,14 @@ class Channel(db.Model):
             delta = injection_range / (num_testpoints - 1)
             injection_values = [self.min_injection_range]
             for i in range(1, num_testpoints):
-                injection_values.append(injection_value_list[i-1] + delta)
+                injection_values.append(injection_values[i-1] + delta)
 
             # Calculates the nominal test values for the channel's measurement points
             measurement_range = self.measurement_range()
             delta = measurement_range / (num_testpoints - 1)
             test_values = [self.min_range]
             for i in range(1, num_testpoints):
-                test_values.append(test_value_list[i-1] + delta)
+                test_values.append(test_values[i-1] + delta)
 
             # Generate each TestPoint and add them to the channel
             for i in range(num_testpoints):
@@ -168,6 +168,9 @@ class Channel(db.Model):
         num_leftover = num_testpoints - num_added
         if num_leftover > 0:
             print(f'Error building TestPoint value list. Only {num_testpoints - num_leftover}/{num_testpoints} added successfully.')
+            print(f'TestPointListType = {testpoint_list_type}')
+            print(f'InjectionValueList = {injection_value_list}')
+            print(f'TestValueList = {test_value_list}')
         else:
             print(f'Successfully built TestPoint value list with {num_testpoints} points.')
 
