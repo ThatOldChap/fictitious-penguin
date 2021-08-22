@@ -26,6 +26,9 @@ def index():
     groups = Group.query.all()
     summary["groups"] = groups
 
+    channels = Channel.query.all()
+    summary["channels"] = channels
+
     return render_template('index.html', title='Home', summary=summary)
 
 
@@ -241,6 +244,8 @@ def channels(group_id):
 
     # Create the master form to add each channel_form into
     channels_form = ChannelsForm()
+
+    # TODO: Create a new class to hold all the channel, tespoint info and forms for the template
 
     for channel in channels:
 

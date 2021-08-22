@@ -35,7 +35,7 @@ class TestPoint(db.Model):
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
 
     def __repr__(self):
-        return f'<TestPoint {self.id} for Channel {self.channel().name}>'
+        return f'<TestPoint {self.id} for Channel {self.channel.name}>'
 
 
     def channel(self):
@@ -49,23 +49,23 @@ class TestPoint(db.Model):
 
     # Calculates the maximum error for a measurement based on the error type
     def calc_max_error(self):
-        channel = self.channel()
+        channel = self.channel
         error_type = channel.error_type
         max_error = channel.max_error
 
         # Returns an error in the engineering units provided
         # ex. max_error = +/- 0.05 VDC
-        if error_type == ErrorType.ENG_UNITS:
+        if error_type == ErrorType.ENG_UNITS.value: 
             return max_error
 
         # Returns an error calculated from the channel's full scale range
         # ex. max_error of 0.05 %FS is equivalent to 0.125 psi on a 0-250 psi full scale range
-        elif error_type == ErrorType.PERCENT_FULL_SCALE:
+        elif error_type == ErrorType.PERCENT_FULL_SCALE.value:
             return channel.full_scale_range * (max_error / 100)
 
         # Returns an error based on the measured/read value being evaluated
         # ex. max_error of 0.1 %RDG is equivalent to 0.015 Hz at a measured value of 15 Hz
-        elif error_type == ErrorType.PERCENT_READING:
+        elif error_type == ErrorType.PERCENT_READING.value:
             return self.measured_test_value * (max_error / 100)
 
 
@@ -128,7 +128,7 @@ class Channel(db.Model):
         num_added = 0
 
         # Builds a list of testpoints defined by the user when a new channel is created
-        if testpoint_list_type == TestPointListType.CUSTOM:
+        if testpoint_list_type == TestPointListType.CUSTOM.value:
             for i in range(num_testpoints):
                 testpoint = TestPoint(
                     channel_id = self.id,
@@ -139,7 +139,7 @@ class Channel(db.Model):
                 num_added +=1
         
         # Builds a default list of testpoints with an equal distance between the points
-        elif testpoint_list_type == TestPointListType.STANDARD:
+        elif testpoint_list_type == TestPointListType.STANDARD.value:            
 
             # Calculates the nominal signal injection values
             injection_range = self.injection_range()
@@ -171,6 +171,7 @@ class Channel(db.Model):
             print(f'TestPointListType = {testpoint_list_type}')
             print(f'InjectionValueList = {injection_value_list}')
             print(f'TestValueList = {test_value_list}')
+            print(f'NumTestPoints = {num_testpoints}')
         else:
             print(f'Successfully built TestPoint value list with {num_testpoints} points.')
 

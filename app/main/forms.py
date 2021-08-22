@@ -128,9 +128,9 @@ class AddChannelForm(FlaskForm):
 
 
 class TestPointForm(FlaskForm):
-    injection_value = FloatField('Injection Value')
-    test_value = FloatField('Test Value')
-    notes = StringField('Notes')
+    injection_value = FloatField('Injection Value', render_kw=CUSTOM_FORM_CLASS)
+    test_value = FloatField('Test Value', render_kw=CUSTOM_FORM_CLASS)
+    notes = StringField('Notes', render_kw=CUSTOM_FORM_CLASS)
 
 
 class ChannelForm(FlaskForm):

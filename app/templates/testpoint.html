@@ -5,37 +5,35 @@
         <div class="row">
             <div class="col">
                 <div class="input-group">
-                    {{ testpoint_form.injection_value() }}
+                    {{ testpoint_form.injection_value(value="") }}
                     <span class="input-group-text">{{ channel.injection_units }}</span>
                 </div>
             </div>
         </div>
     </td>
     <td class="align-middle">
-        <td class="align-middle">
-            <div class="row">
-                <div class="col">
-                    <div class="input-group">
-                        <span class="input-group-text">{{ testpoint.lower_limit() }}</span>
-                        {{ testpoint_form.test_value() }}
-                        <span class="input-group-text">{{ testpoint.upper_limit() }}</span>
-                        <span class="input-group-text">{{ channel.measurement_units }}</span>
-                    </div>
+        <div class="row">
+            <div class="col">
+                <div class="input-group">
+                    <span class="input-group-text">{{ testpoint.lower_limit() }}</span>
+                    {{ testpoint_form.test_value(value="") }}
+                    <span class="input-group-text">{{ testpoint.upper_limit() }}</span>
+                    <span class="input-group-text">{{ channel.measurement_units }}</span>
                 </div>
             </div>
-        </td>
+        </div>
     </td>
     <td class="align-middle">
         <div class="row">
             <div class="col">
                 <div class="input-group">
-                    <input type="text" class="form-control text-center" value="{{ testpoint.calc_error() }}" readonly>
+                    <input type="text" class="form-control text-center" placeholder="0.000" readonly>
                     <span class="input-group-text">{{ channel.measurement_units }}</span>
                 </div>
             </div>
         </div>
     </td>
     <td class="align-middle">{{ moment(testpoint.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
-    <td class="align-middle">{{ testpoint_form.notes(value=testpoint.notes) }}</td>
+    <td class="align-middle">{{ testpoint_form.notes(value="") }}</td>
 </tr>
 {% endblock %}
