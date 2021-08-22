@@ -1,5 +1,17 @@
 {% extends "base.html" %}
 
+{% block head %}
+    {{ super() }}
+    <style>
+        input[type="text"] {
+            text-align: center;        
+        }
+        input[type="text"]::placeholder {
+            text-align: center;        
+        }
+    </style>
+{% endblock %}
+
 {% block app_content %}
 <div>
     <h1>Channel List:</h1>
@@ -18,6 +30,9 @@
             </thead>
             <tbody>
                 {% for channel, channel_form in zip(channels, channels_form.channels) %}
+                    <th class="align-middle text-center" rowspan="{{ channel.num_testpoints() + 1 }}">
+                        {{ channel.name }}
+                    </th>
                     {% for testpoint, testpoint_form in zip(channel.testpoints, channel_form.testpoints) %}
                         {% include 'testpoint.html' %}
                     {% endfor %}

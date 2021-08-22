@@ -114,7 +114,7 @@ class Channel(db.Model):
         return Group.query.filter_by(id=self.group_id).first()
 
     def num_testpoints(self):
-        return len(self.testpoints)
+        return len(self.testpoints.all())
 
     def measurement_range(self):
         return self.max_range - self.min_range
@@ -173,7 +173,7 @@ class Channel(db.Model):
             print(f'TestValueList = {test_value_list}')
             print(f'NumTestPoints = {num_testpoints}')
         else:
-            print(f'Successfully built TestPoint value list with {num_testpoints} points.')
+            print(f'Successfully built TestPoint list with {num_testpoints} TestPoints.')
 
 
 class Group(db.Model):

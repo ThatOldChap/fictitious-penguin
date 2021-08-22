@@ -1,11 +1,23 @@
+
+
 {% block app_content %}
 <tr class="text-center">
-    <td class="align-middle">{{ channel.name }}</td>
+    {#<td class="align-middle">{{ channel.name }}</td>#}
     <td class="align-middle">
         <div class="row">
             <div class="col">
                 <div class="input-group">
-                    {{ testpoint_form.injection_value(value="") }}
+                    {% if testpoint.measured_injection_value == None %}            
+                        {{ testpoint_form.injection_value(
+                            value="",
+                            placeholder=testpoint.nominal_injection_value)
+                        }}
+                    {% else %}
+                        {{ testpoint_form.injection_value(
+                            value=testpoint.measured_injection_value,
+                            placeholder=testpoint.nominal_injection_value)
+                        }}
+                    {% endif %}
                     <span class="input-group-text">{{ channel.injection_units }}</span>
                 </div>
             </div>
@@ -16,7 +28,17 @@
             <div class="col">
                 <div class="input-group">
                     <span class="input-group-text">{{ testpoint.lower_limit() }}</span>
-                    {{ testpoint_form.test_value(value="") }}
+                    {% if testpoint.measured_test_value == None %}            
+                        {{ testpoint_form.test_value(
+                            value="",
+                            placeholder=testpoint.nominal_test_value)
+                        }}
+                    {% else %}
+                        {{ testpoint_form.test_value(
+                            value=testpoint.measured_test_value,
+                            placeholder=testpoint.nominal_test_value)
+                        }}
+                    {% endif %}
                     <span class="input-group-text">{{ testpoint.upper_limit() }}</span>
                     <span class="input-group-text">{{ channel.measurement_units }}</span>
                 </div>
@@ -34,6 +56,12 @@
         </div>
     </td>
     <td class="align-middle">{{ moment(testpoint.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
-    <td class="align-middle">{{ testpoint_form.notes(value="") }}</td>
+    <td class="align-middle">
+        {% if testpoint.notes == None %}            
+            {{ testpoint_form.notes(value="") }}
+        {% else %}
+            {{ testpoint_form.notes(value=testpoint.notes) }}
+        {% endif %}
+    </td>
 </tr>
 {% endblock %}
