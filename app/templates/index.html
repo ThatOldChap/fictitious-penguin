@@ -43,5 +43,16 @@
                 {{ summary["groups"] }}
             </td>
         </tr>
+        <tr>
+            <td>
+                <button type="button" class="btn btn-primary">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_channel', group_id=1) }}">Add Channel</a>
+                </button>
+                <button type="button" class="btn btn-info">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.channels', group_id=1) }}">View Channels</a>
+                </button>         
+                {{ summary["groups"] }}
+            </td>
+        </tr>
     </table>     
 {% endblock %}

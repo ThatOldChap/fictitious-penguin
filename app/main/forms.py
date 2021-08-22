@@ -125,3 +125,17 @@ class AddChannelForm(FlaskForm):
     # Pauses the creation of the form to allow for the additional, dynamically added fields to be added
     # Note: Without the pass, the addition of the dynamic fields invalidates the form
     # pass
+
+
+class TestPointForm(FlaskForm):
+    injection_value = FloatField('Injection Value')
+    test_value = FloatField('Test Value')
+    notes = StringField('Notes')
+
+
+class ChannelForm(FlaskForm):
+    testpoints = FieldList(FormField(TestPointForm))
+
+
+class ChannelsForm(FlaskForm):
+    channels = FieldList(FormField(ChannelForm))

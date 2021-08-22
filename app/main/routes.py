@@ -4,6 +4,7 @@ from app import db
 from app.main import bp
 from app.models import User, Client, Project, Job, Group, Channel
 from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm
+from app.main.forms import ChannelsForm, ChannelForm, TestPointForm
 from app.main.forms import EMPTY_SELECT_CHOICE
 from app.utils import TestPointListType
 
@@ -235,6 +236,30 @@ def add_channel(group_id):
 @bp.route('/group/<group_id>/channels', methods=['GET', 'POST'])
 def channels(group_id):
 
-    channels = Group.query.filter_by(group_id=group_id).all()
+    # Get a list of all the specified Group's Channels
+    channels = Channel.query.filter_by(group_id=group_id).all()
 
-    return render_template('channels.html', title='Channel List', channels=channels)
+    # Create the master form to add each channel_form into
+    channels_form = ChannelsForm()
+
+    for channel in channels:
+
+        # Get a list of all the TestPoints in each Channel
+        testpoints = channel.testpoints
+
+        # Create the channel_form to add each testpoint_form into
+        channel_form = ChannelForm()
+
+        for testpoint in testpoints:
+
+            # Create the testpoint_form for each testpoint
+            testpoint_form = TestPointForm()
+
+            # Add the testpoint_form into the channel_form
+            channel_form.testpoints.append_entry(testpoint_form)
+        
+        # Add the channel_form into the master channels_form
+        channels_form.channels.append_entry(channel_form)
+
+    return render_template('channels.html', title='Channel List', channels=channels,
+        channels_form=channels_form)
