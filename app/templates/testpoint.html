@@ -1,8 +1,15 @@
 
 
 {% block app_content %}
-<tr class="text-center">
-    {#<td class="align-middle">{{ channel.name }}</td>#}
+<tr class="text-center" name="testpoint-parent"
+    data-testpoint-id="{{ testpoint.id }}"
+    data-channel-id="{{ testpoint.channel.id }}"
+    data-measured-injection-value="{{ testpoint.measured_injection_value }}"
+    data-nominal-injection-value="{{ testpoint.nominal_injection_value }}"
+    data-measured-test-value="{{ testpoint.measured_test_value }}"
+    data-nominal-test-value="{{ testpoint.nominal_test_value }}"
+    data-max-error="{{ testpoint.calc_max_error() }}"
+    >
     <td class="align-middle">
         <div class="row">
             <div class="col">

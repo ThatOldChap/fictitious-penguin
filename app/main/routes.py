@@ -240,6 +240,7 @@ def add_channel(group_id):
 def channels(group_id):
 
     # Get a list of all the specified Group's Channels
+    group = Group.query.filter_by(id=group_id).first()
     channels = Channel.query.filter_by(group_id=group_id).all()
 
     # Create the master form to add each channel_form into
@@ -267,4 +268,4 @@ def channels(group_id):
         channels_form.channels.append_entry(channel_form)
 
     return render_template('channels.html', title='Channel List', channels=channels,
-        channels_form=channels_form)
+        channels_form=channels_form, group=group)
