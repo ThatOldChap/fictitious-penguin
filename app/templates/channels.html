@@ -55,12 +55,27 @@
             let INJECTION_VALUE = 'injection_value';
             let TEST_VALUE = 'test_value';
             let NOTES = 'notes';
+            let UPDATE_TESTPOINT_URL = '/update_testpoint';
+            let POST = 'POST';
+            let MESSAGE = 'message';
+
 
             // Listener function for the Injection Value fields
             $(`[id$="${INJECTION_VALUE}"]`).change(function(event) {
 
+                // Find the elements to get the data from
+                let injection_value_element = event.target;
+                let parent = $(this).parents('tr')[0];
 
+                // Prepare the data package
+                let dataset = parent.dataset;
+                let data = {
+                    testpoint_id: dataset.testpointId,
+                    measured_injection_value: parseFloat(injection_value_element.value)
+                }
 
+                // Update the TestPoint
+                updateTestPoint(data);
             });
 
 
@@ -78,6 +93,25 @@
 
 
             });
+
+
+            // Function for sending an ajax request to update TestPoint values in the database
+            function updateTestPoint(data) {
+
+                // Build the ajax request
+                $.ajax({
+                   type: POST,
+                   url: UPDATE_TESTPOINT_URL,
+                   data: data,
+                   success: function(response) {
+                       console.log(response[MESSAGE]);
+                   },
+                   error: function(error) {
+                       console.log('Error updating testpoint.');
+                       console.log(error);
+                   }
+                });
+            }
 
 
 

@@ -1,12 +1,12 @@
-from flask import render_template, url_for, request, current_app, redirect, flash
+from flask import render_template, url_for, request, current_app, redirect, flash, jsonify
 from flask_login import current_user, login_required
 from app import db
 from app.main import bp
-from app.models import User, Client, Project, Job, Group, Channel
+from app.models import TestPoint, User, Client, Project, Job, Group, Channel
 from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm
 from app.main.forms import ChannelsForm, ChannelForm, TestPointForm
 from app.main.forms import EMPTY_SELECT_CHOICE
-from app.utils import TestPointListType
+from app.utils import TestPointListType, none_if_empty
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -269,3 +269,55 @@ def channels(group_id):
 
     return render_template('channels.html', title='Channel List', channels=channels,
         channels_form=channels_form, group=group)
+
+
+@bp.route('/update_testpoint', methods=['POST'])
+def update_testpoint():
+    
+    # TestPoint Field Constants
+    TESTPOINT_ID = 'testpoint_id'
+    CHANNEL_ID = 'channel_id'
+    LAST_UPDATED = 'last_updated'
+    MEASURED_INJECTION_VALUE = 'measured_injection_value'
+    NOMINAL_INJECTION_VALUE = 'nominal_injection_value'
+    MEASURED_TEST_VALUE = 'measured_test_value'
+    NOMINAL_TEST_VALUE = 'nominal_test_value'
+    NOTES = 'notes'
+
+    # Variables to keep track of the updated fields
+    updated_fields = []
+    num_fields = 0
+
+    # Extract the request's form dictionary
+    data = request.form.to_dict()
+
+    # Check which TestPoint is being updated
+    if TESTPOINT_ID in data:
+
+        testpoint = TestPoint.query.filter_by(id=request.form[TESTPOINT_ID]).first()
+
+        # Remove the testpoint_id from the data to check how many parameters are being updated
+        data.pop(TESTPOINT_ID)
+        num_fields = len(data)
+    else:
+        raise ValueError(f'{TESTPOINT_ID} not found in ajax request:\n{data}')
+    
+    # Iterate through each field in the request and update the TestPoint accordingly
+    for key, value in request.form.items():
+
+        if key == MEASURED_INJECTION_VALUE:            
+            testpoint.measured_injection_value = none_if_empty(value)
+            updated_fields.append(MEASURED_INJECTION_VALUE)
+
+    # Check to make sure any fields got updated
+    num_updated = len(updated_fields)
+    if not num_updated == num_fields:
+        raise ValueError(f'Error updating TestPoint fields. Only {num_updated}/{num_fields} updated successfully.')
+
+    # Save the changes to the database
+    db.session.commit()
+
+    return jsonify({
+        'message': f'{testpoint} has successfully updated the following fields: {updated_fields}'
+    })
+

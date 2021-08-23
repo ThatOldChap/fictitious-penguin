@@ -39,3 +39,7 @@ class JobPhase(enum.Enum):
 class TestPointListType(enum.Enum):
     STANDARD = "Standard"
     CUSTOM = "Custom"
+
+# Returns None if a value is empty
+def none_if_empty(value):
+    return None if value == "" else value
