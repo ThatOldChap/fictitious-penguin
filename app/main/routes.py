@@ -293,7 +293,6 @@ def update_testpoint():
 
     # Check which TestPoint is being updated
     if TESTPOINT_ID in data:
-
         testpoint = TestPoint.query.filter_by(id=request.form[TESTPOINT_ID]).first()
 
         # Remove the testpoint_id from the data to check how many parameters are being updated
@@ -308,6 +307,15 @@ def update_testpoint():
         if key == MEASURED_INJECTION_VALUE:            
             testpoint.measured_injection_value = none_if_empty(value)
             updated_fields.append(MEASURED_INJECTION_VALUE)
+
+        if key == MEASURED_TEST_VALUE:
+            testpoint.measured_test_value = none_if_empty(value)
+            updated_fields.append(MEASURED_TEST_VALUE)
+
+        if key == NOTES:
+            testpoint.notes = value
+            updated_fields.append(NOTES)
+
 
     # Check to make sure any fields got updated
     num_updated = len(updated_fields)

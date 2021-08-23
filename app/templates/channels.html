@@ -82,16 +82,38 @@
             // Listener function for the Test Value fields
             $(`[id$="${TEST_VALUE}"]`).change(function(event) {
 
+                // Find the elements to get the data from
+                let test_value_element = event.target;
+                let parent = $(this).parents('tr')[0];
 
+                // Prepare the data package
+                let dataset = parent.dataset;
+                let data = {
+                    testpoint_id: dataset.testpointId,
+                    measured_test_value: parseFloat(test_value_element.value)
+                }
 
+                // Update the TestPoint
+                updateTestPoint(data);
             });
 
 
             // Listener function for the Notes fields
             $(`[id$="${NOTES}"]`).change(function(event) {
 
+                // Find the elements to get the data from
+                let notes_element = event.target;
+                let parent = $(this).parents('tr')[0];
 
+                // Prepare the data package
+                let dataset = parent.dataset;
+                let data = {
+                    testpoint_id: dataset.testpointId,
+                    notes: notes_element.value
+                }
 
+                // Update the TestPoint
+                updateTestPoint(data);
             });
 
 
