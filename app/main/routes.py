@@ -282,6 +282,7 @@ def update_testpoint():
     NOMINAL_INJECTION_VALUE = 'nominal_injection_value'
     MEASURED_TEST_VALUE = 'measured_test_value'
     NOMINAL_TEST_VALUE = 'nominal_test_value'
+    MEASURED_ERROR = 'measured_error'
     NOTES = 'notes'
 
     # Variables to keep track of the updated fields
@@ -302,19 +303,22 @@ def update_testpoint():
         raise ValueError(f'{TESTPOINT_ID} not found in ajax request:\n{data}')
     
     # Iterate through each field in the request and update the TestPoint accordingly
-    for key, value in request.form.items():
+    for key, value in data.items():
 
         if key == MEASURED_INJECTION_VALUE:            
             testpoint.measured_injection_value = none_if_empty(value)
-            updated_fields.append(MEASURED_INJECTION_VALUE)
 
         if key == MEASURED_TEST_VALUE:
             testpoint.measured_test_value = none_if_empty(value)
-            updated_fields.append(MEASURED_TEST_VALUE)
+
+        if key == MEASURED_ERROR:
+            testpoint.measured_error = none_if_empty(value)
 
         if key == NOTES:
             testpoint.notes = value
-            updated_fields.append(NOTES)
+
+        # Add the processed key to the list of updated fields
+        updated_fields.append(key)
 
 
     # Check to make sure any fields got updated

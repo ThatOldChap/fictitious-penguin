@@ -59,19 +59,22 @@
             let POST = 'POST';
             let MESSAGE = 'message';
 
+            // Name Constants
+            let MEASURED_ERROR_NAME = 'measured-error';
+
 
             // Listener function for the Injection Value fields
             $(`[id$="${INJECTION_VALUE}"]`).change(function(event) {
 
                 // Find the elements to get the data from
-                let injection_value_element = event.target;
+                let injectionValueElement = event.target;
                 let parent = $(this).parents('tr')[0];
 
                 // Prepare the data package
                 let dataset = parent.dataset;
                 let data = {
                     testpoint_id: dataset.testpointId,
-                    measured_injection_value: parseFloat(injection_value_element.value)
+                    measured_injection_value: parseFloat(injectionValueElement.value)
                 }
 
                 // Update the TestPoint
@@ -83,18 +86,29 @@
             $(`[id$="${TEST_VALUE}"]`).change(function(event) {
 
                 // Find the elements to get the data from
-                let test_value_element = event.target;
-                let parent = $(this).parents('tr')[0];
+                let testValueElement = event.target;
+                let parent = $(this).parents('tr');
+                let dataset = parent[0].dataset;
 
-                // Prepare the data package
-                let dataset = parent.dataset;
+                // Calculate the measured error for the TestPoint
+                let measuredTestValue = parseFloat(testValueElement.value);
+                let nominalTestValue = parseFloat(dataset.nominalTestValue);
+                let isEmpty = Number.isNaN(measuredTestValue);
+                let measuredError = (isEmpty) ? "" : (measuredTestValue - nominalTestValue).toFixed(3)
+
+                // Prepare the data package                
                 let data = {
                     testpoint_id: dataset.testpointId,
-                    measured_test_value: parseFloat(test_value_element.value)
+                    measured_test_value: measuredTestValue,
+                    measured_error: measuredError
                 }
 
                 // Update the TestPoint
                 updateTestPoint(data);
+
+                // Find and update the measured_error field with the calculated error
+                let errorElement = parent.find(`[name=${MEASURED_ERROR_NAME}]`);
+                (isEmpty) ? errorElement.val('') : errorElement.val(measuredError);
             });
 
 
@@ -102,14 +116,14 @@
             $(`[id$="${NOTES}"]`).change(function(event) {
 
                 // Find the elements to get the data from
-                let notes_element = event.target;
+                let notesElement = event.target;
                 let parent = $(this).parents('tr')[0];
 
                 // Prepare the data package
                 let dataset = parent.dataset;
                 let data = {
                     testpoint_id: dataset.testpointId,
-                    notes: notes_element.value
+                    notes: notesElement.value
                 }
 
                 // Update the TestPoint
