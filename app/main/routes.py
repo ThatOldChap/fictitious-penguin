@@ -1,5 +1,6 @@
 from flask import render_template, url_for, request, current_app, redirect, flash, jsonify
 from flask_login import current_user, login_required
+from datetime import datetime
 from app import db
 from app.main import bp
 from app.models import TestPoint, User, Client, Project, Job, Group, Channel
@@ -326,10 +327,18 @@ def update_testpoint():
     if not num_updated == num_fields:
         raise ValueError(f'Error updating TestPoint fields. Only {num_updated}/{num_fields} updated successfully.')
 
+    # Update the last_updated time now that changes have been made
+    last_updated = datetime.utcnow()
+    testpoint.last_updated = last_updated
+
     # Save the changes to the database
     db.session.commit()
 
-    return jsonify({
-        'message': f'{testpoint} has successfully updated the following fields: {updated_fields}'
-    })
+    # Load the last_updated time into the json payload for a successful ajax request
+    response = {
+        'message': f'{testpoint} has successfully updated the following fields: {updated_fields}',
+        'last_updated': last_updated
+    }
+
+    return jsonify(response)
 

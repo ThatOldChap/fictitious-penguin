@@ -55,12 +55,15 @@
             let INJECTION_VALUE = 'injection_value';
             let TEST_VALUE = 'test_value';
             let NOTES = 'notes';
+            let LAST_UPDATED = 'last_updated';
+            let LAST_UPDATED_FORMAT = 'hh:mm A, DD-MMM-YYYY';
             let UPDATE_TESTPOINT_URL = '/update_testpoint';
             let POST = 'POST';
             let MESSAGE = 'message';
 
             // Name Constants
             let MEASURED_ERROR_NAME = 'measured-error';
+            let LAST_UPDATED_NAME = 'last-updated';
 
 
             // Listener function for the Injection Value fields
@@ -78,7 +81,7 @@
                 }
 
                 // Update the TestPoint
-                updateTestPoint(data);
+                updateTestPoint(data, parent);
             });
 
 
@@ -104,7 +107,7 @@
                 }
 
                 // Update the TestPoint
-                updateTestPoint(data);
+                updateTestPoint(data, parent);
 
                 // Find and update the measured_error field with the calculated error
                 let errorElement = parent.find(`[name=${MEASURED_ERROR_NAME}]`);
@@ -127,26 +130,35 @@
                 }
 
                 // Update the TestPoint
-                updateTestPoint(data);
+                updateTestPoint(data, parent);
             });
 
 
             // Function for sending an ajax request to update TestPoint values in the database
-            function updateTestPoint(data) {
+            function updateTestPoint(data, parentElement) {
 
                 // Build the ajax request
                 $.ajax({
-                   type: POST,
-                   url: UPDATE_TESTPOINT_URL,
-                   data: data,
-                   success: function(response) {
-                       console.log(response[MESSAGE]);
-                   },
-                   error: function(error) {
-                       console.log('Error updating testpoint.');
-                       console.log(error);
-                   }
+                    type: POST,
+                    url: UPDATE_TESTPOINT_URL,
+                    data: data,
+                    success: function(response) {
+                        console.log(response[MESSAGE]);
+
+                        // Extract the last_updated datetime from the response
+                        let lastUpdated = response[LAST_UPDATED];
+
+                        // Update the lastUpdated column of the updated TestPoint row
+                        let lastUpdatedElement = parentElement.find(`[name="${LAST_UPDATED_NAME}"]`);
+                        lastUpdatedElement.text(moment(lastUpdated).format(LAST_UPDATED_FORMAT));
+                    },
+                    error: function(error) {
+                        console.log('Error updating testpoint.');
+                        console.log(error);
+                    }
                 });
+
+                
             }
 
 

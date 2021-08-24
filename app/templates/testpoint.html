@@ -62,7 +62,7 @@
             </div>
         </div>
     </td>
-    <td class="align-middle">{{ moment(testpoint.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
+    <td class="align-middle" name="last-updated">{{ moment(testpoint.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
     <td class="align-middle">
         {% if testpoint.notes == None %}            
             {{ testpoint_form.notes(value="") }}
