@@ -34,7 +34,7 @@
         <div class="row">
             <div class="col">
                 <div class="input-group">
-                    <span class="input-group-text">{{ testpoint.lower_limit() }}</span>
+                    <span class="input-group-text" name="lower-limit">{{ testpoint.lower_limit() }}</span>
                     {% if testpoint.measured_test_value == None %}            
                         {{ testpoint_form.test_value(
                             value="",
@@ -46,7 +46,7 @@
                             placeholder=testpoint.nominal_test_value)
                         }}
                     {% endif %}
-                    <span class="input-group-text">{{ testpoint.upper_limit() }}</span>
+                    <span class="input-group-text" name="upper-limit">{{ testpoint.upper_limit() }}</span>
                     <span class="input-group-text units">{{ channel.measurement_units }}</span>
                 </div>
             </div>
@@ -61,7 +61,7 @@
                     {% else %}
                         <input type="text" class="form-control text-center" name="measured-error" placeholder="0.000" value="{{ testpoint.measured_error }}" readonly>
                     {% endif %}
-                    <span class="input-group-text units">{{ channel.measurement_units }}</span>
+                    <span class="input-group-text units" name="error-units">{{ channel.measurement_units }}</span>
                 </div>
             </div>
         </div>

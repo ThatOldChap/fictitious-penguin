@@ -15,6 +15,9 @@ def index():
 
     summary = {}
 
+    users = User.query.all()
+    summary["users"] = users
+
     clients = Client.query.all()
     summary["clients"] = clients
 
@@ -110,16 +113,35 @@ def add_project():
     return render_template('add_item.html', title='Add Project', form=form, item='Project')
 
 
-@bp.route('/add_job', methods=['GET', 'POST'])
-def add_job():
+@bp.route('/projects', methods=['GET', 'POST'])
+def projects():
+
+    projects = Project.query.all()
+
+    return render_template('projects.html', title='Projects List', projects=projects)
+
+
+@bp.route('/projects/<project_id>/add_job', methods=['GET', 'POST'])
+def add_job(project_id):
+
+    # Generate the choices lists for the form's SelectFields
+    CLIENT_NAME_CHOICES = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in Client.query.order_by('name')]
+    PROJECT_NUMBER_CHOICES = EMPTY_SELECT_CHOICE + [(p.id, p.number) for p in Project.query.order_by('number')]
+    PROJECT_NAME_CHOICES = EMPTY_SELECT_CHOICE + [(p.id, p.name) for p in Project.query.order_by('name')]
+
+    # Get the chosen project 
+    project = Project.query.filter_by(id=project_id).first() 
 
     # Create the form
-    form = AddJobForm()
+    form = AddJobForm(client_name=project.client_id, project_number=project_id, project_name=project_id)
 
-    # Generate the list of SelectField choices to populate in the form
-    form.client_name.choices = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in Client.query.order_by('name')]
-    form.project_number.choices = EMPTY_SELECT_CHOICE + [(p.id, p.number) for p in Project.query.order_by('number')]
-    form.project_name.choices = EMPTY_SELECT_CHOICE + [(p.id, p.name) for p in Project.query.order_by('name')]
+    # Add the project_id from which the new job was requested by the user to be added to
+    form.project_id = project_id 
+
+    # Assign the SelectField choices to populate in the form
+    form.client_name.choices = CLIENT_NAME_CHOICES
+    form.project_number.choices = PROJECT_NUMBER_CHOICES
+    form.project_name.choices = PROJECT_NAME_CHOICES
 
     # User has added a new job
     if form.validate_on_submit():
@@ -137,10 +159,10 @@ def add_job():
     return render_template('add_item.html', title='Add Job', form=form, item='Job')
 
 
-@bp.route('/jobs', methods=['GET', 'POST'])
-def jobs():
+@bp.route('/projects/<project_id>/jobs', methods=['GET', 'POST'])
+def jobs(project_id):
 
-    jobs = Job.query.all()
+    jobs = Job.query.filter_by(project_id=project_id).all()
 
     return render_template('jobs.html', title='Job List', jobs=jobs)
 
@@ -321,7 +343,7 @@ def update_testpoint():
 
         if key == NOTES:
             testpoint.notes = value
-            
+
 
         # Add the processed key to the list of updated fields
         updated_fields.append(key)

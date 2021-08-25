@@ -8,6 +8,14 @@
         <tr>
             <td>
                 <button type="button" class="btn btn-primary">
+                    <a style="color:#FFFFFF;" href="{{ url_for('auth.register') }}">Add User</a>
+                </button>
+                {{ summary["users"] }}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button type="button" class="btn btn-primary">
                     <a style="color:#FFFFFF;" href="{{ url_for('main.add_client') }}">Add Client</a>
                 </button>
                 {{ summary["clients"] }}
@@ -15,6 +23,9 @@
         </tr>
         <tr>
             <td>
+                <button type="button" class="btn btn-info">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.projects') }}">View Projects</a>
+                </button>
                 <button type="button" class="btn btn-primary">
                     <a style="color:#FFFFFF;" href="{{ url_for('main.add_project') }}">Add Project</a>
                 </button>
@@ -23,34 +34,35 @@
         </tr>
         <tr>
             <td>
-                <button type="button" class="btn btn-primary">
-                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_job') }}">Add Job</a>
-                </button>
                 <button type="button" class="btn btn-info">
-                    <a style="color:#FFFFFF;" href="{{ url_for('main.jobs') }}">View Jobs</a>
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.jobs', project_id=1) }}">View Jobs</a>
                 </button>
+                <button type="button" class="btn btn-success">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_job', project_id=1) }}">Add Job</a>
+                </button>                
                 {{ summary["jobs"] }}
             </td>
         </tr>
         <tr>
             <td>
-                <button type="button" class="btn btn-primary">
-                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_group', job_id=1) }}">Add Group</a>
-                </button>
                 <button type="button" class="btn btn-info">
                     <a style="color:#FFFFFF;" href="{{ url_for('main.groups', job_id=1) }}">View Groups</a>
-                </button>         
+                </button> 
+                <button type="button" class="btn btn-success">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_group', job_id=1) }}">Add Group</a>
+                </button>
+                        
                 {{ summary["groups"] }}
             </td>
         </tr>
         <tr>
             <td>
-                <button type="button" class="btn btn-primary">
-                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_channel', group_id=1) }}">Add Channel</a>
-                </button>
                 <button type="button" class="btn btn-info">
                     <a style="color:#FFFFFF;" href="{{ url_for('main.channels', group_id=1) }}">View Channels</a>
-                </button>         
+                </button> 
+                <button type="button" class="btn btn-success">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_channel', group_id=1) }}">Add Channel</a>
+                </button>                        
                 {{ summary["channels"] }}
             </td>
         </tr>

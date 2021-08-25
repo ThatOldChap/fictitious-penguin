@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div>
+        <h1>Projects List:</h1>  
+        <table class="table table-hover table-bordered align-middle">
+            <thead>
+                <tr class="table-primary text-center align-middle">
+                    <th class="align-middle">Client</th>
+                    <th class="align-middle">Project Number</th>
+                    <th class="align-middle">Project Name</th>
+                    <th class="align-middle">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for project in projects %}
+                <tr>
+                    <td class="align-middle text-center">{{ project.client.name }}</td>
+                    <td class="align-middle text-center">{{ project.number }}</td>
+                    <td class="align-middle text-center">{{ project.name }}</td>
+                    <td class="align-middle">
+                        {# Button for seeing a list of all a project's jobs #}
+                        <button type="button" class="btn btn-info">
+                            <a style="color:#FFFFFF;" href="{{ url_for('main.jobs', project_id=project.id) }}">View Jobs</a>
+                        </button>
+                        {# Button for adding a new job to the project #}
+                        <button type="button" class="btn btn-success">
+                            <a style="color:#FFFFFF;" href="{{ url_for('main.add_job', project_id=project.id) }}">Add Job</a>
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
