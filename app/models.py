@@ -3,7 +3,7 @@ from time import time
 from flask import current_app
 from flask_login import UserMixin
 from app import db, login
-from app.utils import ErrorType, TestPointListType, TestResult
+from app.utils import ErrorType, TestPointListType, TestResult, Status
 import jwt
 from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -109,6 +109,9 @@ class Channel(db.Model):
     max_injection_range = db.Column(db.Float(16))
     injection_units = db.Column(db.String(16))
 
+    # Metrics
+    status = db.Column(db.String(16), default=TestResult.UNTESTED.value)
+
     # Foreign Keys
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
 
@@ -132,7 +135,7 @@ class Channel(db.Model):
 
     def build_testpoint_list(self, num_testpoints, testpoint_list_type, injection_value_list, test_value_list):
         
-        # Checker variables
+        # Debugging variables
         num_added = 0
 
         # Builds a list of testpoints defined by the user when a new channel is created
@@ -183,11 +186,44 @@ class Channel(db.Model):
         else:
             print(f'Successfully built TestPoint list with {num_testpoints} TestPoints.')
 
+    def update_status(self):
+
+        # Result tracking variables
+        num_testpoints = self.num_testpoints()
+        num_untested = 0
+        num_passed = 0
+        num_failed = 0
+
+        # Tally up the results
+        for testpoint in self.testpoints:
+
+            test_result = testpoint.test_result
+
+            if test_result == TestResult.UNTESTED.value:
+                num_untested += 1
+            elif test_result == TestResult.PASS.value:
+                num_passed += 1
+            elif test_result == TestResult.FAIL.value:
+                num_failed += 1
+        
+        # Determine the new status
+        if num_testpoints == num_untested:
+            return TestResult.UNTESTED.value
+        elif num_testpoints == num_passed:
+            return TestResult.PASS.value
+        elif num_failed > 0:
+            return TestResult.FAIL.value        
+        else:
+            return Status.IN_PROGRESS.value 
+
+
+
 
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32))
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(16), default=Status.NOT_STARTED.value)
 
     # Foreign Keys
     job_id = db.Column(db.Integer, db.ForeignKey('job.id'))
@@ -205,7 +241,8 @@ class Group(db.Model):
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     stage = db.Column(db.String(16))
-    phase = db.Column(db.String(8))    
+    phase = db.Column(db.String(8))
+    status = db.Column(db.String(16), default=Status.NOT_STARTED.value)
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Foreign Keys
@@ -226,13 +263,14 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32))
     number = db.Column(db.Integer)
+    status = db.Column(db.String(16), default=Status.NOT_STARTED.value)
 
     # Foreign Keys
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
 
     # Relationships
     jobs = db.relationship('Job', backref='project', lazy='dynamic')
-    members = db.relationship('User', secondary=project_members, backref='project',
+    members = db.relationship('User', secondary=project_members, backref='projects',
         lazy='dynamic')
 
 
@@ -303,6 +341,13 @@ class User(UserMixin, db.Model):
         except:
             return
         return User.query.get(id)
+
+    '''
+    Project Relationship:
+    - Use the backref in the Project.members relationship to get the list of projects
+    that belongs to a single User
+    ex. user.projects returns [p1, p2]
+    '''
 
 
 # Keeps track of the logged in user by storing it Flask's user session

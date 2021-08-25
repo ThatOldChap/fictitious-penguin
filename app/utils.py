@@ -3,8 +3,15 @@ import enum
 class TestResult(enum.Enum):
     UNTESTED = "Untested"
     PASS = "Pass"
-    FAIL = "Fail"    
+    FAIL = "Fail"
     # POST = "Post"
+
+class Status(enum.Enum):
+    IN_PROGRESS = "In-Progress"
+    COMPLETE = "Complete"
+    NOT_STARTED = "Not Started"
+    PASS = "Pass"
+    FAIL = "Fail"
 
 class MeasurementType(enum.Enum):
     ANALOGUE_INPUT = "Analogue Input"
@@ -39,6 +46,7 @@ class JobPhase(enum.Enum):
 class TestPointListType(enum.Enum):
     STANDARD = "Standard"
     CUSTOM = "Custom"
+
 
 # Returns None if a value is empty
 def none_if_empty(value):
