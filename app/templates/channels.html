@@ -24,6 +24,7 @@
                     <th class="align-middle">Injection Value</th>
                     <th class="align-middle">Test Value</th>
                     <th class="align-middle">Error</th>
+                    <th class="align-middle">Result</th>
                     <th class="align-middle">Last Updated</th>
                     <th class="align-middle">Notes</th>
                 </tr>
@@ -60,10 +61,17 @@
             let UPDATE_TESTPOINT_URL = '/update_testpoint';
             let POST = 'POST';
             let MESSAGE = 'message';
+            let EMPTY = "";
 
             // Name Constants
             let MEASURED_ERROR_NAME = 'measured-error';
             let LAST_UPDATED_NAME = 'last-updated';
+            let TEST_RESULT_NAME = 'test-result';
+
+            // TestResult Values
+            let PASS_RESULT = 'Pass';
+            let FAIL_RESULT = 'Fail';
+            let UNTESTED_RESULT = 'Untested';
 
 
             // Listener function for the Injection Value fields
@@ -71,10 +79,10 @@
 
                 // Find the elements to get the data from
                 let injectionValueElement = event.target;
-                let parent = $(this).parents('tr')[0];
+                let parent = $(this).parents('tr');
+                let dataset = parent[0].dataset;
 
                 // Prepare the data package
-                let dataset = parent.dataset;
                 let data = {
                     testpoint_id: dataset.testpointId,
                     measured_injection_value: parseFloat(injectionValueElement.value)
@@ -93,17 +101,28 @@
                 let parent = $(this).parents('tr');
                 let dataset = parent[0].dataset;
 
-                // Calculate the measured error for the TestPoint
+                // Calculate the measured error and test result for the TestPoint
                 let measuredTestValue = parseFloat(testValueElement.value);
                 let nominalTestValue = parseFloat(dataset.nominalTestValue);
+                let maxError = parseFloat(dataset.maxError);
                 let isEmpty = Number.isNaN(measuredTestValue);
-                let measuredError = (isEmpty) ? "" : (measuredTestValue - nominalTestValue).toFixed(3)
+                let measuredError, testResult;
+
+                if (isEmpty) {
+                    measuredError = EMPTY;
+                    testResult = UNTESTED_RESULT;
+                } else {
+                    measuredError = (measuredTestValue - nominalTestValue).toFixed(3);
+                    testResult = (maxError - Math.abs(measuredError) >= 0) ?
+                        PASS_RESULT : FAIL_RESULT;
+                }
 
                 // Prepare the data package                
                 let data = {
                     testpoint_id: dataset.testpointId,
                     measured_test_value: measuredTestValue,
-                    measured_error: measuredError
+                    measured_error: measuredError,
+                    test_result: testResult
                 }
 
                 // Update the TestPoint
@@ -112,6 +131,9 @@
                 // Find and update the measured_error field with the calculated error
                 let errorElement = parent.find(`[name=${MEASURED_ERROR_NAME}]`);
                 (isEmpty) ? errorElement.val('') : errorElement.val(measuredError);
+
+                // Find and update the test_result field with the new result
+                let resultElement = parent.find(`[name=${TEST_RESULT_NAME}]`).text(testResult);
             });
 
 
@@ -120,10 +142,10 @@
 
                 // Find the elements to get the data from
                 let notesElement = event.target;
-                let parent = $(this).parents('tr')[0];
+                let parent = $(this).parents('tr');
+                let dataset = parent[0].dataset;
 
                 // Prepare the data package
-                let dataset = parent.dataset;
                 let data = {
                     testpoint_id: dataset.testpointId,
                     notes: notesElement.value
@@ -156,9 +178,7 @@
                         console.log('Error updating testpoint.');
                         console.log(error);
                     }
-                });
-
-                
+                });                
             }
 
 

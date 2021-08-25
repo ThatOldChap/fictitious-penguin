@@ -56,12 +56,17 @@
         <div class="row">
             <div class="col">
                 <div class="input-group">
-                    <input type="text" class="form-control text-center" name="measured-error" placeholder="0.000" readonly>
+                    {% if testpoint.measured_error == None %}
+                        <input type="text" class="form-control text-center" name="measured-error" placeholder="0.000" value="" readonly>
+                    {% else %}
+                        <input type="text" class="form-control text-center" name="measured-error" placeholder="0.000" value="{{ testpoint.measured_error }}" readonly>
+                    {% endif %}
                     <span class="input-group-text">{{ channel.measurement_units }}</span>
                 </div>
             </div>
         </div>
     </td>
+    <td class="align-middle" name="test-result">{{ testpoint.test_result }}</td>
     <td class="align-middle" name="last-updated">{{ moment(testpoint.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
     <td class="align-middle">
         {% if testpoint.notes == None %}            

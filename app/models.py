@@ -3,7 +3,7 @@ from time import time
 from flask import current_app
 from flask_login import UserMixin
 from app import db, login
-from app.utils import ErrorType, TestPointListType
+from app.utils import ErrorType, TestPointListType, TestResult
 import jwt
 from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -28,7 +28,7 @@ class TestPoint(db.Model):
 
     # Extra Info
     measured_error = db.Column(db.Float(8))
-    test_result = db.Column(db.String(12))
+    test_result = db.Column(db.String(12), default=TestResult.UNTESTED.value)
     notes = db.Column(db.String(128))
 
     # Foreign Keys

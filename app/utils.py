@@ -4,7 +4,7 @@ class TestResult(enum.Enum):
     UNTESTED = "Untested"
     PASS = "Pass"
     FAIL = "Fail"    
-    POST = "Post"
+    # POST = "Post"
 
 class MeasurementType(enum.Enum):
     ANALOGUE_INPUT = "Analogue Input"

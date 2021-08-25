@@ -276,14 +276,15 @@ def channels(group_id):
 def update_testpoint():
     
     # TestPoint Field Constants
-    TESTPOINT_ID = 'testpoint_id'
     CHANNEL_ID = 'channel_id'
-    LAST_UPDATED = 'last_updated'
+    TESTPOINT_ID = 'testpoint_id'
     MEASURED_INJECTION_VALUE = 'measured_injection_value'
     NOMINAL_INJECTION_VALUE = 'nominal_injection_value'
     MEASURED_TEST_VALUE = 'measured_test_value'
     NOMINAL_TEST_VALUE = 'nominal_test_value'
     MEASURED_ERROR = 'measured_error'
+    TEST_RESULT = 'test_result'
+    LAST_UPDATED = 'last_updated'
     NOTES = 'notes'
 
     # Variables to keep track of the updated fields
@@ -315,8 +316,12 @@ def update_testpoint():
         if key == MEASURED_ERROR:
             testpoint.measured_error = none_if_empty(value)
 
+        if key == TEST_RESULT:
+            testpoint.test_result = value
+
         if key == NOTES:
             testpoint.notes = value
+            
 
         # Add the processed key to the list of updated fields
         updated_fields.append(key)
