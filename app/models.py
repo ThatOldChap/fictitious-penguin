@@ -9,6 +9,14 @@ from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
+# Many-to-Many Association Tables
+project_members = db.Table(
+    'project_members', db.Model.metadata,
+    db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+)
+
+
 class TestPoint(db.Model):
     # Basic Info
     id = db.Column(db.Integer, primary_key=True)
@@ -224,12 +232,26 @@ class Project(db.Model):
 
     # Relationships
     jobs = db.relationship('Job', backref='project', lazy='dynamic')
+    members = db.relationship('User', secondary=project_members, backref='project',
+        lazy='dynamic')
+
 
     def __repr__(self):
         return f'<Project {self.number}: {self.name}>'
 
     def client(self):
         return Client.query.filter_by(id=self.client_id).first()
+
+    def has_member(self, user):
+        return self.members.filter(project_members.c.user_id == user.id).count() > 0
+
+    def add_member(self, user):
+        if not self.has_member(user):
+            self.members.append(user)
+
+    def remove_member(self, user):
+        if self.has_member(user):
+            self.members.remove(user)  
 
 
 class Client(db.Model):

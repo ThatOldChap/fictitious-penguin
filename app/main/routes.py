@@ -132,11 +132,11 @@ def add_job(project_id):
     # Get the chosen project 
     project = Project.query.filter_by(id=project_id).first() 
 
-    # Create the form
+    # Create and prepopulate the form
     form = AddJobForm(client_name=project.client_id, project_number=project_id, project_name=project_id)
 
     # Add the project_id from which the new job was requested by the user to be added to
-    form.project_id = project_id 
+    form.project_id = project_id
 
     # Assign the SelectField choices to populate in the form
     form.client_name.choices = CLIENT_NAME_CHOICES

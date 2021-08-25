@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import TestPoint, Channel, Group, Job, Project, Client
+from app.models import TestPoint, Channel, Group, Job, Project, Client, User
 
 # Create the app instance
 app = create_app()
@@ -14,7 +14,8 @@ def make_shell_context():
         'Group': Group,
         'Job': Job,
         'Project': Project,
-        'Client': Client
+        'Client': Client,
+        'User': User
     }
 
 '''

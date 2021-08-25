@@ -132,3 +132,4 @@ dmypy.json
 logs/
 icats.log*
 app.db
+app.db-journal
