@@ -4,6 +4,7 @@ from flask import current_app
 from flask_login import UserMixin
 from app import db, login
 from app.utils import ErrorType, TestPointListType, TestResult, Status
+from app.utils import get_channel_stats
 import jwt
 from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -186,10 +187,9 @@ class Channel(db.Model):
         else:
             print(f'Successfully built TestPoint list with {num_testpoints} TestPoints.')
 
-    def update_status(self):
+    def get_stats(self):
 
-        # Result tracking variables
-        num_testpoints = self.num_testpoints()
+        # Statistics tracking variables
         num_untested = 0
         num_passed = 0
         num_failed = 0
@@ -205,18 +205,32 @@ class Channel(db.Model):
                 num_passed += 1
             elif test_result == TestResult.FAIL.value:
                 num_failed += 1
+            
+        # Compile and return the results
+        return {
+            TestResult.UNTESTED.value: num_untested,
+            TestResult.PASS.value: num_passed,
+            TestResult.FAIL.value: num_failed
+        }
+
+    def update_status(self):
+
+        # Unpack the stats
+        stats = self.get_stats()
+        num_testpoints = self.num_testpoints()
         
         # Determine the new status
-        if num_testpoints == num_untested:
-            return TestResult.UNTESTED.value
-        elif num_testpoints == num_passed:
-            return TestResult.PASS.value
-        elif num_failed > 0:
-            return TestResult.FAIL.value        
+        if num_testpoints == stats[TestResult.UNTESTED.value]:
+            self.status = TestResult.UNTESTED.value
+
+        elif num_testpoints == stats[TestResult.PASS.value]:
+            self.status = TestResult.PASS.value
+
+        elif stats[TestResult.FAIL.value] > 0:
+            self.status = TestResult.FAIL.value
+
         else:
-            return Status.IN_PROGRESS.value 
-
-
+            self.status = Status.IN_PROGRESS.value 
 
 
 class Group(db.Model):
@@ -237,6 +251,30 @@ class Group(db.Model):
     def job(self):
         return Job.query.filter_by(id=self.job_id).first()
 
+    def num_channels(self):
+        return len(self.channels.all())
+
+    def get_stats(self):
+
+        # Return the analyzed list of all the channels in the Group
+        return get_channel_stats(self.channels)
+
+    def update_status(self):
+
+        # Unpack the stats
+        stats = self.get_stats()
+        num_channels = self.num_channels()
+
+        # Determine the new status
+        if num_channels == stats[TestResult.UNTESTED.value]:
+            self.status = Status.NOT_STARTED.value
+
+        elif num_channels == stats[TestResult.PASS.value]:
+            self.status = Status.COMPLETE.value
+
+        else:
+            self.status = Status.IN_PROGRESS.value
+
 
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -251,12 +289,46 @@ class Job(db.Model):
     # Relationships
     groups = db.relationship('Group', backref='job', lazy='dynamic')
 
-
     def __repr__(self):
         return f'<Job: {self.stage} {self.phase} for the {self.project.name} project>'
 
     def project(self):
         return Project.query.filter_by(id=self.project_id).first()
+
+    def channels(self):
+
+        # List of all the job's channels
+        channels = []
+        
+        for group in self.groups:
+            # Add the group's list of channels to the job's list of channels
+            channels + group.channels.all()
+        
+        return channels
+
+    def num_channels(self):
+        return len(self.channels())
+
+    def get_stats(self):
+
+        # Return the analyzed list of all the channels in the Job
+        return get_channel_stats(self.channels())
+
+    def update_status(self):
+
+        # Unpack the status
+        stats = self.get_stats()
+        num_channels = self.num_channels()
+
+        # Determine the new status
+        if num_channels == stats[TestResult.UNTESTED.value]:
+            self.status = Status.NOT_STARTED.value
+
+        elif num_channels == stats[TestResult.PASS.value]:
+            self.status = Status.COMPLETE.value
+
+        else:
+            self.status = Status.IN_PROGRESS.value
 
 
 class Project(db.Model):
@@ -279,6 +351,41 @@ class Project(db.Model):
 
     def client(self):
         return Client.query.filter_by(id=self.client_id).first()
+
+    def channels(self):
+
+        # List of all the projects channels
+        channels = []
+
+        for job in self.jobs:
+            # Add the jobs's list of channels to the projects's list of channels
+            channels + job.channels.all()
+        
+        return channels
+
+    def num_channels(self):
+        return len(self.channels())
+
+    def get_stats(self):
+
+        # Return the analyszed list of all the channels in the Project
+        return get_channel_stats(self.channels())
+
+    def update_status(self):
+
+        # Unpack the status
+        stats = self.get_stats()
+        num_channels = self.num_channels()
+
+        # Determine the new status
+        if num_channels == stats[TestResult.UNTESTED.value]:
+            self.status = Status.NOT_STARTED.value
+
+        elif num_channels == stats[TestResult.PASS.value]:
+            self.status = Status.COMPLETE.value
+
+        else:
+            self.status = Status.IN_PROGRESS.value
 
     def has_member(self, user):
         return self.members.filter(project_members.c.user_id == user.id).count() > 0

@@ -7,11 +7,9 @@ class TestResult(enum.Enum):
     # POST = "Post"
 
 class Status(enum.Enum):
+    NOT_STARTED = "Not Started"
     IN_PROGRESS = "In-Progress"
     COMPLETE = "Complete"
-    NOT_STARTED = "Not Started"
-    PASS = "Pass"
-    FAIL = "Fail"
 
 class MeasurementType(enum.Enum):
     ANALOGUE_INPUT = "Analogue Input"
@@ -51,3 +49,35 @@ class TestPointListType(enum.Enum):
 # Returns None if a value is empty
 def none_if_empty(value):
     return None if value == "" else value
+
+
+# Calculates some statistics on a list fo channels
+def get_channel_stats(channels):
+
+        # Statistics tracking variables
+        num_untested = 0
+        num_passed = 0
+        num_failed = 0
+        num_in_progress = 0
+
+        # Tally up the status
+        for channel in channels:
+
+            status = channel.status
+
+            if status == TestResult.UNTESTED.value:
+                num_untested += 1
+            elif status == TestResult.PASS.value:
+                num_passed += 1
+            elif status == TestResult.FAIL.value:
+                num_failed += 1
+            elif status == Status.IN_PROGRESS.value:
+                num_in_progress += 1
+        
+        # Compile and return the results
+        return {
+            TestResult.UNTESTED.value: num_untested,
+            TestResult.PASS.value: num_passed,
+            TestResult.FAIL.value: num_failed,
+            Status.IN_PROGRESS.value: num_in_progress
+        }
