@@ -7,6 +7,8 @@
             <thead>
                 <tr class="table-primary text-center align-middle">
                     <th class="align-middle">Name</th>
+                    <th class="align-middle">Progress</th>
+                    <th class="align-middle">Status</th>
                     <th class="align-middle">Last Updated</th>
                     <th class="align-middle">Actions</th>
                 </tr>
@@ -18,4 +20,51 @@
             </tbody>
         </table>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script>
+        $(document).ready(function() {
+
+            // Name Constants
+            let GROUP_PARENT = 'group-parent';
+            let PROGRESS_PASSED_NAME = 'progress-passed';
+            let PROGRESS_IN_PROGRESS_NAME = 'progress-in-progress';
+            let PROGRESS_FAILED_NAME = 'progress-failed';
+
+            // Data Field Constants
+            let PROGRESS_PASSED_DATA = 'data-progress-passed';
+            let PROGRESS_IN_PROGRESS_DATA = 'data-progress-in-progress';
+            let PROGRESS_FAILED_DATA = 'data-progress-failed';
+            let PROGRESS_UNTESTED_DATA = 'data-progress-untested';
+
+            // Attribute Constants
+            let WIDTH = "width"
+
+            // Find each groups row and extract the progress bar data stored
+            $(`[name=${GROUP_PARENT}]`).each(function(index, element) {
+
+                // Gather the progress bar data from the data attributes
+                let passed = $(this).attr(PROGRESS_PASSED_DATA);
+                let inProgress = $(this).attr(PROGRESS_IN_PROGRESS_DATA);
+                let failed = $(this).attr(PROGRESS_FAILED_DATA);
+                let untested = $(this).attr(PROGRESS_UNTESTED_DATA);
+                console.log(passed)
+                console.log(inProgress)
+                console.log(failed)
+                console.log(untested)
+
+                // Find each progress bar type and update with the corresponding % complete width
+                $(this).find(`[name=${PROGRESS_PASSED_NAME}]`).css(WIDTH, `${passed}%`)
+                $(this).find(`[name=${PROGRESS_IN_PROGRESS_NAME}]`).css(WIDTH, `${inProgress}%`)
+                $(this).find(`[name=${PROGRESS_FAILED_NAME}]`).css(WIDTH, `${failed}%`)
+
+            });
+
+
+
+        });
+    </script>
 {% endblock %}

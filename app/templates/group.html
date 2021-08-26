@@ -1,6 +1,24 @@
 {% block app_content %}
-<tr class="text-center">
+{% set progress = group.progress() %}
+<tr class="text-center" name="group-parent"
+    data-progress-passed="{{ progress['percent_passed'] }}"
+    data-progress-in-progress="{{ progress['percent_in_progress'] }}"
+    data-progress-failed="{{ progress['percent_failed'] }}"
+    data-progress-untested="{{ progress['percent_untested'] }}">
     <td class="align-middle">{{ group.name }}</td>
+    <td class="align-middle">
+        <div class="row">
+            <div class="col-12">
+                <div class="progress">
+                    {# Set the progress bar widths in the groups.html dile dynamically using jQuery #}
+                    <div class="progress-bar bg-success" role="progressbar" name="progress-passed"></div>
+                    <div class="progress-bar bg-info" role="progressbar" name="progress-in-progress"></div>
+                    <div class="progress-bar bg-danger" role="progressbar" name="progress-failed"></div>
+                </div>
+            </div>
+        </div>
+    </td>
+    <td class="align-middle">{{ group.update_status() }}</td>
     <td class="align-middle">{{ moment(group.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
     <td class="align-middle">
         {# Button for seeing a list of all the group's channels #}

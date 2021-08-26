@@ -4,7 +4,7 @@ from flask import current_app
 from flask_login import UserMixin
 from app import db, login
 from app.utils import ErrorType, TestPointListType, TestResult, Status
-from app.utils import get_channel_stats
+from app.utils import get_channel_stats, calc_percent
 import jwt
 from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -230,7 +230,7 @@ class Channel(db.Model):
             self.status = TestResult.FAIL.value
 
         else:
-            self.status = Status.IN_PROGRESS.value 
+            self.status = Status.IN_PROGRESS.value
 
 
 class Group(db.Model):
@@ -257,7 +257,7 @@ class Group(db.Model):
     def get_stats(self):
 
         # Return the analyzed list of all the channels in the Group
-        return get_channel_stats(self.channels)
+        return get_channel_stats(self.channels.all())
 
     def update_status(self):
 
@@ -274,8 +274,33 @@ class Group(db.Model):
 
         else:
             self.status = Status.IN_PROGRESS.value
+        
+        db.session.commit()
 
+        return self.status
 
+    def progress(self):
+
+        # Get the channel stats
+        stats = self.get_stats()
+        num_channels = self.num_channels()
+
+        if num_channels == 0:
+            return {
+            "percent_untested": 100,
+            "percent_passed": 0,
+            "percent_failed": 0,
+            "percent_in_progress": 0
+            }
+        else:
+            return {
+                "percent_untested": calc_percent(stats[TestResult.UNTESTED.value], num_channels),
+                "percent_passed": calc_percent(stats[TestResult.PASS.value], num_channels),
+                "percent_failed": calc_percent(stats[TestResult.FAIL.value], num_channels),
+                "percent_in_progress": calc_percent(stats[Status.IN_PROGRESS.value], num_channels)
+            }
+        
+        
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     stage = db.Column(db.String(16))
@@ -329,6 +354,8 @@ class Job(db.Model):
 
         else:
             self.status = Status.IN_PROGRESS.value
+
+        return self.status
 
 
 class Project(db.Model):
@@ -386,6 +413,8 @@ class Project(db.Model):
 
         else:
             self.status = Status.IN_PROGRESS.value
+
+        return self.status
 
     def has_member(self, user):
         return self.members.filter(project_members.c.user_id == user.id).count() > 0

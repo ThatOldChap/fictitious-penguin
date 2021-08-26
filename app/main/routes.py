@@ -313,19 +313,33 @@ def update_testpoint():
     updated_fields = []
     num_fields = 0
 
+    # Evaluation variables
+    update_status = False
+
     # Extract the request's form dictionary
     data = request.form.to_dict()
 
     # Check which TestPoint is being updated
-    if TESTPOINT_ID in data:
-        testpoint = TestPoint.query.filter_by(id=request.form[TESTPOINT_ID]).first()
+    if TESTPOINT_ID in data:        
 
         # Remove the testpoint_id from the data to check how many parameters are being updated
+        testpoint = TestPoint.query.filter_by(id=request.form[TESTPOINT_ID]).first()
         data.pop(TESTPOINT_ID)
-        num_fields = len(data)
     else:
         raise ValueError(f'{TESTPOINT_ID} not found in ajax request:\n{data}')
+        
+    if CHANNEL_ID in data:        
+
+        # Remove the channel_id from the data to check how many parameters are being updated
+        channel = Channel.query.filter_by(id=request.form[CHANNEL_ID]).first()
+        data.pop(CHANNEL_ID)
+        update_status = True
+    else:
+        raise ValueError(f'{CHANNEL_ID} not found in ajax request:\n{data}')
     
+    # Calculate the new number of variables to iterate over
+    num_fields = len(data)
+
     # Iterate through each field in the request and update the TestPoint accordingly
     for key, value in data.items():
 
@@ -348,7 +362,6 @@ def update_testpoint():
         # Add the processed key to the list of updated fields
         updated_fields.append(key)
 
-
     # Check to make sure any fields got updated
     num_updated = len(updated_fields)
     if not num_updated == num_fields:
@@ -357,6 +370,11 @@ def update_testpoint():
     # Update the last_updated time now that changes have been made
     last_updated = datetime.utcnow()
     testpoint.last_updated = last_updated
+
+    # Update the status of the updated channel
+    if update_status:
+        channel.update_status()
+        print(channel.get_stats())
 
     # Save the changes to the database
     db.session.commit()

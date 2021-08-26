@@ -81,3 +81,7 @@ def get_channel_stats(channels):
             TestResult.FAIL.value: num_failed,
             Status.IN_PROGRESS.value: num_in_progress
         }
+
+# Calculates the percent value of a number and out of its total
+def calc_percent(value, total):
+    return (value / total) * 100
