@@ -4,7 +4,7 @@ from flask import current_app
 from flask_login import UserMixin
 from app import db, login
 from app.utils import ErrorType, TestPointListType, TestResult, Status
-from app.utils import get_channel_stats, calc_percent
+from app.utils import channel_stats, channel_progress, calc_percent
 import jwt
 from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -187,7 +187,7 @@ class Channel(db.Model):
         else:
             print(f'Successfully built TestPoint list with {num_testpoints} TestPoints.')
 
-    def get_stats(self):
+    def testpoint_stats(self):
 
         # Statistics tracking variables
         num_untested = 0
@@ -205,7 +205,7 @@ class Channel(db.Model):
                 num_passed += 1
             elif test_result == TestResult.FAIL.value:
                 num_failed += 1
-            
+        
         # Compile and return the results
         return {
             TestResult.UNTESTED.value: num_untested,
@@ -216,7 +216,7 @@ class Channel(db.Model):
     def update_status(self):
 
         # Unpack the stats
-        stats = self.get_stats()
+        stats = self.testpoint_stats()
         num_testpoints = self.num_testpoints()
         
         # Determine the new status
@@ -231,6 +231,9 @@ class Channel(db.Model):
 
         else:
             self.status = Status.IN_PROGRESS.value
+
+        # Save the results
+        db.session.commit()
 
 
 class Group(db.Model):
@@ -254,15 +257,15 @@ class Group(db.Model):
     def num_channels(self):
         return len(self.channels.all())
 
-    def get_stats(self):
+    def channel_stats(self):
 
         # Return the analyzed list of all the channels in the Group
-        return get_channel_stats(self.channels.all())
+        return channel_stats(self.channels.all())
 
     def update_status(self):
 
         # Unpack the stats
-        stats = self.get_stats()
+        stats = self.channel_stats()
         num_channels = self.num_channels()
 
         # Determine the new status
@@ -277,28 +280,10 @@ class Group(db.Model):
         
         db.session.commit()
 
-        return self.status
+    def channel_progress(self):
 
-    def progress(self):
-
-        # Get the channel stats
-        stats = self.get_stats()
-        num_channels = self.num_channels()
-
-        if num_channels == 0:
-            return {
-            "percent_untested": 100,
-            "percent_passed": 0,
-            "percent_failed": 0,
-            "percent_in_progress": 0
-            }
-        else:
-            return {
-                "percent_untested": calc_percent(stats[TestResult.UNTESTED.value], num_channels),
-                "percent_passed": calc_percent(stats[TestResult.PASS.value], num_channels),
-                "percent_failed": calc_percent(stats[TestResult.FAIL.value], num_channels),
-                "percent_in_progress": calc_percent(stats[Status.IN_PROGRESS.value], num_channels)
-            }
+        # Returns the channel's progress bar width percentages
+        return channel_progress(self)
         
         
 class Job(db.Model):
@@ -325,24 +310,24 @@ class Job(db.Model):
         # List of all the job's channels
         channels = []
         
-        for group in self.groups:
+        for group in self.groups.all():
             # Add the group's list of channels to the job's list of channels
-            channels + group.channels.all()
+            channels += group.channels.all()
         
         return channels
 
     def num_channels(self):
         return len(self.channels())
 
-    def get_stats(self):
+    def channel_stats(self):
 
         # Return the analyzed list of all the channels in the Job
-        return get_channel_stats(self.channels())
+        return channel_stats(self.channels())
 
     def update_status(self):
 
         # Unpack the status
-        stats = self.get_stats()
+        stats = self.channel_stats()
         num_channels = self.num_channels()
 
         # Determine the new status
@@ -355,7 +340,13 @@ class Job(db.Model):
         else:
             self.status = Status.IN_PROGRESS.value
 
-        return self.status
+        # Save the changes
+        db.session.commit()
+
+    def channel_progress(self):
+
+        # Returns the channel's progress bar width percentages
+        return channel_progress(self)
 
 
 class Project(db.Model):
@@ -386,22 +377,22 @@ class Project(db.Model):
 
         for job in self.jobs:
             # Add the jobs's list of channels to the projects's list of channels
-            channels + job.channels.all()
+            channels + job.channels()
         
         return channels
 
     def num_channels(self):
         return len(self.channels())
 
-    def get_stats(self):
+    def channel_stats(self):
 
         # Return the analyszed list of all the channels in the Project
-        return get_channel_stats(self.channels())
+        return channel_stats(self.channels())
 
     def update_status(self):
 
         # Unpack the status
-        stats = self.get_stats()
+        stats = self.channel_stats()
         num_channels = self.num_channels()
 
         # Determine the new status
@@ -414,7 +405,13 @@ class Project(db.Model):
         else:
             self.status = Status.IN_PROGRESS.value
 
-        return self.status
+        # Save the changes
+        db.session.commit()
+
+    def channel_progress(self):
+
+        # Returns the channel's progress bar width percentages
+        return channel_progress(self)
 
     def has_member(self, user):
         return self.members.filter(project_members.c.user_id == user.id).count() > 0

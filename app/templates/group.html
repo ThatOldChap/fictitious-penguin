@@ -1,5 +1,5 @@
 {% block app_content %}
-{% set progress = group.progress() %}
+{% set progress = group.channel_progress() %}
 <tr class="text-center" name="group-parent"
     data-progress-passed="{{ progress['percent_passed'] }}"
     data-progress-in-progress="{{ progress['percent_in_progress'] }}"
@@ -18,7 +18,7 @@
             </div>
         </div>
     </td>
-    <td class="align-middle">{{ group.update_status() }}</td>
+    <td class="align-middle">{{ group.status }}</td>
     <td class="align-middle">{{ moment(group.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
     <td class="align-middle">
         {# Button for seeing a list of all the group's channels #}

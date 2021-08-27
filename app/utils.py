@@ -52,7 +52,7 @@ def none_if_empty(value):
 
 
 # Calculates some statistics on a list fo channels
-def get_channel_stats(channels):
+def channel_stats(channels):
 
         # Statistics tracking variables
         num_untested = 0
@@ -81,6 +81,30 @@ def get_channel_stats(channels):
             TestResult.FAIL.value: num_failed,
             Status.IN_PROGRESS.value: num_in_progress
         }
+
+
+# Returns the channel progress for a given set of channels
+def channel_progress(item):
+
+    # Get the channel stats
+        stats = item.channel_stats()
+        num_channels = item.num_channels()
+
+        if num_channels == 0:
+            return {
+            "percent_untested": 100,
+            "percent_passed": 0,
+            "percent_failed": 0,
+            "percent_in_progress": 0
+            }
+        else:
+            return {
+                "percent_untested": calc_percent(stats[TestResult.UNTESTED.value], num_channels),
+                "percent_passed": calc_percent(stats[TestResult.PASS.value], num_channels),
+                "percent_failed": calc_percent(stats[TestResult.FAIL.value], num_channels),
+                "percent_in_progress": calc_percent(stats[Status.IN_PROGRESS.value], num_channels)
+            }
+
 
 # Calculates the percent value of a number and out of its total
 def calc_percent(value, total):

@@ -51,10 +51,6 @@
                 let inProgress = $(this).attr(PROGRESS_IN_PROGRESS_DATA);
                 let failed = $(this).attr(PROGRESS_FAILED_DATA);
                 let untested = $(this).attr(PROGRESS_UNTESTED_DATA);
-                console.log(passed)
-                console.log(inProgress)
-                console.log(failed)
-                console.log(untested)
 
                 // Find each progress bar type and update with the corresponding % complete width
                 $(this).find(`[name=${PROGRESS_PASSED_NAME}]`).css(WIDTH, `${passed}%`)
@@ -62,9 +58,6 @@
                 $(this).find(`[name=${PROGRESS_FAILED_NAME}]`).css(WIDTH, `${failed}%`)
 
             });
-
-
-
         });
     </script>
 {% endblock %}

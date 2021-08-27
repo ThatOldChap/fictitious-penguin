@@ -371,10 +371,12 @@ def update_testpoint():
     last_updated = datetime.utcnow()
     testpoint.last_updated = last_updated
 
-    # Update the status of the updated channel
+    # Update the status of the updated channel, group, job and project
     if update_status:
         channel.update_status()
-        print(channel.get_stats())
+        channel.group.update_status()
+        channel.group.job.update_status()
+        channel.group.job.project.update_status()
 
     # Save the changes to the database
     db.session.commit()
