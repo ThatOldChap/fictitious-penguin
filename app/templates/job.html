@@ -11,6 +11,10 @@
     <td class="align-middle">{{ job.stage }}</td>
     <td class="align-middle">{{ job.phase }}</td>
     <td class="align-middle">
+        <div class="row justify-content-between">
+            <div class="col-3">{{ progress['percent_passed'] }}%</div>
+            <div class="col-3">{{ job.channel_stats()['Pass'] }}/{{ job.num_channels() }}</div>
+        </div>
         <div class="row">
             <div class="col-12">
                 <div class="progress">

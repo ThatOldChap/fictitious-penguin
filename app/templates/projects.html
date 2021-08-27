@@ -9,15 +9,37 @@
                     <th class="align-middle">Client</th>
                     <th class="align-middle">Project Number</th>
                     <th class="align-middle">Project Name</th>
+                    <th class="align-middle" width="30%">Progress</th>
                     <th class="align-middle">Actions</th>
                 </tr>
             </thead>
             <tbody>
             {% for project in projects %}
-                <tr>
+                {% set progress = project.channel_progress() %}
+                <tr name="project-parent"
+                    data-progress-passed="{{ progress['percent_passed'] }}"
+                    data-progress-in-progress="{{ progress['percent_in_progress'] }}"
+                    data-progress-failed="{{ progress['percent_failed'] }}"
+                    data-progress-untested="{{ progress['percent_untested'] }}">
                     <td class="align-middle text-center">{{ project.client.name }}</td>
                     <td class="align-middle text-center">{{ project.number }}</td>
                     <td class="align-middle text-center">{{ project.name }}</td>
+                    <td class="align-middle text-center">
+                        <div class="row justify-content-between">
+                            <div class="col-2">{{ progress['percent_passed'] }}%</div>
+                            <div class="col-2">{{ project.channel_stats()['Pass'] }}/{{ project.num_channels() }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="progress">
+                                    {# Set the progress bar widths in the jobs.html dile dynamically using jQuery #}
+                                    <div class="progress-bar bg-success" role="progressbar" name="progress-passed"></div>
+                                    <div class="progress-bar bg-info" role="progressbar" name="progress-in-progress"></div>
+                                    <div class="progress-bar bg-danger" role="progressbar" name="progress-failed"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
                     <td class="align-middle">
                         {# Button for seeing a list of all a project's jobs #}
                         <button type="button" class="btn btn-info">
@@ -33,4 +55,17 @@
             </tbody>
         </table>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script>
+        $(document).ready(function() {
+
+            // Update the progress bar
+            let PROJECT = 'project';
+            updateProgressBar(PROJECT);
+        });
+    </script>
 {% endblock %}

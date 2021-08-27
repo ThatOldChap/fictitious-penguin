@@ -7,6 +7,10 @@
     data-progress-untested="{{ progress['percent_untested'] }}">
     <td class="align-middle">{{ group.name }}</td>
     <td class="align-middle">
+        <div class="row justify-content-between">
+            <div class="col-2">{{ progress['percent_passed'] }}%</div>
+            <div class="col-2">{{ group.channel_stats()['Pass'] }}/{{ group.num_channels() }}</div>
+        </div>
         <div class="row">
             <div class="col-12">
                 <div class="progress">

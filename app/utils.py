@@ -1,4 +1,4 @@
-import enum
+import enum, math
 
 class TestResult(enum.Enum):
     UNTESTED = "Untested"
@@ -108,4 +108,4 @@ def channel_progress(item):
 
 # Calculates the percent value of a number and out of its total
 def calc_percent(value, total):
-    return (value / total) * 100
+    return round((value / total) * 100, 1)

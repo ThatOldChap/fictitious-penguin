@@ -375,9 +375,9 @@ class Project(db.Model):
         # List of all the projects channels
         channels = []
 
-        for job in self.jobs:
+        for job in self.jobs.all():
             # Add the jobs's list of channels to the projects's list of channels
-            channels + job.channels()
+            channels += job.channels()
         
         return channels
 
