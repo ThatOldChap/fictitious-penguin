@@ -1,10 +1,9 @@
 {% block app_content %}
 {% set progress = job.channel_progress() %}
 <tr class="text-center" name="job-parent"
-    data-progress-passed="{{ progress['percent_passed'] }}"
-    data-progress-in-progress="{{ progress['percent_in_progress'] }}"
+    data-progress-passed="{{ progress['percent_passed'] }}"    
     data-progress-failed="{{ progress['percent_failed'] }}"
-    data-progress-untested="{{ progress['percent_untested'] }}">
+    data-progress-in-progress="{{ progress['percent_in_progress'] }}">
     <td class="align-middle">{{ job.project.client.name }}</td>
     <td class="align-middle">{{ job.project.number }}</td>
     <td class="align-middle">{{ job.project.name }}</td>

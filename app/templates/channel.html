@@ -15,7 +15,6 @@
                 <div class="progress">
                     {# Set the progress bar widths in the channels.html file dynamically using jQuery #}
                     <div class="progress-bar bg-success" role="progressbar" name="progress-passed"></div>
-                    <div class="progress-bar bg-info" role="progressbar" name="progress-in-progress"></div>
                     <div class="progress-bar bg-danger" role="progressbar" name="progress-failed"></div>
                 </div>
             </div>
@@ -24,8 +23,8 @@
     <td class="align-middle" name="channel-status">{{ channel.status }}</td>
     <td class="align-middle" name="last-updated">{{ moment(channel.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
     <td class="align-middle" name="">
-        <button type="button" class="btn btn-success">
-            <a style="color:#FFFFFF;" href="">Signed</a>
+        <button type="button" class="btn btn-outline-success">
+            <a href="">Signed</a>
         </button>
     </td>
 </tr>

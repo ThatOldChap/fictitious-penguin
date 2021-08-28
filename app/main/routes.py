@@ -301,13 +301,16 @@ def update_testpoint():
     CHANNEL_ID = 'channel_id'
     TESTPOINT_ID = 'testpoint_id'
     MEASURED_INJECTION_VALUE = 'measured_injection_value'
-    NOMINAL_INJECTION_VALUE = 'nominal_injection_value'
     MEASURED_TEST_VALUE = 'measured_test_value'
-    NOMINAL_TEST_VALUE = 'nominal_test_value'
     MEASURED_ERROR = 'measured_error'
     TEST_RESULT = 'test_result'
     LAST_UPDATED = 'last_updated'
     NOTES = 'notes'
+
+    # Other constants
+    MESSAGE = 'message'
+    PROGRESS = 'progress'
+
 
     # Variables to keep track of the updated fields
     updated_fields = []
@@ -383,8 +386,9 @@ def update_testpoint():
 
     # Load the last_updated time into the json payload for a successful ajax request
     response = {
-        'message': f'{testpoint} has successfully updated the following fields: {updated_fields}',
-        'last_updated': last_updated
+        MESSAGE: f'{testpoint} has successfully updated the following fields: {updated_fields}',
+        LAST_UPDATED: last_updated,
+        PROGRESS: channel.testpoint_progress()
     }
 
     return jsonify(response)

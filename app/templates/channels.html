@@ -53,6 +53,9 @@
 
             // Value Constants
             let CHANNELS = 'channels';
+            let CHANNEL = 'channel';
+            let CHANNEL_PARENT = CHANNEL + '-parent';
+            let TESTPOINT = 'testpoint';
             let TESTPOINTS = 'testpoints';
             let INJECTION_VALUE = 'injection_value';
             let TEST_VALUE = 'test_value';
@@ -61,8 +64,12 @@
             let LAST_UPDATED_FORMAT = 'hh:mm A, DD-MMM-YYYY';
             let UPDATE_TESTPOINT_URL = '/update_testpoint';
             let POST = 'POST';
+            let PROGRESS = 'progress';
             let MESSAGE = 'message';
             let EMPTY = "";
+            let PERCENT_UNTESTED = 'percent_untested';
+            let PERCENT_PASSED = 'percent_passed';
+            let PERCENT_FAILED = 'percent_failed';
 
             // Name Constants
             let MEASURED_ERROR_NAME = 'measured-error';
@@ -74,6 +81,9 @@
             let FAIL_RESULT = 'Fail';
             let UNTESTED_RESULT = 'Untested';
 
+
+            // Update the progress bars as the page is loaded
+            updateAllProgressBars(CHANNEL, TESTPOINT);
 
             // Listener function for the Injection Value fields
             $(`[id$="${INJECTION_VALUE}"]`).change(function(event) {
@@ -99,8 +109,8 @@
 
                 // Find the elements to get the data from
                 let testValueElement = event.target;
-                let parent = $(this).parents('tr');
-                let dataset = parent[0].dataset;
+                let parentTestpoint = $(this).parents('tr');
+                let dataset = parentTestpoint[0].dataset;
 
                 // Extract the relevant values from the data attributes and form values
                 let measuredTestValue = parseFloat(testValueElement.value);
@@ -129,15 +139,18 @@
                     test_result: testResult
                 }
 
+                // Find the parent Channel element
+                let parentChannel = $(parentTestpoint).prevAll(`[name=${CHANNEL_PARENT}]`);
+
                 // Update the TestPoint
-                updateTestPoint(data, parent);
+                updateTestPoint(data, parentTestpoint, parentChannel);                
 
                 // Find and update the measured_error field with the calculated error
-                let errorElement = parent.find(`[name=${MEASURED_ERROR_NAME}]`);
+                let errorElement = parentTestpoint.find(`[name=${MEASURED_ERROR_NAME}]`);
                 (isEmpty) ? errorElement.val('') : errorElement.val(measuredError);
 
                 // Find and update the test_result field with the new result
-                let resultElement = parent.find(`[name=${TEST_RESULT_NAME}]`).text(testResult);
+                let resultElement = parentTestpoint.find(`[name=${TEST_RESULT_NAME}]`).text(testResult);
             });
 
 
@@ -161,7 +174,7 @@
 
 
             // Function for sending an ajax request to update TestPoint values in the database
-            function updateTestPoint(data, parentElement) {
+            function updateTestPoint(data, parentTestpoint, parentChannel) {
 
                 // Build the ajax request
                 $.ajax({
@@ -171,12 +184,19 @@
                     success: function(response) {
                         console.log(response[MESSAGE]);
 
-                        // Extract the last_updated datetime from the response
+                        // Extract the required data from the response
                         let lastUpdated = response[LAST_UPDATED];
+                        let progress = response[PROGRESS];
+                        let passed = progress[PERCENT_PASSED];
+                        let failed = progress[PERCENT_FAILED];
+                        let inProgress = 0;
 
                         // Update the lastUpdated column of the updated TestPoint row
-                        let lastUpdatedElement = parentElement.find(`[name="${LAST_UPDATED_NAME}"]`);
+                        let lastUpdatedElement = parentTestpoint.find(`[name="${LAST_UPDATED_NAME}"]`);
                         lastUpdatedElement.text(moment(lastUpdated).format(LAST_UPDATED_FORMAT));
+
+                        // Update the progress bar with the newly calculated progress
+                        updateProgressBar(parentChannel, TESTPOINT, passed, failed, inProgress);
                     },
                     error: function(error) {
                         console.log('Error updating testpoint.');
@@ -184,9 +204,6 @@
                     }
                 });                
             }
-
-
-
         });
     </script>
 {% endblock %}

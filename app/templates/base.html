@@ -42,38 +42,57 @@
 
     {# Progress bar updating function #}
     <script>
-        function updateProgressBar(parentName) {
-            // Name Constants
+
+        // Name Constants
+        let PROGRESS_PASSED_NAME = 'progress-passed';
+        let PROGRESS_FAILED_NAME = 'progress-failed';
+        let PROGRESS_IN_PROGRESS_NAME = 'progress-in-progress';
+
+        // Data Field Constants
+        let PROGRESS_PASSED_DATA = 'data-progress-passed';
+        let PROGRESS_FAILED_DATA = 'data-progress-failed';
+        let PROGRESS_IN_PROGRESS_DATA = 'data-progress-in-progress';
+
+        // Attribute Constants
+        let WIDTH = "width"
+
+        // Value Constants
+        let CHANNEL = 'channel';
+        let TESTPOINT = 'testpoint';
+
+        function updateProgressBar(parentElement, itemType,
+            percentPassed, percentFailed, percentInProgress) {     
+
+            // Find each progress bar type and update with the corresponding % complete width
+            $(parentElement).find(`[name=${PROGRESS_PASSED_NAME}]`).css(WIDTH, `${percentPassed}%`);
+            $(parentElement).find(`[name=${PROGRESS_FAILED_NAME}]`).css(WIDTH, `${percentFailed}%`);
+
+            if (itemType == CHANNEL) {                
+                $(parentElement).find(`[name=${PROGRESS_IN_PROGRESS_NAME}]`).css(WIDTH, `${percentInProgress}%`);
+            }
+        }
+
+        function updateAllProgressBars(parentName, itemType) {
+            
+            // Set the chosen progress bar parent from the user
             let PROGRESS_PARENT = `${parentName}-parent`;
-            let PROGRESS_PASSED_NAME = 'progress-passed';
-            let PROGRESS_IN_PROGRESS_NAME = 'progress-in-progress';
-            let PROGRESS_FAILED_NAME = 'progress-failed';
 
-            // Data Field Constants
-            let PROGRESS_PASSED_DATA = 'data-progress-passed';
-            let PROGRESS_IN_PROGRESS_DATA = 'data-progress-in-progress';
-            let PROGRESS_FAILED_DATA = 'data-progress-failed';
-            let PROGRESS_UNTESTED_DATA = 'data-progress-untested';
-
-            // Attribute Constants
-            let WIDTH = "width"
-
-            // Find each groups row and extract the progress bar data stored
+            // Find and update each parent item's progress bar
             $(`[name=${PROGRESS_PARENT}]`).each(function(index, element) {
 
                 // Gather the progress bar data from the data attributes
                 let passed = $(this).attr(PROGRESS_PASSED_DATA);
-                let inProgress = $(this).attr(PROGRESS_IN_PROGRESS_DATA);
-                let failed = $(this).attr(PROGRESS_FAILED_DATA);
-                let untested = $(this).attr(PROGRESS_UNTESTED_DATA);
+                let failed = $(this).attr(PROGRESS_FAILED_DATA); 
+                let inProgress = 0;
 
-                // Find each progress bar type and update with the corresponding % complete width
-                $(this).find(`[name=${PROGRESS_PASSED_NAME}]`).css(WIDTH, `${passed}%`)
-                $(this).find(`[name=${PROGRESS_IN_PROGRESS_NAME}]`).css(WIDTH, `${inProgress}%`)
-                $(this).find(`[name=${PROGRESS_FAILED_NAME}]`).css(WIDTH, `${failed}%`)
+                if (itemType == CHANNEL) {  
+                    inProgress = $(this).attr(PROGRESS_IN_PROGRESS_DATA);
+                }
 
+                updateProgressBar(this, itemType, passed, failed, inProgress);
             });
         }
+
     </script>
 {% endblock %}
 

@@ -1,10 +1,9 @@
 {% block app_content %}
 {% set progress = group.channel_progress() %}
 <tr class="text-center" name="group-parent"
-    data-progress-passed="{{ progress['percent_passed'] }}"
-    data-progress-in-progress="{{ progress['percent_in_progress'] }}"
+    data-progress-passed="{{ progress['percent_passed'] }}"    
     data-progress-failed="{{ progress['percent_failed'] }}"
-    data-progress-untested="{{ progress['percent_untested'] }}">
+    data-progress-in-progress="{{ progress['percent_in_progress'] }}">
     <td class="align-middle">{{ group.name }}</td>
     <td class="align-middle">
         <div class="row justify-content-between">
