@@ -47,6 +47,9 @@
         let PROGRESS_PASSED_NAME = 'progress-passed';
         let PROGRESS_FAILED_NAME = 'progress-failed';
         let PROGRESS_IN_PROGRESS_NAME = 'progress-in-progress';
+        let PERCENT_PASSED = 'percent-passed';
+        let NUM_PASSED = 'num-passed';
+        let CHANNEL_STATUS = 'channel-status';
 
         // Data Field Constants
         let PROGRESS_PASSED_DATA = 'data-progress-passed';
@@ -93,8 +96,12 @@
             });
         }
 
-        function updateLastUpdated(element, fieldName, format, newDateTime) {
-            element.find(`[name="${fieldName}"]`).text(moment(newDateTime).format(format));
+        function updateFieldTextByName(element, name, newText) {
+            $(element).find(`[name="${name}"]`).text(`${newText}`);
+        }
+
+        function updateFieldValByName(element, name, newValue) {
+            $(element).find(`[name="${name}"]`).val(`${newValue}`);
         }
 
     </script>
