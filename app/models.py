@@ -235,6 +235,19 @@ class Channel(db.Model):
         # Save the results
         db.session.commit()
 
+    def testpoint_progress(self):
+
+        # Get the testpoint stats
+        stats = self.testpoint_stats()
+        num_testpoints = self.num_testpoints()
+
+        # Calculate and return the progress bar percentages
+        return {
+            "percent_untested": calc_percent(stats[TestResult.UNTESTED.value], num_testpoints),
+            "percent_passed": calc_percent(stats[TestResult.PASS.value], num_testpoints),
+            "percent_failed": calc_percent(stats[TestResult.FAIL.value], num_testpoints),
+        }
+
 
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -31,9 +31,10 @@
             </thead>
             <tbody>
                 {% for channel, channel_form in zip(channels, channels_form.channels) %}
-                    <th class="align-middle text-center" rowspan="{{ channel.num_testpoints() + 1 }}">
+                    <th class="align-middle text-center" rowspan="{{ channel.num_testpoints() + 2 }}">
                         {{ channel.name }}
                     </th>
+                    {% include 'channel.html' %}
                     {% for testpoint, testpoint_form in zip(channel.testpoints, channel_form.testpoints) %}
                         {% include 'testpoint.html' %}
                     {% endfor %}

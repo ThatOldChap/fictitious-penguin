@@ -87,23 +87,23 @@ def channel_stats(channels):
 def channel_progress(item):
 
     # Get the channel stats
-        stats = item.channel_stats()
-        num_channels = item.num_channels()
+    stats = item.channel_stats()
+    num_channels = item.num_channels()
 
-        if num_channels == 0:
-            return {
-            "percent_untested": 100,
-            "percent_passed": 0,
-            "percent_failed": 0,
-            "percent_in_progress": 0
-            }
-        else:
-            return {
-                "percent_untested": calc_percent(stats[TestResult.UNTESTED.value], num_channels),
-                "percent_passed": calc_percent(stats[TestResult.PASS.value], num_channels),
-                "percent_failed": calc_percent(stats[TestResult.FAIL.value], num_channels),
-                "percent_in_progress": calc_percent(stats[Status.IN_PROGRESS.value], num_channels)
-            }
+    if num_channels == 0:
+        return {
+        "percent_untested": 100,
+        "percent_passed": 0,
+        "percent_failed": 0,
+        "percent_in_progress": 0
+        }
+    else:
+        return {
+            "percent_untested": calc_percent(stats[TestResult.UNTESTED.value], num_channels),
+            "percent_passed": calc_percent(stats[TestResult.PASS.value], num_channels),
+            "percent_failed": calc_percent(stats[TestResult.FAIL.value], num_channels),
+            "percent_in_progress": calc_percent(stats[Status.IN_PROGRESS.value], num_channels)
+        }
 
 
 # Calculates the percent value of a number and out of its total
