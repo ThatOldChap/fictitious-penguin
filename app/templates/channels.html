@@ -66,6 +66,8 @@
             let POST = 'POST';
             let PROGRESS = 'progress';
             let MESSAGE = 'message';
+            let NUM_PASSED = 'num_passed';
+            let STATUS = 'status';
             let EMPTY = "";
             let PERCENT_UNTESTED = 'percent_untested';
             let PERCENT_PASSED = 'percent_passed';
@@ -140,7 +142,7 @@
                 }
 
                 // Find the parent Channel element
-                let parentChannel = $(parentTestpoint).prevAll(`[name=${CHANNEL_PARENT}]`);
+                let parentChannel = $(parentTestpoint).prevAll(`[name=${CHANNEL_PARENT}]`).first();
 
                 // Update the TestPoint
                 updateTestPoint(data, parentTestpoint, parentChannel);                
@@ -190,10 +192,20 @@
                         let passed = progress[PERCENT_PASSED];
                         let failed = progress[PERCENT_FAILED];
                         let inProgress = 0;
+                        let num_passed = response[NUM_PASSED];
+                        let status = response[STATUS];
 
                         // Update the lastUpdated column of the updated TestPoint row
-                        let lastUpdatedElement = parentTestpoint.find(`[name="${LAST_UPDATED_NAME}"]`);
-                        lastUpdatedElement.text(moment(lastUpdated).format(LAST_UPDATED_FORMAT));
+                        //let testpointLastUpdated = parentTestpoint.find(`[name="${LAST_UPDATED_NAME}"]`);
+                        //testpointLastUpdated.text(moment(lastUpdated).format(LAST_UPDATED_FORMAT));
+
+                        // Update the lastUpdated column of the updated Channel header row
+                        //let channelLastUpdated = parentChannel.find(`[name="${LAST_UPDATED_NAME}"]`);
+                        //channelLastUpdated.text(moment(lastUpdated).format(LAST_UPDATED_FORMAT));
+
+                        // Update the lastUpdated fields for both the TestPoint and Channel
+                        updateLastUpdated(parentTestpoint, LAST_UPDATED_NAME, LAST_UPDATED_FORMAT, lastUpdated);
+                        updateLastUpdated(parentChannel, LAST_UPDATED_NAME, LAST_UPDATED_FORMAT, lastUpdated);
 
                         // Update the progress bar with the newly calculated progress
                         updateProgressBar(parentChannel, TESTPOINT, passed, failed, inProgress);

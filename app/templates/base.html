@@ -93,6 +93,10 @@
             });
         }
 
+        function updateLastUpdated(element, fieldName, format, newDateTime) {
+            element.find(`[name="${fieldName}"]`).text(moment(newDateTime).format(format));
+        }
+
     </script>
 {% endblock %}
 

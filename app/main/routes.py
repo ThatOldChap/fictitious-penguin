@@ -7,7 +7,7 @@ from app.models import TestPoint, User, Client, Project, Job, Group, Channel
 from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm
 from app.main.forms import ChannelsForm, ChannelForm, TestPointForm
 from app.main.forms import EMPTY_SELECT_CHOICE
-from app.utils import TestPointListType, none_if_empty
+from app.utils import TestPointListType, TestResult, none_if_empty
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -297,27 +297,28 @@ def channels(group_id):
 @bp.route('/update_testpoint', methods=['POST'])
 def update_testpoint():
     
-    # TestPoint Field Constants
+    # TestPoint and Channel Field Constants
     CHANNEL_ID = 'channel_id'
     TESTPOINT_ID = 'testpoint_id'
     MEASURED_INJECTION_VALUE = 'measured_injection_value'
     MEASURED_TEST_VALUE = 'measured_test_value'
     MEASURED_ERROR = 'measured_error'
     TEST_RESULT = 'test_result'
+    STATUS = 'status'
     LAST_UPDATED = 'last_updated'
     NOTES = 'notes'
 
     # Other constants
     MESSAGE = 'message'
     PROGRESS = 'progress'
-
+    NUM_PASSED = 'num_passed'
 
     # Variables to keep track of the updated fields
     updated_fields = []
     num_fields = 0
 
     # Evaluation variables
-    update_status = False
+    has_channel = False
 
     # Extract the request's form dictionary
     data = request.form.to_dict()
@@ -336,7 +337,7 @@ def update_testpoint():
         # Remove the channel_id from the data to check how many parameters are being updated
         channel = Channel.query.filter_by(id=request.form[CHANNEL_ID]).first()
         data.pop(CHANNEL_ID)
-        update_status = True
+        has_channel = True
     else:
         raise ValueError(f'{CHANNEL_ID} not found in ajax request:\n{data}')
     
@@ -361,7 +362,6 @@ def update_testpoint():
         if key == NOTES:
             testpoint.notes = value
 
-
         # Add the processed key to the list of updated fields
         updated_fields.append(key)
 
@@ -374,8 +374,9 @@ def update_testpoint():
     last_updated = datetime.utcnow()
     testpoint.last_updated = last_updated
 
-    # Update the status of the updated channel, group, job and project
-    if update_status:
+    # Update the status and last_update time of the updated channel, group, job and project
+    if has_channel:
+        channel.last_updated = last_updated
         channel.update_status()
         channel.group.update_status()
         channel.group.job.update_status()
@@ -388,7 +389,9 @@ def update_testpoint():
     response = {
         MESSAGE: f'{testpoint} has successfully updated the following fields: {updated_fields}',
         LAST_UPDATED: last_updated,
-        PROGRESS: channel.testpoint_progress()
+        PROGRESS: channel.testpoint_progress(),
+        STATUS: channel.status,
+        NUM_PASSED: channel.testpoint_stats()[TestResult.PASS.value]
     }
 
     return jsonify(response)
