@@ -79,12 +79,7 @@
             let TEST_RESULT_NAME = 'test-result';
             let NUM_PASSED_NAME = 'num-passed';
             let PERCENT_PASSED_NAME = 'percent-passed';
-            let CHANNEL_STATUS_NAME = 'channel-status';
-
-            // TestResult Values
-            let PASS_RESULT = 'Pass';
-            let FAIL_RESULT = 'Fail';
-            let UNTESTED_RESULT = 'Untested';
+            let CHANNEL_STATUS_NAME = 'channel-status';  
 
 
             // Update the progress bars as the page is loaded
@@ -153,12 +148,13 @@
                 // Find and update the measured_error field with the calculated error
                 let errorValue = (isEmpty) ? "" : measuredError;
                 updateFieldValByName(parentTestpoint, MEASURED_ERROR_NAME, errorValue);
-                //let errorElement = parentTestpoint.find(`[name=${MEASURED_ERROR_NAME}]`);
-                //(isEmpty) ? errorElement.val('') : errorElement.val(measuredError);
 
                 // Find and update the test_result field with the new result
                 updateFieldTextByName(parentTestpoint, TEST_RESULT_NAME, testResult);
-                //let resultElement = parentTestpoint.find(`[name=${TEST_RESULT_NAME}]`).text(testResult);
+
+                // Find and update the test_result stats badge
+                let newBadgeClass = getStatusBadgeClass(testResult);
+                updateBadgeClass(parentTestpoint, TEST_RESULT_NAME, newBadgeClass);
             });
 
 
@@ -213,6 +209,10 @@
                         updateFieldTextByName(parentChannel, PERCENT_PASSED_NAME, passed + '%');
                         updateFieldTextByName(parentChannel, NUM_PASSED_NAME, numPassed);
                         updateFieldTextByName(parentChannel, CHANNEL_STATUS_NAME, status);
+
+                        // Update the status badge
+                        let newBadgeClass = getStatusBadgeClass(status);
+                        updateBadgeClass(parentChannel, CHANNEL_STATUS_NAME, newBadgeClass); 
                     },
                     error: function(error) {
                         console.log('Error updating testpoint.');

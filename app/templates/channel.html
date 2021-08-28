@@ -21,7 +21,17 @@
             </div>
         </div>
     </td>
-    <td class="align-middle" name="channel-status">{{ channel.status }}</td>
+    <td class="align-middle">
+        {% if channel.status == 'Untested' %}
+        <span class="badge bg-secondary result-badge" name="channel-status">{{ channel.status }}</span>
+        {% elif channel.status == 'In-Progress' %}
+        <span class="badge bg-info result-badge" name="channel-status">{{ channel.status }}</span>
+        {% elif channel.status == 'Pass' %}
+        <span class="badge bg-success result-badge" name="channel-status">{{ channel.status }}</span>
+        {% elif channel.status == 'Fail' %}
+        <span class="badge bg-danger result-badge" name="channel-status">{{ channel.status }}</span>
+        {% endif %}
+    </td>
     <td class="align-middle" name="last-updated">{{ moment(channel.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
     <td class="align-middle" name="">
         <button type="button" class="btn btn-outline-success">

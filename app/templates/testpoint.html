@@ -63,7 +63,15 @@
             </div>
         </div>
     </td>
-    <td class="align-middle" name="test-result">{{ testpoint.test_result }}</td>
+    <td class="align-middle">
+        {% if testpoint.test_result == 'Untested' %}
+        <span class="badge bg-secondary result-badge" name="test-result">{{ testpoint.test_result }}</span>
+        {% elif testpoint.test_result == 'Pass' %}
+        <span class="badge bg-success result-badge" name="test-result">{{ testpoint.test_result }}</span>
+        {% elif testpoint.test_result == 'Fail' %}
+        <span class="badge bg-danger result-badge" name="test-result">{{ testpoint.test_result }}</span>
+        {% endif %}
+    </td>
     <td class="align-middle" name="last-updated">{{ moment(testpoint.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
     <td class="align-middle">
         {% if testpoint.notes == None %}            

@@ -21,6 +21,9 @@
             .units {
                 background-color:#C6D2DE;
             }
+            .result-badge {
+                font-size: 1.1em;
+            }
         </style>
 
     {% endblock %}
@@ -63,6 +66,23 @@
         let CHANNEL = 'channel';
         let TESTPOINT = 'testpoint';
 
+        // TestResult Values
+        let PASS_RESULT = 'Pass';
+        let FAIL_RESULT = 'Fail';
+        let UNTESTED_RESULT = 'Untested';
+
+        // Status Values
+        let NOT_STARTED = 'Not Started';
+        let IN_PROGRESS = 'In-Progress';
+        let COMPLETE = 'Complete';
+
+        // Class Values
+        let BG_SECONDARY = 'bg-secondary';
+        let BG_SUCCESS = 'bg-success';
+        let BG_DANGER = 'bg-danger';
+        let BG_INFO = 'bg-info';
+
+
         function updateProgressBar(parentElement, itemType,
             percentPassed, percentFailed, percentInProgress) {     
 
@@ -102,6 +122,33 @@
 
         function updateFieldValByName(element, name, newValue) {
             $(element).find(`[name="${name}"]`).val(`${newValue}`);
+        }
+
+        function getStatusBadgeClass(testResult) {
+
+            // Check against each TestResult enum value
+            if (testResult == UNTESTED_RESULT) {
+                return BG_SECONDARY;
+            } else if (testResult == PASS_RESULT) {
+                return BG_SUCCESS;
+            } else if (testResult == FAIL_RESULT) {
+                return BG_DANGER;
+
+            // Check against each Status enum value
+            } else if (testResult == IN_PROGRESS) {
+                return BG_INFO;
+            } else if (testResult == NOT_STARTED) {
+                return BG_SECONDARY;
+            } else if (testResult == COMPLETE) {
+                return BG_SUCCESS;
+            }
+        }
+
+        function updateBadgeClass(element, name, newBadgeClass) {
+            // Remove the existing badge class
+            $(element).find(`[name="${name}"]`)
+                .removeClass('bg-secondary bg-success bg-danger bg-info')
+                .addClass(`${newBadgeClass}`);                                   
         }
 
     </script>

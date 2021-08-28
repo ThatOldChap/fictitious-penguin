@@ -108,4 +108,4 @@ def channel_progress(item):
 
 # Calculates the percent value of a number and out of its total
 def calc_percent(value, total):
-    return round((value / total) * 100, 0)
+    return round((value / total) * 100)
