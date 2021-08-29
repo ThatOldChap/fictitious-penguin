@@ -45,6 +45,17 @@ class TestPointListType(enum.Enum):
     STANDARD = "Standard"
     CUSTOM = "Custom"
 
+class TestEquipmentType(enum.Enum):
+    BRIDGE_SIMULATOR = "Bridge Simulator"
+    DC_VOLTAGE_SOURCE = "DC Voltage Source"
+    MULTIFUNCTION_CALIBRATOR = "Multifunction Calibrator"
+    SIGNAL_SOURCE = "Signal Source"
+    OSCILLOSCOPE = "Oscilloscope"
+    DIGITAL_MULTIMETER = "Digital Multimeter"
+    PRESSURE_PUMP = "Pressure Pump"
+    RESOLVER_SIMULATOR = "Resolver Simulator"
+    DECADE_BOX = "Decade Box"
+    
 
 # Returns None if a value is empty
 def none_if_empty(value):

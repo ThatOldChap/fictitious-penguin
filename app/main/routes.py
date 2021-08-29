@@ -3,8 +3,8 @@ from flask_login import current_user, login_required
 from datetime import datetime
 from app import db
 from app.main import bp
-from app.models import TestPoint, User, Client, Project, Job, Group, Channel
-from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm
+from app.models import TestEquipment, TestPoint, User, Client, Project, Job, Group, Channel
+from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm, AddTestEquipmentForm
 from app.main.forms import ChannelsForm, ChannelForm, TestPointForm
 from app.main.forms import EMPTY_SELECT_CHOICE
 from app.utils import TestPointListType, TestResult, none_if_empty
@@ -396,3 +396,27 @@ def update_testpoint():
 
     return jsonify(response)
 
+
+@bp.route('/add_test_equipment', methods=['GET', 'POST'])
+def add_test_equipment():
+
+    # Create the form
+    form = AddTestEquipmentForm()
+
+    # User has added a new client
+    if form.validate_on_submit():
+
+        # Add the new client to the database
+        test_equipment = TestEquipment(
+            name=form.name.data,
+            manufacturer=form.manufacturer.data,
+            model_num=form.model_num.data,
+            serial_num=form.serial_num.data,
+            asset_id=form.asset_id.data
+            )
+        db.session.add(test_equipment)
+        db.session.commit()
+        flash(f'Test Equipment {test_equipment.asset_id} "{test_equipment.name}" has been added to the database.')
+        return redirect(url_for('main.index'))
+
+    return render_template('add_item.html', title='Add Test Equipment', form=form, item='Test Equipment')

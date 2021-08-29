@@ -1,12 +1,10 @@
-from flask.templating import render_template
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, SelectField, HiddenField
 from wtforms.fields.core import FieldList, FloatField, FormField
-from wtforms.i18n import DefaultTranslations
 from wtforms.validators import ValidationError, DataRequired
-from wtforms.widgets.core import Select
 from app.models import User, Client, Project
-from app.utils import JobStage, JobPhase, MeasurementType, EngUnits, ErrorType, TestPointListType
+from app.utils import JobStage, JobPhase, MeasurementType, EngUnits, ErrorType
+from app.utils import TestEquipmentType, TestPointListType
 
 # FormField class constants
 CUSTOM_SELECT_CLASS = {'class': 'custom-select'}
@@ -22,6 +20,7 @@ ENG_UNITS_CHOICES = EMPTY_SELECT_CHOICE + [(units.value, units.value) for units 
 ERROR_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(e.value, e.value) for e in ErrorType]
 NUM_TESTPOINT_CHOICES = [(i, i) for i in range(1, 11)]
 TESTPOINT_LIST_TYPE_CHOICES = [(t.value, t.value) for t in TestPointListType]
+TEST_EQUIPMENT_TYPE_CHOICES = [(t.value, t.value) for t in TestEquipmentType]
 
 
 class EditProfileForm(FlaskForm):
@@ -139,3 +138,12 @@ class ChannelForm(FlaskForm):
 
 class ChannelsForm(FlaskForm):
     channels = FieldList(FormField(ChannelForm))
+
+
+class AddTestEquipmentForm(FlaskForm):
+    name = StringField('Name', render_kw=CUSTOM_FORM_CLASS,
+        choices=TEST_EQUIPMENT_TYPE_CHOICES, validators=[DataRequired()])
+    manufacturer = StringField('Manufacturer', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    model_num = StringField('Model Number', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    serial_num = StringField('Serial Number', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    asset_id = StringField('Asset ID', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])

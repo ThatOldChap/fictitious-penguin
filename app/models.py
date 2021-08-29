@@ -500,3 +500,16 @@ class User(UserMixin, db.Model):
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
+
+
+class TestEquipment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    asset_id = db.Column(db.String(24))
+    name = db.Column(db.String(32))
+    manufacturer = db.Column(db.String(24))
+    model_num = db.Column(db.String(24))
+    serial_num = db.Column(db.Integer)
+    calibration_due_date = db.Column(db.DateTime)
+    
+    def __repr__(self):
+	    f'<TestEquipment {self.alias}: {self.manufacturer} {self.name}>'
