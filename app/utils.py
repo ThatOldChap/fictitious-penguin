@@ -52,10 +52,10 @@ class TestEquipmentType(enum.Enum):
     SIGNAL_SOURCE = "Signal Source"
     OSCILLOSCOPE = "Oscilloscope"
     DIGITAL_MULTIMETER = "Digital Multimeter"
-    PRESSURE_PUMP = "Pressure Pump"
+    DIGITAL_PRESSURE_GAUGE = "Digital Pressure Gauge"
     RESOLVER_SIMULATOR = "Resolver Simulator"
     DECADE_BOX = "Decade Box"
-    
+
 
 # Returns None if a value is empty
 def none_if_empty(value):

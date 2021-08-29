@@ -33,6 +33,9 @@ def index():
     channels = Channel.query.all()
     summary["channels"] = channels
 
+    test_equipment = TestEquipment.query.all()
+    summary["test_equipment"] = test_equipment
+
     return render_template('index.html', title='Home', summary=summary)
 
 

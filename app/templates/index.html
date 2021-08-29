@@ -66,5 +66,13 @@
                 {{ summary["channels"] }}
             </td>
         </tr>
+        <tr>
+            <td>
+                <button type="button" class="btn btn-success">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_test_equipment') }}">Add Test Equipment</a>
+                </button>                        
+                {{ summary["test_equipment"] }}
+            </td>
+        </tr>
     </table>     
 {% endblock %}

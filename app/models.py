@@ -512,4 +512,4 @@ class TestEquipment(db.Model):
     calibration_due_date = db.Column(db.DateTime)
     
     def __repr__(self):
-	    f'<TestEquipment {self.alias}: {self.manufacturer} {self.name}>'
+	    return f'<TestEquipment {self.asset_id}: {self.manufacturer} {self.name}>'
