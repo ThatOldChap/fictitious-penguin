@@ -1,4 +1,5 @@
 import enum, math
+from app import db
 
 class TestResult(enum.Enum):
     UNTESTED = "Untested"
@@ -45,7 +46,7 @@ class TestPointListType(enum.Enum):
     STANDARD = "Standard"
     CUSTOM = "Custom"
 
-class TestEquipmentType(enum.Enum):
+class StandardTestEquipmentTypes(enum.Enum):
     BRIDGE_SIMULATOR = "Bridge Simulator"
     DC_VOLTAGE_SOURCE = "DC Voltage Source"
     MULTIFUNCTION_CALIBRATOR = "Multifunction Calibrator"
@@ -119,4 +120,32 @@ def channel_progress(item):
 
 # Calculates the percent value of a number and out of its total
 def calc_percent(value, total):
-    return round((value / total) * 100)
+    return 0 if (total == 0) else round((value / total) * 100)
+
+
+# Prepopulate the database with the StandardTestEquipmentTypes
+def addStandardTestEquipmentTypes():
+    
+    # Import the Model directly here to avoid a circular import
+    from app.models import TestEquipmentType
+
+    # New Equipment list
+    new_equipment_types = []
+
+    # Compile a list of the existing TestPointType items in the database
+    existing_equipment = [t.name for t in TestEquipmentType.query.all()]
+
+    # Create new TestEquipmentTypes
+    for test_equipment_type in StandardTestEquipmentTypes:
+
+        # Check to make sure an existing TestEquipmentType doesn't already exist
+        if test_equipment_type.value in existing_equipment:
+            continue
+
+        new_type = TestEquipmentType(name=test_equipment_type.name)
+        db.session.add(new_type)
+        new_equipment_types.append(new_type.name)
+    
+    # Save the changes
+    db.session.commit()
+    print(f'Successfully added the following TestEquipmentTypes:\n{new_equipment_types}')

@@ -55,6 +55,19 @@
                         <div class="row">
                             {# Signal Injection Information #}
                             <legend>Signal Injection Range</legend>
+                            <div class="row">
+                                <div class="col-md-12 g-2">
+                                    <label for="test-equipment-types-button-group">Required Test Equipment Types</label>
+                                    <div class="btn-group-toggle mb-3" role="group" data-toggle="buttons" id="test-equipment-types-button-group">
+                                        {% for test_equipment_type in test_equipment_types %}
+                                        <label class="btn btn-outline-info mb-1" for="checkbox-{{ (test_equipment_type.name).replace('_', '-') }}">
+                                            {{ (test_equipment_type.name).replace('_', ' ') }}
+                                            {{ form['checkbox_{}'.format(test_equipment_type.name)] }}
+                                        </label>                    
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-md-4 g-2">
                                 {{ form.min_injection_range.label }}
                                 {{ form.min_injection_range() }}

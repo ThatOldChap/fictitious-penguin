@@ -3,11 +3,12 @@ from flask_login import current_user, login_required
 from datetime import datetime
 from app import db
 from app.main import bp
-from app.models import TestEquipment, TestPoint, User, Client, Project, Job, Group, Channel
+from app.models import TestEquipment, TestPoint, User, Client, Project, Job, Group, Channel, TestEquipmentType
 from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm, AddTestEquipmentForm
 from app.main.forms import ChannelsForm, ChannelForm, TestPointForm
-from app.main.forms import EMPTY_SELECT_CHOICE
-from app.utils import TestPointListType, TestResult, none_if_empty
+from app.main.forms import EMPTY_SELECT_CHOICE, CUSTOM_FORM_CLASS
+from wtforms.fields.core import BooleanField
+from app.utils import StandardTestEquipmentTypes, TestPointListType, TestResult, none_if_empty
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -111,7 +112,7 @@ def add_project():
         db.session.add(project)
         db.session.commit()
         flash(f'Project "{project.name}" has been added to the database.')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.projects'))
 
     return render_template('add_item.html', title='Add Project', form=form, item='Project')
 
@@ -157,7 +158,7 @@ def add_job(project_id):
         db.session.add(job)
         db.session.commit()
         flash(f'Job "{job.stage} {job.phase}" has been added to the {job.project.name} project.')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.projects'))
 
     return render_template('add_item.html', title='Add Job', form=form, item='Job')
 
@@ -190,7 +191,7 @@ def add_group(job_id):
         db.session.add(group)
         db.session.commit()
         flash(f'Group "{group.name}" has been added to the {group.job.stage} {group.job.phase} job for the {group.job.project.name} project.')
-        return redirect(url_for('main.index'))
+        return redirect(url_for('main.jobs', project_id=group.job.project.id))
 
     return render_template('add_item.html', title='New Group', form=form, item="Group")
 
@@ -204,6 +205,13 @@ def groups(job_id):
 
 @bp.route('/group/<group_id>/add_channel', methods=['GET', 'POST'])
 def add_channel(group_id):
+
+    # Pre-load checkbox-style buttons for each TestEquipmentType into the form
+    test_equipment_types = [test_equipment for test_equipment in TestEquipmentType.query.all()]
+    for test_equipment_type in test_equipment_types:
+        id = 'checkbox-' + (test_equipment_type.name).replace('_', '-')
+        setattr(AddChannelForm, f'checkbox_{test_equipment_type.name}',
+            BooleanField(id=id, render_kw=CUSTOM_FORM_CLASS))
 
     # Create the form
     form = AddChannelForm()
@@ -250,6 +258,13 @@ def add_channel(group_id):
         # Build the testpoint_list for the new channel
         channel.build_testpoint_list(num_testpoints, testpoint_list_type,
             injection_values, test_values)
+
+        # Extract the TestEquipmentTypes selected by the User
+        for test_equipment_type in test_equipment_types:
+            if form.data['checkbox_' + test_equipment_type.name]:
+                channel.add_test_equipment_type(test_equipment_type)
+                print(f'{test_equipment_type} has been added to {channel} as a required TestEquipmentType')
+
         db.session.commit()
         flash(f'Channel "{channel.name}" has been added to the {channel.group.name} group along with {num_testpoints} testpoints.')
         
@@ -259,7 +274,7 @@ def add_channel(group_id):
     if len(form.errors.items()) > 0:
         print(form.errors.items())
 
-    return render_template('add_channel.html', title='Add Channel', form=form)
+    return render_template('add_channel.html', title='Add Channel', form=form, test_equipment_types=test_equipment_types)
 
 
 @bp.route('/group/<group_id>/channels', methods=['GET', 'POST'])
@@ -419,7 +434,7 @@ def add_test_equipment():
             )
         db.session.add(test_equipment)
         db.session.commit()
-        flash(f'Test Equipment {test_equipment.asset_id} "{test_equipment.name}" has been added to the database.')
+        flash(f'Test Equipment "{test_equipment.asset_id}" {test_equipment.name} has been added to the database.')
         return redirect(url_for('main.index'))
 
     return render_template('add_item.html', title='Add Test Equipment', form=form, item='Test Equipment')

@@ -11,10 +11,29 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 
 # Many-to-Many Association Tables
+# Stores all the Users that have access to a project
 project_members = db.Table(
     'project_members', db.Model.metadata,
     db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
+)
+# Stores all the TestEquipment used for a project
+project_equipment = db.Table(
+    'project_equipment', db.Model.metadata,
+    db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
+    db.Column('test_equipment_id', db.Integer, db.ForeignKey('test_equipment.id'))
+)
+# Stores all the TestEquipment used when a channel is tested
+channel_equipment = db.Table(
+    'channel_equipment', db.Model.metadata,
+    db.Column('channel_id', db.Integer, db.ForeignKey('channel.id')),
+    db.Column('test_equipment_id', db.Integer, db.ForeignKey('test_equipment.id'))
+)
+# Stores all the required TestEquipmentTypes for testing a channel
+channel_required_equipment = db.Table(
+    'channel_required_equipment', db.Model.metadata,
+    db.Column('channel_id', db.Integer, db.ForeignKey('channel.id')),
+    db.Column('test_equipment_type_id', db.Integer, db.ForeignKey('test_equipment_type.id'))
 )
 
 
@@ -118,6 +137,11 @@ class Channel(db.Model):
 
     # Relationships
     testpoints = db.relationship('TestPoint', backref='channel', lazy='dynamic')
+    test_equipment = db.relationship('TestEquipment', secondary=channel_equipment,
+        backref='channel', lazy='dynamic')
+    required_test_equipment = db.relationship('TestEquipmentType',
+        secondary=channel_required_equipment, backref='channel', lazy='dynamic')
+
 
     def __repr__(self):
         return f'<Channel {self.name}>'
@@ -247,6 +271,12 @@ class Channel(db.Model):
             "percent_passed": calc_percent(stats[TestResult.PASS.value], num_testpoints),
             "percent_failed": calc_percent(stats[TestResult.FAIL.value], num_testpoints),
         }
+
+    def add_test_equipment_type(self, test_equipment_type):
+        self.required_test_equipment.append(test_equipment_type)
+
+    def add_test_equipment(self, test_equipment):
+        self.test_equipment.append(test_equipment)        
 
 
 class Group(db.Model):
@@ -510,6 +540,21 @@ class TestEquipment(db.Model):
     model_num = db.Column(db.String(24))
     serial_num = db.Column(db.Integer)
     calibration_due_date = db.Column(db.DateTime)
+
+    # Foreign Keys
+    test_equipment_type_id = db.Column(db.Integer, db.ForeignKey('test_equipment_type.id'))
     
     def __repr__(self):
 	    return f'<TestEquipment {self.asset_id}: {self.manufacturer} {self.name}>'
+
+
+class TestEquipmentType(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32))
+
+    # Relationships
+    test_equipment = db.relationship('TestEquipment', backref='test_equipment_type',
+        lazy='dynamic')
+
+    def __repr__(self):
+        return f'<TestEquipmentType {self.id}: {self.name}>'

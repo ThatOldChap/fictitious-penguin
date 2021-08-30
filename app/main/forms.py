@@ -4,7 +4,7 @@ from wtforms.fields.core import FieldList, FloatField, FormField
 from wtforms.validators import ValidationError, DataRequired
 from app.models import User, Client, Project
 from app.utils import JobStage, JobPhase, MeasurementType, EngUnits, ErrorType
-from app.utils import TestEquipmentType, TestPointListType
+from app.utils import StandardTestEquipmentTypes, TestPointListType
 
 # FormField class constants
 CUSTOM_SELECT_CLASS = {'class': 'custom-select'}
@@ -20,7 +20,7 @@ ENG_UNITS_CHOICES = EMPTY_SELECT_CHOICE + [(units.value, units.value) for units 
 ERROR_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(e.value, e.value) for e in ErrorType]
 NUM_TESTPOINT_CHOICES = [(i, i) for i in range(1, 11)]
 TESTPOINT_LIST_TYPE_CHOICES = [(t.value, t.value) for t in TestPointListType]
-TEST_EQUIPMENT_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(t.value, t.value) for t in TestEquipmentType]
+TEST_EQUIPMENT_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(t.value, t.value) for t in StandardTestEquipmentTypes]
 
 
 class EditProfileForm(FlaskForm):
@@ -119,11 +119,8 @@ class AddChannelForm(FlaskForm):
 
     submit = SubmitField('Add Channel', render_kw=PRIMARY_SUBMIT_BUTTON_CLASS)
 
-    # TODO: Custom validator to allow for zero values in FloatField
-
-    # Pauses the creation of the form to allow for the additional, dynamically added fields to be added
-    # Note: Without the pass, the addition of the dynamic fields invalidates the form
-    # pass
+    # Add a pass for the form to allow for the TestEquipmentType fields to be added before the form is instantiated
+    pass
 
 
 class TestPointForm(FlaskForm):
