@@ -31,9 +31,27 @@
             </thead>
             <tbody>
                 {% for channel, channel_form in zip(channels, channels_form.channels) %}
-                    <th class="align-middle text-center" rowspan="{{ channel.num_testpoints() + 2 }}">
-                        {{ channel.name }}
-                    </th>
+                    <div class="row" rowspan="{{ channel.num_testpoints() + 2 }}">
+                        <div class="card">
+                            <div class="card-header">{{ channel.name }}</div>
+                            <div class="card-body">
+                                {% for test_equipment_type in channel.required_test_equipment.all() %}
+                                    {% set equipment_id = "equipment-{}".format(test_equipment_type.id) %}
+                                    <div class="row g-1 btn-group" role="group" data-toggle="buttons">
+                                        <div class="btn-group" role="group">
+                                            <button id="{{ equipment_id }}" type="button" class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown">
+                                                {{ test_equipment_type.name }}
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#">Dropdown link</a></li>
+                                                <li><a class="dropdown-item" href="#">Dropdown link</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>                            
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>                   
                     {% include 'channel.html' %}
                     {% for testpoint, testpoint_form in zip(channel.testpoints, channel_form.testpoints) %}
                         {% include 'testpoint.html' %}
