@@ -4,7 +4,8 @@
     data-channel-id="{{ channel.id }}"
     data-progress-passed="{{ progress['percent_passed'] }}"
     data-progress-failed="{{ progress['percent_failed'] }}"
-    data-progress-untested="{{ progress['percent_untested'] }}">  
+    data-progress-untested="{{ progress['percent_untested'] }}">
+    <th class="align-middle text-center">{{ channel.name }}</th>
     <td class="align-middle" colspan="3">
         <div class="row justify-content-between">            
             <div class="col-1" name="percent-passed">{{ progress['percent_passed'] }}%</div>

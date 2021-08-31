@@ -31,8 +31,8 @@
             </thead>
             <tbody>
                 {% for channel, channel_form in zip(channels, channels_form.channels) %}
-                    {% include 'channel_summary.html' %}
                     {% include 'channel.html' %}
+                    {% include 'channel_summary.html' %}                    
                     {% for testpoint, testpoint_form in zip(channel.testpoints, channel_form.testpoints) %}
                         {% include 'testpoint.html' %}
                     {% endfor %}
