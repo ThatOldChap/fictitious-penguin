@@ -142,7 +142,7 @@ def addStandardTestEquipmentTypes():
         if test_equipment_type.value in existing_equipment:
             continue
 
-        new_type = TestEquipmentType(name=test_equipment_type.name)
+        new_type = TestEquipmentType(name=test_equipment_type.value)
         db.session.add(new_type)
         new_equipment_types.append(new_type.name)
     
