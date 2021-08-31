@@ -1,0 +1,52 @@
+<td class="text-center" rowspan="{{ channel.num_testpoints() + 2 }}">
+    <table class="table table-bordered">
+        <thead>
+            <tr class="table-secondary text-center align-middle">
+                <th class="align-middle" colspan="2">{{ channel.name }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-center align-middle">Test Equipment</td>
+                <td class="text-center">
+                {% for test_equipment_type in channel.required_test_equipment.all() %}
+                    {% set equipment_id = "equipment-{}".format(test_equipment_type.id) %}
+                    <div class="row">
+                        <div class="col-12 g-1">
+                            <div class="btn-group" role="group">
+                                {% set equip_id = "equip-{}".format(test_equipment_type.id) %}
+                                <button id="{{ equip_id }}" type="button" class="btn btn-info dropdown-toggle badge" data-toggle="dropdown">
+                                    {{ test_equipment_type.name }}
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item active" href="#">MDS0504: Due 25-Oct-2021</a></li>
+                                    <li><a class="dropdown-item" href="#">MDS0265: Due 30-Nov-2021</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>                                               
+                {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <td class="text-center align-middle">Interface</td>
+                <td class="text-center align-middle">
+                    <input class="form-control" id="test-1" type="text" value="">
+                </td>
+            </tr>
+            <tr>
+                <td class="text-center align-middle">Signatures</td>
+                <td class="text-center align-middle">
+                    <button type="button" class="btn btn-outline-primary badge" data-toggle="buttons">Supplier</button>
+                    <button type="button" class="btn btn-outline-primary badge" data-toggle="buttons">Client</button>
+                </td>
+            </tr>            
+            <tr>
+                <td class="text-center align-middle">Notes</td>
+                <td class="text-center align-middle">
+                    <textarea class="form-control"></textarea>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</td>
