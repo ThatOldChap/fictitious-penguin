@@ -19,13 +19,13 @@
     <table class="table table-hover table-bordered align-middle">
         <thead>
             <tr class="table-secondary text-center align-middle">
-                <th class="align-middle">Channel Name</th>
+                <th class="align-middle">Channel Summary</th>
                 <th class="align-middle">Injection Value</th>
                 <th class="align-middle">Test Value</th>
                 <th class="align-middle">Error</th>
                 <th class="align-middle">Result</th>
                 <th class="align-middle">Last Updated</th>
-                <th class="align-middle">Notes</th>
+                <th class="align-middle">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -75,7 +75,8 @@
             let TEST_RESULT_NAME = 'test-result';
             let NUM_PASSED_NAME = 'num-passed';
             let PERCENT_PASSED_NAME = 'percent-passed';
-            let CHANNEL_STATUS_NAME = 'channel-status';  
+            let CHANNEL_STATUS_NAME = 'channel-status';
+            let SUMMARY_PARENT_NAME = 'summary-parent';
 
 
             // Update the progress bars as the page is loaded
@@ -159,17 +160,17 @@
 
                 // Find the elements to get the data from
                 let notesElement = event.target;
-                let parent = $(this).parents('tr');
+                let parent = $(this).parents(`[name^="${SUMMARY_PARENT_NAME}"]`).prev(`[name^="${CHANNEL_PARENT}"]`);
                 let dataset = parent[0].dataset;
 
                 // Prepare the data package
                 let data = {
-                    testpoint_id: dataset.testpointId,
+                    channel_id: dataset.channelId,
                     notes: notesElement.value
                 }
 
-                // Update the TestPoint
-                updateTestPoint(data, parent);
+                // Update the Channel
+                updateChannel(data, parent);
             });
 
 

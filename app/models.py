@@ -56,8 +56,7 @@ class TestPoint(db.Model):
 
     # Extra Info
     measured_error = db.Column(db.Float(8))
-    test_result = db.Column(db.String(12), default=TestResult.UNTESTED.value)
-    notes = db.Column(db.String(128))
+    test_result = db.Column(db.String(12), default=TestResult.UNTESTED.value)    
 
     # Foreign Keys
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
@@ -131,6 +130,10 @@ class Channel(db.Model):
 
     # Metrics
     status = db.Column(db.String(16), default=TestResult.UNTESTED.value)
+
+    # Summary Info
+    interface = db.Column(db.String(32))
+    notes = db.Column(db.String(128))
 
     # Foreign Keys
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'))

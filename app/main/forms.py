@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, SelectField, HiddenField
 from wtforms.fields.core import FieldList, FloatField, FormField
+from wtforms.fields.simple import TextAreaField
 from wtforms.validators import ValidationError, DataRequired
 from app.models import User, Client, Project
 from app.utils import JobStage, JobPhase, MeasurementType, EngUnits, ErrorType
@@ -126,11 +127,12 @@ class AddChannelForm(FlaskForm):
 class TestPointForm(FlaskForm):
     injection_value = FloatField('Injection Value', render_kw=CUSTOM_FORM_CLASS)
     test_value = FloatField('Test Value', render_kw=CUSTOM_FORM_CLASS)
-    notes = StringField('Notes', render_kw=CUSTOM_FORM_CLASS)
-
+    
 
 class ChannelForm(FlaskForm):
     testpoints = FieldList(FormField(TestPointForm))
+    interface = StringField('Interface', render_kw=CUSTOM_FORM_CLASS)
+    notes = TextAreaField('Notes', render_kw=CUSTOM_FORM_CLASS)
 
 
 class ChannelsForm(FlaskForm):

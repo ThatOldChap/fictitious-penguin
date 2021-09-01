@@ -140,7 +140,7 @@ def upgrade():
     # ### end Alembic commands ###
 
     '''
-    Manual commands for previous column alter
+    # Manual commands for previous column alter
     with op.batch_alter_table('channel') as batch_op:
         batch_op.alter_column('test_units', new_column_name='injection_units')
 
@@ -168,7 +168,7 @@ def downgrade():
     # ### end Alembic commands ###
 
     '''
-    Manual commands for previous column alter
+    # Manual commands for previous column alter
     with op.batch_alter_table('channel') as batch_op:
         batch_op.alter_column('injection_units', new_column_name='test_units')
 

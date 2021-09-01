@@ -312,6 +312,69 @@ def channels(group_id):
         channels_form=channels_form, group=group)
 
 
+@bp.route('/update_channel', methods=['POST'])
+def update_channel():
+
+    # Channel Field Constants
+    CHANNEL_ID = 'channel_id'
+    INTERFACE = 'interface'
+    NOTES = 'notes'
+    LAST_UPDATED = 'last_updated'
+
+    # Other constants
+    MESSAGE = 'message'
+
+    # Variables to keep track of the updated fields
+    updated_fields = []
+    num_fields = 0
+
+    # Extract the request's form dictionary
+    data = request.form.to_dict()
+
+    if CHANNEL_ID in data:        
+
+        # Remove the channel_id from the data to check how many parameters are being updated
+        channel = Channel.query.filter_by(id=request.form[CHANNEL_ID]).first()
+        data.pop(CHANNEL_ID)
+        has_channel = True
+    else:
+        raise ValueError(f'{CHANNEL_ID} not found in ajax request:\n{data}')
+
+    # Calculate the new number of variables to iterate over
+    num_fields = len(data)
+
+    # Iterate through each field in the request and update the Channel accordingly
+    for key, value in data.items():        
+
+        if key == INTERFACE:            
+            channel.interface = none_if_empty(value)
+        
+        if key == NOTES:            
+            channel.notes = none_if_empty(value)
+
+        # Add the processed key to the list of updated fields
+        updated_fields.append(key)
+
+     # Check to make sure any fields got updated
+    num_updated = len(updated_fields)
+    if not num_updated == num_fields:
+        raise ValueError(f'Error updating Channel fields. Only {num_updated}/{num_fields} updated successfully.')
+    
+    # Update the last_updated time now that changes have been made
+    last_updated = datetime.utcnow()
+    channel.last_updated = last_updated
+
+    # Save the changes to the database
+    db.session.commit()
+
+    # Load the last_updated time into the json payload for a successful ajax request
+    response = {
+        MESSAGE: f'{channel} has successfully updated the following fields: {updated_fields}',
+        LAST_UPDATED: last_updated
+    }
+    
+    return jsonify(response)
+
 @bp.route('/update_testpoint', methods=['POST'])
 def update_testpoint():
     
@@ -324,7 +387,6 @@ def update_testpoint():
     TEST_RESULT = 'test_result'
     STATUS = 'status'
     LAST_UPDATED = 'last_updated'
-    NOTES = 'notes'
 
     # Other constants
     MESSAGE = 'message'
@@ -376,9 +438,6 @@ def update_testpoint():
 
         if key == TEST_RESULT:
             testpoint.test_result = value
-
-        if key == NOTES:
-            testpoint.notes = value
 
         # Add the processed key to the list of updated fields
         updated_fields.append(key)

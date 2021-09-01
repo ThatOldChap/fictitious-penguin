@@ -1,4 +1,4 @@
-<td class="text-center" rowspan="{{ channel.num_testpoints() + 1 }}">
+<td class="text-center" rowspan="{{ channel.num_testpoints() + 1 }}" name="summary-parent">
     <table class="table table-bordered table-secondary">
         {#<thead>
             <tr class="table-secondary text-center align-middle">
@@ -31,7 +31,11 @@
             <tr>
                 <td class="text-center align-middle table-primary">Interface</td>
                 <td class="text-center align-middle">
-                    <input class="form-control" id="test-1" type="text" value="">
+                    {% if channel.interface == None %}            
+                        {{ channel_form.interface(value="") }}
+                    {% else %}
+                        {{ channel_form.interface(value=channel.interface) }}
+                    {% endif %}
                 </td>
             </tr>
             <tr>
@@ -44,7 +48,11 @@
             <tr>
                 <td class="text-center align-middle table-primary">Notes</td>
                 <td class="text-center align-middle">
-                    <textarea class="form-control"></textarea>
+                    {% if channel.notes == None %}            
+                        {{ channel_form.notes(value="") }}
+                    {% else %}
+                        {{ channel_form.notes(value=channel.notes) }}
+                    {% endif %}
                 </td>
             </tr>
         </tbody>
