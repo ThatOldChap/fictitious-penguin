@@ -1,8 +1,8 @@
-"""Restarted db from scratch
+"""Reset db again to fix table columns
 
-Revision ID: d695e18ea510
+Revision ID: d1306cd646c4
 Revises: 
-Create Date: 2021-08-29 20:49:02.030798
+Create Date: 2021-09-01 13:55:35.724271
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd695e18ea510'
+revision = 'd1306cd646c4'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -107,6 +107,8 @@ def upgrade():
     sa.Column('max_injection_range', sa.Float(precision=16), nullable=True),
     sa.Column('injection_units', sa.String(length=16), nullable=True),
     sa.Column('status', sa.String(length=16), nullable=True),
+    sa.Column('interface', sa.String(length=32), nullable=True),
+    sa.Column('notes', sa.String(length=128), nullable=True),
     sa.Column('group_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -132,19 +134,11 @@ def upgrade():
     sa.Column('nominal_test_value', sa.Float(precision=16), nullable=True),
     sa.Column('measured_error', sa.Float(precision=8), nullable=True),
     sa.Column('test_result', sa.String(length=12), nullable=True),
-    sa.Column('notes', sa.String(length=128), nullable=True),
     sa.Column('channel_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['channel_id'], ['channel.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
-
-    '''
-    # Manual commands for previous column alter
-    with op.batch_alter_table('channel') as batch_op:
-        batch_op.alter_column('test_units', new_column_name='injection_units')
-
-    '''
 
 
 def downgrade():
@@ -166,10 +160,3 @@ def downgrade():
     op.drop_table('test_equipment_type')
     op.drop_table('client')
     # ### end Alembic commands ###
-
-    '''
-    # Manual commands for previous column alter
-    with op.batch_alter_table('channel') as batch_op:
-        batch_op.alter_column('injection_units', new_column_name='test_units')
-
-    '''

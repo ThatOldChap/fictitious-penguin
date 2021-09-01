@@ -62,7 +62,7 @@ class TestPoint(db.Model):
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
 
     def __repr__(self):
-        return f'<TestPoint id#{self.id} for Channel {self.channel.name}>'
+        return f'<TestPoint id-{self.id} for Channel {self.channel.name}>'
 
 
     def channel(self):
