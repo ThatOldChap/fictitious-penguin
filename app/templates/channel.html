@@ -1,6 +1,6 @@
 {% block app_content %}
 {% set progress = channel.testpoint_progress() %}
-<tr class="text-center" name="channel-parent"
+<tr class="text-center table-primary" name="channel-parent"
     data-channel-id="{{ channel.id }}"
     data-progress-passed="{{ progress['percent_passed'] }}"
     data-progress-failed="{{ progress['percent_failed'] }}"
