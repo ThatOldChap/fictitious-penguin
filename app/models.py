@@ -32,7 +32,7 @@ channel_equipment = db.Table(
     db.Column('channel_id', db.Integer, db.ForeignKey('channel.id')),
     db.Column('test_equipment_id', db.Integer, db.ForeignKey('test_equipment.id')),
     db.Column('timestamp', db.DateTime),
-    db.Column('test_equipment_calibration_due_date', db.DateTime, db.ForeignKey('test_equipment.calibration_due_date')),
+    db.Column('test_equipment_calibration_due_date', db.DateTime)
 )
 
 # Stores all the required TestEquipmentTypes for testing a channel
@@ -557,6 +557,12 @@ class TestEquipment(db.Model):
     
     def __repr__(self):
 	    return f'<TestEquipment {self.asset_id}: {self.manufacturer} {self.name}>'
+
+    def add_calibration_record(self, calibration_record):
+        self.calibration_records.append(calibration_record)
+
+    def remove_calibration_record(self, calibration_record):
+        self.calibration_records.append(calibration_record)
 
 
 class TestEquipmentType(db.Model):
