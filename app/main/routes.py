@@ -296,9 +296,7 @@ def channels(group_id):
 
         # Create the channel_form to add each testpoint_form into
         channel_form = ChannelForm()
-        print(f'Original notes form data = {channel_form.notes.data}, notes = {channel.notes}')
         channel_form.notes.data = channel.notes
-        print(f'Prepopulated notes data = {channel_form.notes.data}')
 
         for testpoint in testpoints:
 
@@ -366,8 +364,6 @@ def update_channel():
     # Update the last_updated time now that changes have been made
     last_updated = datetime.utcnow()
     channel.last_updated = last_updated
-
-    print(f'New notes value is: {channel.notes}')
 
     # Save the changes to the database
     db.session.commit()

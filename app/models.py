@@ -10,25 +10,31 @@ from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-# Many-to-Many Association Tables
+'''Many-to-Many Association Tables'''
 # Stores all the Users that have access to a project
 project_members = db.Table(
     'project_members', db.Model.metadata,
     db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
 )
+
 # Stores all the TestEquipment used for a project
 project_equipment = db.Table(
     'project_equipment', db.Model.metadata,
     db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
     db.Column('test_equipment_id', db.Integer, db.ForeignKey('test_equipment.id'))
 )
-# Stores all the TestEquipment used when a channel is tested
+
+# Stores a record of the TestEquipment used on a channel when tested for comparing calibration due dates to the test date 
+# Ex. Channel id-4 was tested with DMM id-1 at '16:03 July 2, 2021' where DMM id-1 is due for calibration on 00:00 Nov 12, 2021
 channel_equipment = db.Table(
     'channel_equipment', db.Model.metadata,
     db.Column('channel_id', db.Integer, db.ForeignKey('channel.id')),
-    db.Column('test_equipment_id', db.Integer, db.ForeignKey('test_equipment.id'))
+    db.Column('test_equipment_id', db.Integer, db.ForeignKey('test_equipment.id')),
+    db.Column('timestamp', db.DateTime),
+    db.Column('test_equipment_calibration_due_date', db.DateTime, db.ForeignKey('test_equipment.calibration_due_date')),
 )
+
 # Stores all the required TestEquipmentTypes for testing a channel
 channel_required_equipment = db.Table(
     'channel_required_equipment', db.Model.metadata,
@@ -542,10 +548,12 @@ class TestEquipment(db.Model):
     manufacturer = db.Column(db.String(24))
     model_num = db.Column(db.String(24))
     serial_num = db.Column(db.Integer)
-    calibration_due_date = db.Column(db.DateTime)
 
     # Foreign Keys
     test_equipment_type_id = db.Column(db.Integer, db.ForeignKey('test_equipment_type.id'))
+
+    # Relationships
+    calibration_records = db.relationship('CalibrationRecord', backref='test_equipment', lazy='dynamic')
     
     def __repr__(self):
 	    return f'<TestEquipment {self.asset_id}: {self.manufacturer} {self.name}>'
@@ -561,3 +569,15 @@ class TestEquipmentType(db.Model):
 
     def __repr__(self):
         return f'<TestEquipmentType {self.id}: {self.name}>'
+
+
+class CalibrationRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    calibration_date = db.Column(db.DateTime)
+    calibration_due_date = db.Column(db.DateTime)
+
+    # Foreign Keys
+    test_equipment_id = db.Column(db.Integer, db.ForeignKey('test_equipment.id'))
+
+    def __repr__(self):
+        return f'CalibrationRecord for {TestEquipment.query.filter_by(id=self.id)}'
