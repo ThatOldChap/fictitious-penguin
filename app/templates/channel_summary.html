@@ -49,11 +49,7 @@
                 <tr>
                     <td class="text-center align-middle table-primary">Notes</td>
                     <td class="text-center align-middle">
-                        {% if channel.notes == None %}            
-                            {{ channel_form.notes(value="") }}
-                        {% else %}
-                            {{ channel_form.notes(value=channel.notes) }}
-                        {% endif %}
+                        {{ channel_form.notes.data }}
                     </td>
                 </tr>
             </tbody>

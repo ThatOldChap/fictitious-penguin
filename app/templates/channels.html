@@ -59,6 +59,7 @@
             let LAST_UPDATED = 'last_updated';
             let LAST_UPDATED_FORMAT = 'hh:mm A, DD-MMM-YYYY';
             let UPDATE_TESTPOINT_URL = '/update_testpoint';
+            let UPDATE_CHANNEL_URL = '/update_channel';
             let POST = 'POST';
             let PROGRESS = 'progress';
             let MESSAGE = 'message';
@@ -174,6 +175,23 @@
                 updateChannel(data, parent);
             });
 
+            // Function for sending an ajax request to update Channel values in the database
+            function updateChannel(data, parentChannel) {
+
+                // Build the ajax request
+                $.ajax({
+                    type: POST,
+                    url: UPDATE_CHANNEL_URL,
+                    data: data,
+                    success: function(response) {
+                        console.log(response[MESSAGE]);
+                    },
+                    error: function(error) {
+                        console.log('Error updating testpoint.');
+                        console.log(error);
+                    }
+                });
+            }
 
             // Function for sending an ajax request to update TestPoint values in the database
             function updateTestPoint(data, parentTestpoint, parentChannel) {

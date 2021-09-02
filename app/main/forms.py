@@ -132,7 +132,7 @@ class TestPointForm(FlaskForm):
 class ChannelForm(FlaskForm):
     testpoints = FieldList(FormField(TestPointForm))
     interface = StringField('Interface', render_kw=CUSTOM_FORM_CLASS)
-    notes = TextAreaField('Notes', render_kw=CUSTOM_FORM_CLASS)
+    notes = TextAreaField('Notes', render_kw=CUSTOM_FORM_CLASS, default="")
 
 
 class ChannelsForm(FlaskForm):
