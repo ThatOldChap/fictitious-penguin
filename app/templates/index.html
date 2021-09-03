@@ -68,10 +68,21 @@
         </tr>
         <tr>
             <td>
+                <button type="button" class="btn btn-info">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.test_equipment') }}">View Test Equipment</a>
+                </button>
                 <button type="button" class="btn btn-success">
                     <a style="color:#FFFFFF;" href="{{ url_for('main.add_test_equipment') }}">Add Test Equipment</a>
                 </button>                        
                 {{ summary["test_equipment"] }}
+            </td>
+        </tr>
+        <tr>
+            <td>                
+                <button type="button" class="btn btn-success">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_calibration_record', test_equipment_id=1) }}">Add Calibration Record</a>
+                </button>
+                {{ summary["calibration_records"] }}
             </td>
         </tr>
     </table>     

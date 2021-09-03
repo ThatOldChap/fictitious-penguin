@@ -564,6 +564,10 @@ class TestEquipment(db.Model):
     def remove_calibration_record(self, calibration_record):
         self.calibration_records.append(calibration_record)
 
+    def due_date(self):
+        return self.calibration_records.filter_by(id=self.id) \
+            .order_by(CalibrationRecord.calibration_due_date.desc()).first()
+
 
 class TestEquipmentType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -586,4 +590,4 @@ class CalibrationRecord(db.Model):
     test_equipment_id = db.Column(db.Integer, db.ForeignKey('test_equipment.id'))
 
     def __repr__(self):
-        return f'CalibrationRecord for {TestEquipment.query.filter_by(id=self.id)}'
+        return f'CalibrationRecord for {TestEquipment.query.filter_by(id=self.test_equipment_id).first()} due {self.calibration_due_date}'

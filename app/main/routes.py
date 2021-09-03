@@ -3,12 +3,12 @@ from flask_login import current_user, login_required
 from datetime import datetime
 from app import db
 from app.main import bp
-from app.models import TestEquipment, TestPoint, User, Client, Project, Job, Group, Channel, TestEquipmentType
-from app.main.forms import EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm, AddTestEquipmentForm
+from app.models import CalibrationRecord, TestEquipment, TestPoint, User, Client, Project, Job, Group, Channel, TestEquipmentType
+from app.main.forms import AddCalibrationRecordForm, EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm, AddTestEquipmentForm
 from app.main.forms import ChannelsForm, ChannelForm, TestPointForm
 from app.main.forms import EMPTY_SELECT_CHOICE, CUSTOM_FORM_CLASS
 from wtforms.fields.core import BooleanField
-from app.utils import StandardTestEquipmentTypes, TestPointListType, TestResult, none_if_empty
+from app.utils import TestPointListType, TestResult, none_if_empty
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -36,6 +36,9 @@ def index():
 
     test_equipment = TestEquipment.query.all()
     summary["test_equipment"] = test_equipment
+
+    calibration_records = CalibrationRecord.query.all()
+    summary["calibration_records"] = calibration_records
 
     return render_template('index.html', title='Home', summary=summary)
 
@@ -498,3 +501,36 @@ def add_test_equipment():
         return redirect(url_for('main.index'))
 
     return render_template('add_item.html', title='Add Test Equipment', form=form, item='Test Equipment')
+
+
+@bp.route('/test_equipment/<test_equipment_id>/add_calibration_record', methods=['GET', 'POST'])
+def add_calibration_record(test_equipment_id):
+
+    test_equipment = TestEquipment.query.filter_by(id=test_equipment_id).first()
+
+    # Create the form
+    form = AddCalibrationRecordForm()
+
+    # User has added a new client
+    if form.validate_on_submit():
+
+        # Add the new client to the database
+        calibration_record = CalibrationRecord(
+            calibration_date=form.calibration_date.data,
+            calibration_due_date=form.calibration_due_date.data,
+            test_equipment_id=test_equipment_id
+        )
+        db.session.add(calibration_record)
+        db.session.commit()
+        flash(f'Calibration Record has been added for "{test_equipment}" with a due date of {calibration_record.calibration_due_date}.')
+        return redirect(url_for('main.index'))
+
+    return render_template('add_item.html', title='Add Calibration Record', form=form, item='Calibration Record')
+
+
+@bp.route('/test_equipment', methods=['GET', 'POST'])
+def test_equipment():
+
+    test_equipment = TestEquipment.query.all()
+
+    return render_template('test_equipment.html', title='Test Equipment List', test_equipment=test_equipment)

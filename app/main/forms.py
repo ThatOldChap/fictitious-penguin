@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, IntegerField, SelectField, HiddenField
 from wtforms.fields.core import FieldList, FloatField, FormField
 from wtforms.fields.simple import TextAreaField
+from wtforms.fields.html5 import DateField
 from wtforms.validators import ValidationError, DataRequired
 from app.models import User, Client, Project
 from app.utils import JobStage, JobPhase, MeasurementType, EngUnits, ErrorType
@@ -147,3 +148,9 @@ class AddTestEquipmentForm(FlaskForm):
     serial_num = StringField('Serial Number', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
     asset_id = StringField('Asset ID', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
     submit = SubmitField('Add Test Equipment')
+
+
+class AddCalibrationRecordForm(FlaskForm):
+    calibration_date = DateField('DatePicker', format='%Y-%m-%d')
+    calibration_due_date = DateField('DatePicker', format='%Y-%m-%d')
+    submit = SubmitField('Add Calibration Record')
