@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import TestPoint, Channel, Group, Job, Project
+from app.models import TestPoint, Channel, Group, Job, Project, CalibrationRecord
 from app.models import Client, User, TestEquipment, TestEquipmentType
 
 # Create the app instance
@@ -18,7 +18,8 @@ def make_shell_context():
         'Client': Client,
         'User': User,
         'TestEquipment': TestEquipment,
-        'TestEquipmentType': TestEquipmentType
+        'TestEquipmentType': TestEquipmentType,
+        'CalibrationRecord': CalibrationRecord
     }
 
 '''

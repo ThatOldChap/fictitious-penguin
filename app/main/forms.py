@@ -147,10 +147,12 @@ class AddTestEquipmentForm(FlaskForm):
     model_num = StringField('Model Number', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
     serial_num = StringField('Serial Number', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
     asset_id = StringField('Asset ID', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    calibration_date = DateField('Calibration Date', format='%Y-%m-%d')
+    calibration_due_date = DateField('Calibration Due Date', format='%Y-%m-%d')
     submit = SubmitField('Add Test Equipment')
 
 
 class AddCalibrationRecordForm(FlaskForm):
-    calibration_date = DateField('DatePicker', format='%Y-%m-%d')
-    calibration_due_date = DateField('DatePicker', format='%Y-%m-%d')
+    calibration_date = DateField('Calibration Date', format='%Y-%m-%d')
+    calibration_due_date = DateField('Calibration Due Date', format='%Y-%m-%d')
     submit = SubmitField('Add Calibration Record')

@@ -565,8 +565,14 @@ class TestEquipment(db.Model):
         self.calibration_records.append(calibration_record)
 
     def due_date(self):
-        return self.calibration_records.filter_by(id=self.id) \
+        # Get the most recent calibration record
+        latest_record = self.calibration_records.filter_by(test_equipment_id=self.id) \
             .order_by(CalibrationRecord.calibration_due_date.desc()).first()
+        
+        if latest_record is None:
+            return None
+        else:
+            return latest_record.calibration_due_date
 
 
 class TestEquipmentType(db.Model):
