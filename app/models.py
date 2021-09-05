@@ -414,7 +414,8 @@ class Project(db.Model):
     jobs = db.relationship('Job', backref='project', lazy='dynamic')
     members = db.relationship('User', secondary=project_members, backref='projects',
         lazy='dynamic')
-
+    test_equipment = db.relationship('TestEquipment', secondary=project_equipment,
+        backref='projects', lazy='dynamic')
 
     def __repr__(self):
         return f'<Project {self.number}: {self.name}>'
@@ -476,6 +477,17 @@ class Project(db.Model):
         if self.has_member(user):
             self.members.remove(user)  
 
+    def has_test_equipment(self, test_equipment):
+        return self.test_equipment.filter_by(id=test_equipment.id).count() > 0
+
+    def add_test_equipment(self, test_equipment):
+        if not self.has_test_equipment(test_equipment):
+            self.test_equipment.append(test_equipment)
+
+    def remove_test_equipment(self, test_equipment):
+        if self.has_test_equipment(test_equipment):
+            self.test_equipment.remove(test_equipment)
+
 
 class Client(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -530,7 +542,7 @@ class User(UserMixin, db.Model):
     Project Relationship:
     - Use the backref in the Project.members relationship to get the list of projects
     that belongs to a single User
-    ex. user.projects returns [p1, p2]
+    ex. user.projects returns [u1, u2]
     '''
 
 
@@ -584,6 +596,17 @@ class TestEquipmentType(db.Model):
 
     def __repr__(self):
         return f'<TestEquipmentType {self.id}: {self.name}>'
+
+    def has_test_equipment(self, test_equipment):
+        return self.test_equipment.filter_by(id=test_equipment.id).count() > 0
+
+    def add_test_equipment(self, test_equipment):
+        if not self.has_test_equipment(test_equipment):
+            self.test_equipment.append(test_equipment)
+
+    def remove_test_equipment(self, test_equipment):
+        if self.has_test_equipment(test_equipment):
+            self.test_equipment.remove(test_equipment)    
 
 
 class CalibrationRecord(db.Model):

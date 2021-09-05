@@ -4,11 +4,11 @@ from datetime import datetime
 from app import db
 from app.main import bp
 from app.models import TestPoint, User, Client, Project, Job, Group, Channel, TestEquipmentType, TestEquipment, CalibrationRecord
-from app.main.forms import AddCalibrationRecordForm, EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm, AddTestEquipmentForm, UpdateProjectMembersForm
+from app.main.forms import AddCalibrationRecordForm, EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm, AddTestEquipmentForm, UpdateProjectForm
 from app.main.forms import ChannelsForm, ChannelForm, TestPointForm
 from app.main.forms import EMPTY_SELECT_CHOICE, CUSTOM_FORM_CLASS
 from wtforms.fields.core import BooleanField
-from app.utils import TestPointListType, TestResult, none_if_empty
+from app.utils import StandardTestEquipmentTypes, TestPointListType, TestResult, none_if_empty
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -507,6 +507,11 @@ def add_test_equipment():
         test_equipment.add_calibration_record(calibration_record)
         db.session.commit()
 
+        # Add the new TestEquipment to the list of TestEquipmentTypes 
+        test_equipment_type = TestEquipmentType.query.filter_by(test_equipment.name).first()
+        test_equipment_type.add_test_equipment(test_equipment)
+        db.session.commit()
+
         flash(f'Test Equipment "{test_equipment.asset_id}" {test_equipment.name} has been added to the database.')
         return redirect(url_for('main.index'))
 
@@ -546,8 +551,8 @@ def test_equipment():
     return render_template('test_equipment.html', title='Test Equipment List', test_equipment=test_equipment)
 
 
-@bp.route('/projects/<project_id>/update_project_members', methods=['GET', 'POST'])
-def update_project_members(project_id):
+@bp.route('/projects/<project_id>/edit_project_members', methods=['GET', 'POST'])
+def edit_project_members(project_id):
 
     # Get a list of all the users
     users = User.query.all()
@@ -559,19 +564,18 @@ def update_project_members(project_id):
 
     for user in users:
 
-        # Gather all the existing members on the project to prepopulate the fields
-        existing_member = all_members.count(user) > 0
-        if existing_member:
+        # Gather all the existing members on the project to pre-populate the fields
+        member_exists = all_members.count(user) > 0
+        if member_exists:
             existing_members.append(user)
 
-        # Add the button to the form
+        # Add the button for the User to the form
         id = 'checkbox-user-' + str(user.id)
-        setattr(UpdateProjectMembersForm, f'checkbox_user_{user.id}',
-            BooleanField(id=id, render_kw=CUSTOM_FORM_CLASS, default=existing_member))        
-        
+        setattr(UpdateProjectForm, f'checkbox_user_{user.id}',
+            BooleanField(id=id, render_kw=CUSTOM_FORM_CLASS, default=member_exists)) 
     
     # Create the form
-    form = UpdateProjectMembersForm()
+    form = UpdateProjectForm()
 
     if form.validate_on_submit():
         
@@ -579,7 +583,7 @@ def update_project_members(project_id):
         added_users = []
         removed_users = []
 
-        # Update the members assigned on the project
+        # Update the members assigned to the project
         for user in users:
             if form.data['checkbox_user_' + str(user.id)]:
 
@@ -596,10 +600,12 @@ def update_project_members(project_id):
                     project.remove_member(user)
                     removed_users.append(user.username)                
         
+        # Save to the database
         db.session.commit()
-        flash(f'The following users were added to the {project.name} project:\n \
-            Added Users: {added_users}\nRemoved Users: {removed_users}\n \
-            Updated Project Member List: {project.members.all()}')
+        flash('Project Members have been successfully updated.')
+        print(f'The following users were added to the {project.name} project: \
+            \nAdded Users: {added_users}\nRemoved Users: {removed_users} \
+            \nUpdated Project Member List: {project.members.all()}')
 
         return redirect(url_for('main.projects', project_id=project_id))
     
@@ -607,7 +613,75 @@ def update_project_members(project_id):
     if len(form.errors.items()) > 0:
         print(form.errors.items())
 
-    return render_template('update_project_members.html', title='Update Project Members',
+    return render_template('edit_project_members.html', title='Edit Project Members',
         form=form, users=users, existing_members=existing_members)
         
 
+@bp.route('/projects/<project_id>/edit_project_test_equipment.html', methods=['GET', 'POST'])
+def edit_project_test_equipment(project_id):
+
+    # Get a list of the TestEquipmentTypes
+    test_equipment_types = TestEquipmentType.query.all()
+    
+    # Get a list of the existing TestEquipment that has been assigned to the Project
+    project = Project.query.filter_by(id=project_id).first()
+    all_equipment = project.test_equipment.all()
+    existing_equipment_list = []
+
+    for test_equipment_type in test_equipment_types:        
+        for test_equipment in test_equipment_type.test_equipment.all():
+
+            # Get all the existing equipment on the project to pre-populate the fields
+            equipment_exists = all_equipment.count(test_equipment) > 0
+            if equipment_exists:
+                existing_equipment_list.append(test_equipment)
+
+            # Add a button for the TestEquipment to the form
+            id = 'checkbox-equipment-' + str(test_equipment.id)
+            setattr(UpdateProjectForm, f'checkbox_equipment_{test_equipment.id}',
+                BooleanField(id=id, render_kw=CUSTOM_FORM_CLASS, default=equipment_exists))
+
+    # Create the form
+    form = UpdateProjectForm()
+
+    if form.validate_on_submit():
+
+        # Result checking variables
+        added_equipment = []
+        removed_equipment = []
+
+        # Update the test equipment assigned to the project
+        for test_equipment_type in test_equipment_types:
+            for test_equipment in test_equipment_type.test_equipment.all():
+
+                if form.data['checkbox_equipment_' + str(test_equipment.id)]:
+
+                    # Existing test equipment has not been removed
+                    if project.has_test_equipment(test_equipment):
+                        continue
+
+                    # Add the new test equipment to the project
+                    project.add_test_equipment(test_equipment)
+                    added_equipment.append(test_equipment.name)
+                else:
+                    # Existing test equipment has been removed
+                    if project.has_test_equipment(test_equipment):
+                        project.remove_test_equipment(test_equipment)
+                        removed_equipment.append(test_equipment.name)
+        
+        # Save to the database
+        db.session.commit()
+        flash('Project Equipment List has been successfully updated.')
+        print(f'The following test equipment was added to the {project.name} project: \
+            \nAdded Equipment: {added_equipment}\nRemoved Equipment: {removed_equipment} \
+            \nUpdated Project Equipment List: {project.test_equipment.all()}')
+
+        return redirect(url_for('main.projects', project_id=project_id))
+
+    # Display the errors if there are any
+    if len(form.errors.items()) > 0:
+        print(form.errors.items())
+
+    return render_template('edit_project_test_equipment.html', title='Edit Project Test Equipment',
+        form=form, test_equipment_types=test_equipment_types,
+        existing_equipment_list=existing_equipment_list)

@@ -158,7 +158,7 @@ class AddCalibrationRecordForm(FlaskForm):
     submit = SubmitField('Add Calibration Record')
 
 
-class UpdateProjectMembersForm(FlaskForm):
-    submit = SubmitField('Update Members', render_kw=PRIMARY_SUBMIT_BUTTON_CLASS)
+class UpdateProjectForm(FlaskForm):
+    submit = SubmitField('Update Project', render_kw=PRIMARY_SUBMIT_BUTTON_CLASS)
     # Lets the form be created dynamically
     pass

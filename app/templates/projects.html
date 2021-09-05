@@ -50,7 +50,11 @@
                         </button>
                         {# Button for updating the members assigned to a project #}
                         <button type="button" class="btn btn-warning">
-                            <a style="color:#FFFFFF;" href="{{ url_for('main.update_project_members', project_id=project.id) }}">Update Members</a>
+                            <a style="color:#FFFFFF;" href="{{ url_for('main.edit_project_members', project_id=project.id) }}">Edit Members</a>
+                        </button>
+                        {# Button for updating the test equipment assigned to a project #}
+                        <button type="button" class="btn btn-warning">
+                            <a style="color:#FFFFFF;" href="{{ url_for('main.edit_project_test_equipment', project_id=project.id) }}">Edit Test Equipment</a>
                         </button>
                     </td>
                 </tr>
