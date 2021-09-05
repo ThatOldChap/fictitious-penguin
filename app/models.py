@@ -25,16 +25,6 @@ project_equipment = db.Table(
     db.Column('test_equipment_id', db.Integer, db.ForeignKey('test_equipment.id'))
 )
 
-# Stores a record of the TestEquipment used on a channel when tested for comparing calibration due dates to the test date 
-# Ex. Channel id-4 was tested with DMM id-1 at '16:03 July 2, 2021' where DMM id-1 is due for calibration on 00:00 Nov 12, 2021
-channel_equipment = db.Table(
-    'channel_equipment', db.Model.metadata,
-    db.Column('channel_id', db.Integer, db.ForeignKey('channel.id')),
-    db.Column('test_equipment_id', db.Integer, db.ForeignKey('test_equipment.id')),
-    db.Column('timestamp', db.DateTime),
-    db.Column('test_equipment_calibration_due_date', db.DateTime)
-)
-
 # Stores all the required TestEquipmentTypes for testing a channel
 channel_required_equipment = db.Table(
     'channel_required_equipment', db.Model.metadata,
@@ -146,8 +136,7 @@ class Channel(db.Model):
 
     # Relationships
     testpoints = db.relationship('TestPoint', backref='channel', lazy='dynamic')
-    test_equipment = db.relationship('TestEquipment', secondary=channel_equipment,
-        backref='channel', lazy='dynamic')
+    test_equipment = db.relationship('ChannelEquipmentRecord', back_populates='channel')
     required_test_equipment = db.relationship('TestEquipmentType',
         secondary=channel_required_equipment, backref='channel', lazy='dynamic')
 
@@ -565,6 +554,7 @@ class TestEquipment(db.Model):
 
     # Relationships
     calibration_records = db.relationship('CalibrationRecord', backref='test_equipment', lazy='dynamic')
+    channels = db.relationship('ChannelEquipmentRecord', back_populates='test_equipment')
     
     def __repr__(self):
 	    return f'<TestEquipment {self.asset_id}: {self.manufacturer} {self.name}>'
@@ -623,3 +613,16 @@ class CalibrationRecord(db.Model):
 
     def get_test_equipment(self):
         return TestEquipment.query.filter_by(id=self.test_equipment_id).first()
+
+# Stores a record of the TestEquipment used on a channel when tested for comparing calibration due dates to the test date 
+# Ex. Channel id-4 was tested with DMM id-1 at '16:03 July 2, 2021' where DMM id-1 is due for calibration on 00:00 Nov 12, 2021
+class ChannelEquipmentRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
+    test_equipment_id = db.Column(db.Integer, db.ForeignKey('test_equipment.id'))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    calibration_due_date = db.Column(db.DateTime)
+
+    # Relationships
+    channel = db.relationship('Channel', back_populates='test_equipment')
+    test_equipment = db.relationship('TestEquipment', back_populates='channels')

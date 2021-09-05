@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 from datetime import datetime
 from app import db
 from app.main import bp
-from app.models import TestPoint, User, Client, Project, Job, Group, Channel, TestEquipmentType, TestEquipment, CalibrationRecord
+from app.models import TestPoint, User, Client, Project, Job, Group, Channel, TestEquipmentType, TestEquipment, CalibrationRecord, ChannelEquipmentRecord
 from app.main.forms import AddCalibrationRecordForm, EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm, AddTestEquipmentForm, UpdateProjectForm
 from app.main.forms import ChannelsForm, ChannelForm, TestPointForm
 from app.main.forms import EMPTY_SELECT_CHOICE, CUSTOM_FORM_CLASS
@@ -290,8 +290,6 @@ def channels(group_id):
     # Create the master form to add each channel_form into
     channels_form = ChannelsForm()
 
-    # TODO: Create a new class to hold all the channel, tespoint info and forms for the template
-
     for channel in channels:
 
         # Get a list of all the TestPoints in each Channel
@@ -324,6 +322,7 @@ def update_channel():
     INTERFACE = 'interface'
     NOTES = 'notes'
     LAST_UPDATED = 'last_updated'
+    TEST_EQUIPMENT_ID = 'test_equipment_id'
 
     # Other constants
     MESSAGE = 'message'
@@ -340,7 +339,6 @@ def update_channel():
         # Remove the channel_id from the data to check how many parameters are being updated
         channel = Channel.query.filter_by(id=request.form[CHANNEL_ID]).first()
         data.pop(CHANNEL_ID)
-        has_channel = True
     else:
         raise ValueError(f'{CHANNEL_ID} not found in ajax request:\n{data}')
 
@@ -355,6 +353,22 @@ def update_channel():
         
         if key == NOTES:            
             channel.notes = none_if_empty(value)
+
+        if key == TEST_EQUIPMENT_ID:
+
+            # Get the information necessary to create the ChannelEquipmentRecord
+            test_equipment = TestEquipment.query.filter_by(id=value).first()
+            current_date = datetime.utcnow()
+
+            # Create a record of the TestEquipment being used by the channel
+            record = ChannelEquipmentRecord(
+                channel_id=channel.id,
+                test_equipment_id=test_equipment.id,
+                timestamp=current_date,
+                calibration_due_date=test_equipment.due_date()
+            )
+            channel.test_equipment.append(record)
+            db.session.commit()
 
         # Add the processed key to the list of updated fields
         updated_fields.append(key)

@@ -78,7 +78,8 @@
             let PERCENT_PASSED_NAME = 'percent-passed';
             let CHANNEL_STATUS_NAME = 'channel-status';
             let SUMMARY_PARENT_NAME = 'summary-parent';
-
+            let ASSET_ID_NAME = 'asset-id';
+            let EQUIPMENT_CHOICE_NAME = 'equipment-choice';
 
             // Update the progress bars as the page is loaded
             updateAllProgressBars(CHANNEL, TESTPOINT);
@@ -173,6 +174,42 @@
 
                 // Update the Channel
                 updateChannel(data, parent);
+            });
+
+            $(`[name=${EQUIPMENT_CHOICE_NAME}] > a.dropdown-item`).click(function(event) {
+
+                // Find the dropdown item, even if the user clicks any inner elements to the dropdown
+                let target = event.target;
+                let dropdownItem = $(target).parents(`[name=${EQUIPMENT_CHOICE_NAME}]`);
+                let dropdownDataset = dropdownItem[0].dataset;
+
+                // Find the parent row element to extract data from
+                let parent = $(this).parents(`[name^="${SUMMARY_PARENT_NAME}"]`).prev(`[name^="${CHANNEL_PARENT}"]`);
+                let parentDataset = parent[0].dataset;
+
+                // Find the main button element
+                let parentButton = $(this).parents('ul').prev();
+
+                // Determine the new text to replace within the button
+                let assetId = $(dropdownItem).find(`[name=${ASSET_ID_NAME}]`).text();
+
+                // Update the button with the new text
+                $(parentButton).find(`[name=${ASSET_ID_NAME}]`).text(assetId)
+
+                // Update the channel with the change in TestEquipment
+                let data = {
+                    channel_id: parentDataset.channelId,
+                    test_equipment_id: dropdownDataset.equipmentId
+                }
+                updateChannel(data, parent);
+
+                // Update the formatting of the button to be active if a valid asset is chosen
+                let isNone = (assetId == 'None')
+                if (isNone) {
+                    $(parent).removeClass('btn-primary').addClass('btn-outline-primary');
+                } else {
+                    $(parent).removeClass('btn-outline-primary').addClass('btn-primary');
+                }
             });
 
             // Function for sending an ajax request to update Channel values in the database

@@ -1,5 +1,6 @@
 import enum, math
 from app import db
+from datetime import datetime
 
 class TestResult(enum.Enum):
     UNTESTED = "Untested"
@@ -149,3 +150,84 @@ def addStandardTestEquipmentTypes():
     # Save the changes
     db.session.commit()
     print(f'Successfully added the following TestEquipmentTypes:\n{new_equipment_types}')
+
+# Pre-populate the database with test data
+def initDbForTest():
+
+    from app.models import User, Client, Project, Job, Group, TestEquipment, TestEquipmentType, CalibrationRecord
+
+    # Create some Users
+    u1 = User(username='Michael', email='michael@example.com')
+    u1.set_password('test')
+    u2 = User(username='Natalie', email='natalie@example.com')
+    u2.set_password('test')
+    u3 = User(username='Eric', email='eric@example.com')
+    u3.set_password('test')
+    u4 = User(username='John', email='john@example.com')
+    u4.set_password('test')    
+    db.session.add_all([u1, u2, u3, u4])
+    db.session.commit()
+
+    # Create some Clients
+    c1 = Client(name="Rolls-Royce")
+    c2 = Client(name="Pratt & Whitney")
+    c3 = Client(name="SEBW")
+    db.session.add_all([c1, c2, c3])
+    db.session.commit()
+
+    # Create some Projects
+    p1 = Project(name=c1.name, number='0542', client_id=c1.id)
+    p2 = Project(name=c1.name, number='0545', client_id=c1.id)
+    p3 = Project(name=c2.name, number='0529', client_id=c2.id)
+    p4 = Project(name=c2.name, number='0551', client_id=c2.id)
+    p5 = Project(name=c3.name, number='1051', client_id=c3.id)
+    p6 = Project(name=c3.name, number='1003', client_id=c3.id)
+    db.session.add_all([p1, p2, p3, p4, p5, p6])
+    db.session.commit()
+
+    # Create some Jobs for the Projects
+    for p in Project.query.all():
+        j1 = Job(project_id=p.id, stage="In-House", phase="Commissioning")
+        j2 = Job(project_id=p.id, stage="On-Site", phase="Commissioning")
+        j3 = Job(project_id=p.id, stage="On-Site", phase="ATP")
+        db.session.add_all([j1, j2, j3])
+    db.session.commit()
+
+    # Create some groups for the Jobs
+    for j in Job.query.all():
+        g1 = Group(name='Liquid/Air Pressures', job_id=j.id)
+        g2 = Group(name='Speeds', job_id=j.id)
+        g3 = Group(name='Vibrations', job_id=j.id)
+        db.session.add_all([g1, g2, g3])
+    db.session.commit()
+
+    # Create the default TestEquipmentTypes
+    addStandardTestEquipmentTypes()
+    
+    # Create some starting TestEquipment
+    count = 0
+    for t in TestEquipmentType.query.all():
+        t1 = TestEquipment(
+            name=t.name,
+            manufacturer='ACME Co.',
+            model_num='123456' + str(count*10),
+            serial_num='000000' + str(count*10),
+            asset_id='MDS 1' + str(count*10)
+        )
+        db.session.add(t1)
+    db.session.commit()
+
+    # Add some calibration records for each TestEquipment
+    for t in TestEquipment.query.all():
+        dt1 = datetime(2021, 4, 4)
+        dt2 = datetime(2021, 11, 18)
+        dt3 = datetime(2022, 3, 29)
+        c1 = CalibrationRecord(test_equipment_id=t.id,
+            calibration_date=dt1,
+            calibration_due_date=dt2)
+        c2 = CalibrationRecord(test_equipment_id=t.id,
+            calibration_date=dt1,
+            calibration_due_date=dt3)
+        t.add_calibration_record(c1)
+        t.add_calibration_record(c2)
+    db.session.commit()
