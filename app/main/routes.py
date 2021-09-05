@@ -3,8 +3,8 @@ from flask_login import current_user, login_required
 from datetime import datetime
 from app import db
 from app.main import bp
-from app.models import CalibrationRecord, TestEquipment, TestPoint, User, Client, Project, Job, Group, Channel, TestEquipmentType
-from app.main.forms import AddCalibrationRecordForm, EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm, AddTestEquipmentForm
+from app.models import TestPoint, User, Client, Project, Job, Group, Channel, TestEquipmentType, TestEquipment, CalibrationRecord
+from app.main.forms import AddCalibrationRecordForm, EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm, AddTestEquipmentForm, UpdateProjectMembersForm
 from app.main.forms import ChannelsForm, ChannelForm, TestPointForm
 from app.main.forms import EMPTY_SELECT_CHOICE, CUSTOM_FORM_CLASS
 from wtforms.fields.core import BooleanField
@@ -484,10 +484,10 @@ def add_test_equipment():
     # Create the form
     form = AddTestEquipmentForm()
 
-    # User has added a new client
+    # User has added a new TestEquipment
     if form.validate_on_submit():
 
-        # Add the new client to the database
+        # Add the new TestEquipment to the database
         test_equipment = TestEquipment(
             name=form.name.data,
             manufacturer=form.manufacturer.data,
@@ -497,6 +497,16 @@ def add_test_equipment():
             )
         db.session.add(test_equipment)
         db.session.commit()
+
+        # Add the starting calibration information for the TestEquipment
+        calibration_record = CalibrationRecord(
+            calibration_date=form.calibration_date.data,
+            calibration_due_date=form.calibration_due_date.data,
+            test_equipment_id=test_equipment.id
+        )
+        test_equipment.add_calibration_record(calibration_record)
+        db.session.commit()
+
         flash(f'Test Equipment "{test_equipment.asset_id}" {test_equipment.name} has been added to the database.')
         return redirect(url_for('main.index'))
 
@@ -511,10 +521,10 @@ def add_calibration_record(test_equipment_id):
     # Create the form
     form = AddCalibrationRecordForm()
 
-    # User has added a new client
+    # User has added a new CalibrationRecord
     if form.validate_on_submit():
 
-        # Add the new client to the database
+        # Add the new CalibrationRecord to the database
         calibration_record = CalibrationRecord(
             calibration_date=form.calibration_date.data,
             calibration_due_date=form.calibration_due_date.data,
@@ -534,3 +544,70 @@ def test_equipment():
     test_equipment = TestEquipment.query.all()
 
     return render_template('test_equipment.html', title='Test Equipment List', test_equipment=test_equipment)
+
+
+@bp.route('/projects/<project_id>/update_project_members', methods=['GET', 'POST'])
+def update_project_members(project_id):
+
+    # Get a list of all the users
+    users = User.query.all()
+
+    # Get a list of the existing members on the Project
+    project = Project.query.filter_by(id=project_id).first()
+    all_members = project.members.all()
+    existing_members = []
+
+    for user in users:
+
+        # Gather all the existing members on the project to prepopulate the fields
+        existing_member = all_members.count(user) > 0
+        if existing_member:
+            existing_members.append(user)
+
+        # Add the button to the form
+        id = 'checkbox-user-' + str(user.id)
+        setattr(UpdateProjectMembersForm, f'checkbox_user_{user.id}',
+            BooleanField(id=id, render_kw=CUSTOM_FORM_CLASS, default=existing_member))        
+        
+    
+    # Create the form
+    form = UpdateProjectMembersForm()
+
+    if form.validate_on_submit():
+        
+        # Result checking variables
+        added_users = []
+        removed_users = []
+
+        # Update the members assigned on the project
+        for user in users:
+            if form.data['checkbox_user_' + str(user.id)]:
+
+                # Existing member has not been removed
+                if project.has_member(user):
+                    continue
+
+                # Add the new member to the project
+                project.add_member(user)
+                added_users.append(user.username)
+            else:
+                # Existing member has been removed
+                if project.has_member(user):
+                    project.remove_member(user)
+                    removed_users.append(user.username)                
+        
+        db.session.commit()
+        flash(f'The following users were added to the {project.name} project:\n \
+            Added Users: {added_users}\nRemoved Users: {removed_users}\n \
+            Updated Project Member List: {project.members.all()}')
+
+        return redirect(url_for('main.projects', project_id=project_id))
+    
+    # Display the errors if there are any
+    if len(form.errors.items()) > 0:
+        print(form.errors.items())
+
+    return render_template('update_project_members.html', title='Update Project Members',
+        form=form, users=users, existing_members=existing_members)
+        
+

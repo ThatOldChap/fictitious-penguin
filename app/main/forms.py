@@ -156,3 +156,9 @@ class AddCalibrationRecordForm(FlaskForm):
     calibration_date = DateField('Calibration Date', format='%Y-%m-%d')
     calibration_due_date = DateField('Calibration Due Date', format='%Y-%m-%d')
     submit = SubmitField('Add Calibration Record')
+
+
+class UpdateProjectMembersForm(FlaskForm):
+    submit = SubmitField('Update Members', render_kw=PRIMARY_SUBMIT_BUTTON_CLASS)
+    # Lets the form be created dynamically
+    pass

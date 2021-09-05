@@ -48,6 +48,10 @@
                         <button type="button" class="btn btn-success">
                             <a style="color:#FFFFFF;" href="{{ url_for('main.add_job', project_id=project.id) }}">Add Job</a>
                         </button>
+                        {# Button for updating the members assigned to a project #}
+                        <button type="button" class="btn btn-warning">
+                            <a style="color:#FFFFFF;" href="{{ url_for('main.update_project_members', project_id=project.id) }}">Update Members</a>
+                        </button>
                     </td>
                 </tr>
             {% endfor %}

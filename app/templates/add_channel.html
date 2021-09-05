@@ -60,10 +60,10 @@
                                     <label for="test-equipment-types-button-group">Required Test Equipment Types</label>
                                     <div class="btn-group-toggle mb-3" role="group" data-toggle="buttons" id="test-equipment-types-button-group">
                                         {% for test_equipment_type in test_equipment_types %}
-                                        <label class="btn btn-outline-info mb-1" for="checkbox-{{ (test_equipment_type.name).replace('_', '-') }}">
-                                            {{ (test_equipment_type.name).replace('_', ' ') }}
-                                            {{ form['checkbox_{}'.format(test_equipment_type.name)] }}
-                                        </label>                    
+                                            <label class="btn btn-outline-info mb-1" for="checkbox-{{ (test_equipment_type.name).replace('_', '-') }}">
+                                                {{ (test_equipment_type.name).replace('_', ' ') }}
+                                                {{ form['checkbox_{}'.format(test_equipment_type.name)] }}
+                                            </label>                    
                                         {% endfor %}
                                     </div>
                                 </div>

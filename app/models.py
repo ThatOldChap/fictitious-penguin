@@ -484,7 +484,6 @@ class Client(db.Model):
     # Relationships
     projects = db.relationship('Project', backref='client', lazy='dynamic')
 
-
     def __repr__(self):
         return f'<Client: {self.name}>'
 
@@ -596,4 +595,8 @@ class CalibrationRecord(db.Model):
     test_equipment_id = db.Column(db.Integer, db.ForeignKey('test_equipment.id'))
 
     def __repr__(self):
-        return f'CalibrationRecord for {TestEquipment.query.filter_by(id=self.test_equipment_id).first()} due {self.calibration_due_date}'
+        test_equipment = self.get_test_equipment()
+        return f'CalibrationRecord for {test_equipment.name} ({test_equipment.asset_id}) due {self.calibration_due_date}'
+
+    def get_test_equipment(self):
+        return TestEquipment.query.filter_by(id=self.test_equipment_id).first()
