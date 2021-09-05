@@ -205,7 +205,7 @@ def initDbForTest():
     addStandardTestEquipmentTypes()
     
     # Create some starting TestEquipment
-    count = 0
+    count = 1
     for t in TestEquipmentType.query.all():
         t1 = TestEquipment(
             name=t.name,
@@ -215,6 +215,7 @@ def initDbForTest():
             asset_id='MDS 1' + str(count*10)
         )
         db.session.add(t1)
+        count += 1
     db.session.commit()
 
     # Add some calibration records for each TestEquipment

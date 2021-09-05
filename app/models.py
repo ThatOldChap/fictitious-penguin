@@ -273,8 +273,15 @@ class Channel(db.Model):
     def add_test_equipment_type(self, test_equipment_type):
         self.required_test_equipment.append(test_equipment_type)
 
-    def add_test_equipment(self, test_equipment):
-        self.test_equipment.append(test_equipment)        
+    def current_test_equipment(self):
+
+        # Sorting criteria to sort by timestamp of a ChannelEquipmentRecord
+        def sort_by_datetime(channel_equipment_record):
+            return channel_equipment_record.timestamp
+
+        records = self.test_equipment
+        records.sort(reverse=True, key=sort_by_datetime)
+        return records[0]
 
 
 class Group(db.Model):
