@@ -323,6 +323,7 @@ def update_channel():
     NOTES = 'notes'
     LAST_UPDATED = 'last_updated'
     TEST_EQUIPMENT_ID = 'test_equipment_id'
+    TEST_EQUIPMENT_TYPE_ID = 'test_equipment_type_id'
 
     # Other constants
     MESSAGE = 'message'
@@ -333,14 +334,19 @@ def update_channel():
 
     # Extract the request's form dictionary
     data = request.form.to_dict()
+    print(data)
 
-    if CHANNEL_ID in data:        
-
-        # Remove the channel_id from the data to check how many parameters are being updated
+    if CHANNEL_ID in data:
+        # Get the channel from the ajax request and remove it from the keys to check
         channel = Channel.query.filter_by(id=request.form[CHANNEL_ID]).first()
         data.pop(CHANNEL_ID)
     else:
         raise ValueError(f'{CHANNEL_ID} not found in ajax request:\n{data}')
+    
+    if TEST_EQUIPMENT_TYPE_ID in data:
+        # Get the test_equipment_type_id from the ajax request and remove it from the keys to check
+        test_equipment_type_id = data[TEST_EQUIPMENT_TYPE_ID]
+        data.pop(TEST_EQUIPMENT_TYPE_ID)
 
     # Calculate the new number of variables to iterate over
     num_fields = len(data)
@@ -356,16 +362,25 @@ def update_channel():
 
         if key == TEST_EQUIPMENT_ID:
 
-            # Get the information necessary to create the ChannelEquipmentRecord
-            test_equipment = TestEquipment.query.filter_by(id=value).first()
-            current_date = datetime.utcnow()
+            # Get the current TestEquipment assigned to the channel
+            current_test_equipment = channel.current_test_equipment(test_equipment_type_id)
+            has_current_test_equipment = (current_test_equipment is not None)
+
+            # The current TestEquipment is the same as the selected TestEquipment so ignore
+            if has_current_test_equipment:
+                if current_test_equipment.id == value:
+                    continue
+
+            # A new TestEquipment has been selected
+            new_test_equipment = TestEquipment.query.filter_by(id=value).first()
 
             # Create a record of the TestEquipment being used by the channel
             record = ChannelEquipmentRecord(
                 channel_id=channel.id,
-                test_equipment_id=test_equipment.id,
-                timestamp=current_date,
-                calibration_due_date=test_equipment.due_date()
+                test_equipment_id=new_test_equipment.id,
+                test_equipment_type_id=test_equipment_type_id,
+                timestamp=datetime.utcnow(),
+                calibration_due_date=new_test_equipment.due_date()
             )
             channel.test_equipment.append(record)
             db.session.commit()

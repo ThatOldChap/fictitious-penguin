@@ -273,15 +273,27 @@ class Channel(db.Model):
     def add_test_equipment_type(self, test_equipment_type):
         self.required_test_equipment.append(test_equipment_type)
 
-    def current_test_equipment(self):
+    def current_test_equipment(self, test_equipment_type_id):
 
         # Sorting criteria to sort by timestamp of a ChannelEquipmentRecord
         def sort_by_datetime(channel_equipment_record):
             return channel_equipment_record.timestamp
 
+        # Return the TestEquipment that is used on the latest record for a channel
         records = self.test_equipment
+
+        # Return None if the channel has no history of TestEquipment assigned to it
+        if len(records) == 0:
+            return None
+
+        # Starting at the most recent record, check through all the records for the specified TestEquipmentType
         records.sort(reverse=True, key=sort_by_datetime)
-        return records[0]
+        for record in records:
+            if record.test_equipment_type_id == test_equipment_type_id:
+                return TestEquipment.query.filter_by(id=record.test_equipment_id).first()
+
+        # If no record is found, then return None
+        return None
 
 
 class Group(db.Model):
@@ -627,6 +639,7 @@ class ChannelEquipmentRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
     test_equipment_id = db.Column(db.Integer, db.ForeignKey('test_equipment.id'))
+    test_equipment_type_id = db.Column(db.Integer, db.ForeignKey('test_equipment_type.id'))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     calibration_due_date = db.Column(db.DateTime)
 

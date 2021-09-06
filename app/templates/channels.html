@@ -189,16 +189,16 @@
 
                 // Find the main button element
                 let parentButton = $(this).parents('ul').prev();
+                let parentButtonDataset = parentButton[0].dataset;
 
-                // Determine the new text to replace within the button
+                // Determine the new text to replace within the button and update it
                 let assetId = $(dropdownItem).find(`[name=${ASSET_ID_NAME}]`).text();
-
-                // Update the button with the new text
                 $(parentButton).find(`[name=${ASSET_ID_NAME}]`).text(assetId)
 
                 // Update the channel with the change in TestEquipment
                 let data = {
                     channel_id: parentDataset.channelId,
+                    test_equipment_type_id: parentButtonDataset.equipmentTypeId,
                     test_equipment_id: dropdownDataset.equipmentId
                 }
                 updateChannel(data, parent);
@@ -206,9 +206,9 @@
                 // Update the formatting of the button to be active if a valid asset is chosen
                 let isNone = (assetId == 'None')
                 if (isNone) {
-                    $(parent).removeClass('btn-primary').addClass('btn-outline-primary');
+                    $(parentButton).removeClass('btn-primary').addClass('btn-outline-primary');
                 } else {
-                    $(parent).removeClass('btn-outline-primary').addClass('btn-primary');
+                    $(parentButton).removeClass('btn-outline-primary').addClass('btn-primary');
                 }
             });
 

@@ -176,12 +176,12 @@ def initDbForTest():
     db.session.commit()
 
     # Create some Projects
-    p1 = Project(name=c1.name, number='0542', client_id=c1.id)
-    p2 = Project(name=c1.name, number='0545', client_id=c1.id)
-    p3 = Project(name=c2.name, number='0529', client_id=c2.id)
-    p4 = Project(name=c2.name, number='0551', client_id=c2.id)
-    p5 = Project(name=c3.name, number='1051', client_id=c3.id)
-    p6 = Project(name=c3.name, number='1003', client_id=c3.id)
+    p1 = Project(name='Test Bed 80', number='0542', client_id=c1.id)
+    p2 = Project(name='RTS Development', number='0545', client_id=c1.id)
+    p3 = Project(name='UTRC Compressor', number='0529', client_id=c2.id)
+    p4 = Project(name='Aero E-Fan', number='0551', client_id=c2.id)
+    p5 = Project(name='Core 2 Facility', number='1051', client_id=c3.id)
+    p6 = Project(name='High Altitude Facility', number='1003', client_id=c3.id)
     db.session.add_all([p1, p2, p3, p4, p5, p6])
     db.session.commit()
 
@@ -231,4 +231,6 @@ def initDbForTest():
             calibration_due_date=dt3)
         t.add_calibration_record(c1)
         t.add_calibration_record(c2)
+        test_equipment_type = TestEquipmentType.query.filter_by(name=t.name).first()
+        test_equipment_type.add_test_equipment(t)
     db.session.commit()
