@@ -8,7 +8,7 @@ from app.main.forms import AddCalibrationRecordForm, EditProfileForm, AddClientF
 from app.main.forms import ChannelsForm, ChannelForm, TestPointForm
 from app.main.forms import EMPTY_SELECT_CHOICE, CUSTOM_FORM_CLASS
 from wtforms.fields.core import BooleanField
-from app.utils import StandardTestEquipmentTypes, TestPointListType, TestResult, none_if_empty
+from app.utils import TestPointListType, TestResult, none_if_empty
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -155,13 +155,14 @@ def add_job(project_id):
         # Add the new job to the database
         job = Job(
             project_id=form.project_name.data,
+            name=form.name.data,
             stage=form.stage.data,
             phase=form.phase.data            
-            )
+        )
         db.session.add(job)
         db.session.commit()
         flash(f'Job "{job.stage} {job.phase}" has been added to the {job.project.name} project.')
-        return redirect(url_for('main.projects'))
+        return redirect(url_for('main.jobs', project_id=project_id))
 
     return render_template('add_item.html', title='Add Job', form=form, item='Job')
 
@@ -169,9 +170,10 @@ def add_job(project_id):
 @bp.route('/projects/<project_id>/jobs', methods=['GET', 'POST'])
 def jobs(project_id):
 
+    project = Project.query.filter_by(id=project_id).first()
     jobs = Job.query.filter_by(project_id=project_id).all()
 
-    return render_template('jobs.html', title='Job List', jobs=jobs)
+    return render_template('jobs.html', title='Job List', jobs=jobs, project=project)
 
 
 @bp.route('/job/<job_id>/add_group', methods=['GET', 'POST'])
@@ -194,16 +196,17 @@ def add_group(job_id):
         db.session.add(group)
         db.session.commit()
         flash(f'Group "{group.name}" has been added to the {group.job.stage} {group.job.phase} job for the {group.job.project.name} project.')
-        return redirect(url_for('main.jobs', project_id=group.job.project.id))
+        return redirect(url_for('main.groups', job_id=job_id))
 
     return render_template('add_item.html', title='New Group', form=form, item="Group")
 
 @bp.route('/job/<job_id>/groups', methods=['GET', 'POST'])
 def groups(job_id):
 
+    job = Job.query.filter_by(id=job_id).first()
     groups = Group.query.filter_by(job_id=job_id).all()
 
-    return render_template('groups.html', title='Group List', groups=groups)
+    return render_template('groups.html', title='Group List', groups=groups, job=job)
 
 
 @bp.route('/group/<group_id>/add_channel', methods=['GET', 'POST'])
@@ -271,7 +274,7 @@ def add_channel(group_id):
         db.session.commit()
         flash(f'Channel "{channel.name}" has been added to the {channel.group.name} group along with {num_testpoints} testpoints.')
         
-        return redirect(url_for(f'main.groups', job_id=channel.group.job.id))
+        return redirect(url_for(f'main.channels', group_id=group_id))
 
     # Display the errors if there are any
     if len(form.errors.items()) > 0:
@@ -537,7 +540,7 @@ def add_test_equipment():
         db.session.commit()
 
         # Add the new TestEquipment to the list of TestEquipmentTypes 
-        test_equipment_type = TestEquipmentType.query.filter_by(test_equipment.name).first()
+        test_equipment_type = TestEquipmentType.query.filter_by(name=test_equipment.name).first()
         test_equipment_type.add_test_equipment(test_equipment)
         db.session.commit()
 

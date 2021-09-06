@@ -348,6 +348,7 @@ class Group(db.Model):
         
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32))
     stage = db.Column(db.String(16))
     phase = db.Column(db.String(8))
     status = db.Column(db.String(16), default=Status.NOT_STARTED.value)
@@ -628,7 +629,7 @@ class CalibrationRecord(db.Model):
 
     def __repr__(self):
         test_equipment = self.get_test_equipment()
-        return f'CalibrationRecord for {test_equipment.name} ({test_equipment.asset_id}) due {self.calibration_due_date}'
+        return f'<CalibrationRecord for {test_equipment.name} ({test_equipment.asset_id}) due {self.calibration_due_date}>'
 
     def get_test_equipment(self):
         return TestEquipment.query.filter_by(id=self.test_equipment_id).first()
@@ -646,3 +647,6 @@ class ChannelEquipmentRecord(db.Model):
     # Relationships
     channel = db.relationship('Channel', back_populates='test_equipment')
     test_equipment = db.relationship('TestEquipment', back_populates='channels')
+
+    def __repr__(self):
+        return f'<ChannelEquipmentRecord for channel {self.channel.name} and {self.test_equipment.name} ({self.test_equipment.asset_id}) at {self.timestamp}>'

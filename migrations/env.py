@@ -20,8 +20,9 @@ logger = logging.getLogger('alembic.env')
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
+# from app import mymodel
 # target_metadata = mymodel.Base.metadata
+from app.models import *
 config.set_main_option(
     'sqlalchemy.url',
     str(current_app.extensions['migrate'].db.engine.url).replace('%', '%%'))

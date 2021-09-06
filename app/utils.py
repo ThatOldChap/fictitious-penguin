@@ -187,9 +187,9 @@ def initDbForTest():
 
     # Create some Jobs for the Projects
     for p in Project.query.all():
-        j1 = Job(project_id=p.id, stage="In-House", phase="Commissioning")
-        j2 = Job(project_id=p.id, stage="On-Site", phase="Commissioning")
-        j3 = Job(project_id=p.id, stage="On-Site", phase="ATP")
+        j1 = Job(project_id=p.id, name="TDAS", stage="In-House", phase="Commissioning")
+        j2 = Job(project_id=p.id, name="TDAS", stage="On-Site", phase="Commissioning")
+        j3 = Job(project_id=p.id, name="TDAS", stage="On-Site", phase="ATP")
         db.session.add_all([j1, j2, j3])
     db.session.commit()
 

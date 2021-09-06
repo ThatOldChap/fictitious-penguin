@@ -1,6 +1,5 @@
 from app import create_app, db
-from app.models import TestPoint, Channel, Group, Job, Project, CalibrationRecord
-from app.models import Client, User, TestEquipment, TestEquipmentType, ChannelEquipmentRecord
+from app.models import *
 from app.utils import initDbForTest
 
 # Create the app instance

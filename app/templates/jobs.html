@@ -2,13 +2,30 @@
 
 {% block app_content %}
     <div>
-        <h1>Jobs List:</h1>        
+        <div class="row align-items-center">
+            <div class="col-auto">
+                {# Back Button for navigating back to the Projects Page #}
+                <button type="button" class="btn btn-primary">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.projects') }}">Back to Projects</a>
+                </button>              
+            </div>
+            <div class="col-auto">
+                <h1>{{ project.name }} - Jobs</h1>
+            </div>
+            <div class="col-auto">
+                {# Create Button for creating a new Job #}
+                <button type="button" class="btn btn-success">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_job', project_id=project.id) }}">Add Job</a>
+                </button>
+            </div>         
+        </div>          
         <table class="table table-hover table-bordered align-middle">
             <thead>
                 <tr class="table-primary text-center align-middle">
                     <th class="align-middle">Client</th>
                     <th class="align-middle">Project Number</th>
                     <th class="align-middle">Project Name</th>
+                    <th class="align-middle">Name</th>
                     <th class="align-middle">Stage</th>
                     <th class="align-middle">Phase</th>
                     <th class="align-middle" width="15%">Progress</th>

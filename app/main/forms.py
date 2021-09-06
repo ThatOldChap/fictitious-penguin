@@ -71,6 +71,7 @@ class AddJobForm(FlaskForm):
     client_name = SelectField('Client Name', render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
     project_number = SelectField('Project Number', render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
     project_name = SelectField('Project Name', render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
+    name = StringField('Job Name', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
     stage = SelectField('Project Stage', choices=JOB_STAGE_CHOICES, render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
     phase = SelectField('Project Phase', choices=JOB_PHASE_CHOICES, render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
     submit = SubmitField('Add Job')
@@ -141,7 +142,7 @@ class ChannelsForm(FlaskForm):
 
 
 class AddTestEquipmentForm(FlaskForm):
-    name = SelectField('Name', render_kw=CUSTOM_FORM_CLASS,
+    name = SelectField('Name', render_kw=CUSTOM_SELECT_CLASS,
         choices=TEST_EQUIPMENT_TYPE_CHOICES, validators=[DataRequired()])
     manufacturer = StringField('Manufacturer', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
     model_num = StringField('Model Number', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
