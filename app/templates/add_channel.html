@@ -16,15 +16,20 @@
                                 {{ form.name.label }}
                                 {{ form.name() }}
                             </div>
+                            <div class="col-md-2 g-2">
+                                {{ form.suffix.label }}
+                                {{ form.suffix() }}
+                            </div>
+                            <div class="col-md-2 g-2">
+                                {{ form.quantity.label }}
+                                {{ form.quantity() }}
+                            </div>
                             <div class="col-md-4 g-2">
                                 {{ form.measurement_type.label }}
                                 {{ form.measurement_type() }}
                             </div>
-                            <div class="col-md-4 g-2">
-                                {{ form.measurement_units.label }}
-                                {{ form.measurement_units() }}
-                            </div>
                         </div>
+                        <hr class="my-3">                      
                         <div class="row">
                             {# Measurement Information #}
                             <div class="col-md-4 g-2">
@@ -34,10 +39,10 @@
                             <div class="col-md-4 g-2">
                                 {{ form.max_range.label }}
                                 {{ form.max_range() }}
-                            </div>
+                            </div>                            
                             <div class="col-md-4 g-2">
-                                {{ form.full_scale_range.label }}
-                                {{ form.full_scale_range() }}
+                                {{ form.measurement_units.label }}
+                                {{ form.measurement_units() }}
                             </div>
                         </div>
                         <div class="row">
@@ -49,6 +54,10 @@
                             <div class="col-md-4 g-2">
                                 {{ form.error_type.label }}
                                 {{ form.error_type() }}
+                            </div>
+                            <div class="col-md-4 g-2">
+                                {{ form.full_scale_range.label }}
+                                {{ form.full_scale_range(disabled=True) }}
                             </div>
                         </div>
                         <hr class="my-3">
@@ -150,6 +159,8 @@
             let TESTPOINT_LIST = 'testpoint_list';
             let TESTPOINT_LIST_TYPE = 'testpoint_list_type';
             let NUM_TESTPOINTS = 'num_testpoints';
+            let ERROR_TYPE = 'error_type';
+            let FULL_SCALE_RANGE = 'full_scale_range';
 
             // Form Field Constants
             let INJECTION_VALUE = 'injection_value';
@@ -166,6 +177,9 @@
             let DISABLED = 'disabled';
             let STANDARD = 'Standard';
             let CUSTOM = 'Custom';
+            let ENG_UNITS = 'Eng Units';
+            let PERCENT_FS = '%FS';
+            let PERCENT_RDG = '%RDG';
 
             // Monitoring variables
             let oldNumTestpoints = 1;
@@ -207,6 +221,15 @@
                 });
             })
 
+            // Function for disabling/enabling the Full-Scale range form field
+            $(`#${ERROR_TYPE}`).change(function(event) {
+                let errorType = $(this).val()
+                if (errorType == PERCENT_FS) {
+                    $(`#${FULL_SCALE_RANGE}`).prop("disabled", false);
+                } else {
+                    $(`#${FULL_SCALE_RANGE}`).prop("disabled", true);
+                }
+            });
 
             // Function called when the user changes the Channel's Injection Units
             $(`#${INJECTION_UNITS}`).change(function(event) {

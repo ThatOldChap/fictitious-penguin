@@ -31,9 +31,9 @@ class EngUnits(enum.Enum):
     PSI = "psi"
 
 class ErrorType(enum.Enum):
-    PERCENT_FULL_SCALE = f'%FS'
-    PERCENT_READING = '%RDG'
     ENG_UNITS = 'Eng Units'
+    PERCENT_FULL_SCALE = f'%FS'
+    PERCENT_READING = '%RDG'    
 
 class JobStage(enum.Enum):
     IN_HOUSE = "In-House"
@@ -122,6 +122,19 @@ def channel_progress(item):
 # Calculates the percent value of a number and out of its total
 def calc_percent(value, total):
     return 0 if (total == 0) else round((value / total) * 100)
+
+# Generates a list of tuples for use in a numeric SelectField form field
+def number_list_choices(last_num, num_digits):
+    num_list = []
+    for i in range(1, last_num+1):
+        if num_digits == 1:
+            value = i
+        elif num_digits == 2:
+            value = f'{i:02d}'
+        elif num_digits == 3:
+            value = f'{i:03d}'            
+        num_list.append((i, value))
+    return num_list
 
 
 # Prepopulate the database with the StandardTestEquipmentTypes

@@ -6,7 +6,7 @@ from wtforms.fields.html5 import DateField
 from wtforms.validators import ValidationError, DataRequired
 from app.models import User, Client, Project
 from app.utils import JobStage, JobPhase, MeasurementType, EngUnits, ErrorType
-from app.utils import StandardTestEquipmentTypes, TestPointListType
+from app.utils import StandardTestEquipmentTypes, TestPointListType, number_list_choices
 
 # FormField class constants
 CUSTOM_SELECT_CLASS = {'class': 'custom-select'}
@@ -19,8 +19,10 @@ JOB_PHASE_CHOICES = EMPTY_SELECT_CHOICE + [(phase.value, phase.value) for phase 
 JOB_STAGE_CHOICES = EMPTY_SELECT_CHOICE + [(stage.value, stage.value) for stage in JobStage]
 MEASUREMENT_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(t.value, t.value) for t in MeasurementType]
 ENG_UNITS_CHOICES = EMPTY_SELECT_CHOICE + [(units.value, units.value) for units in EngUnits]
-ERROR_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(e.value, e.value) for e in ErrorType]
-NUM_TESTPOINT_CHOICES = [(i, i) for i in range(1, 11)]
+ERROR_TYPE_CHOICES = [(e.value, e.value) for e in ErrorType]
+NUM_TESTPOINTS_CHOICES = number_list_choices(10, 1)
+QUANTITY_CHOICES = number_list_choices(100, 1)
+SUFFIX_CHOICES = number_list_choices(100, 3)
 TESTPOINT_LIST_TYPE_CHOICES = [(t.value, t.value) for t in TestPointListType]
 TEST_EQUIPMENT_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(t.value, t.value) for t in StandardTestEquipmentTypes]
 
@@ -90,8 +92,12 @@ class AddTestPointForm(FlaskForm):
 
 class AddChannelForm(FlaskForm):
     # Basic Channel Info
-    name = StringField('Name', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
     group_id = HiddenField('Group ID')
+    name = StringField('Name', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    suffix = SelectField('Suffix', render_kw=CUSTOM_SELECT_CLASS,
+        choices=SUFFIX_CHOICES, validators=[DataRequired()])
+    quantity = SelectField('Quantity', render_kw=CUSTOM_SELECT_CLASS,
+        choices=QUANTITY_CHOICES, validators=[DataRequired()])
 
     # Measurement Info
     measurement_type = SelectField('Type', render_kw=CUSTOM_SELECT_CLASS,
@@ -115,7 +121,7 @@ class AddChannelForm(FlaskForm):
 
     # Testpoint List Info
     num_testpoints = SelectField('Number of TestPoints', render_kw=CUSTOM_SELECT_CLASS,
-        choices=NUM_TESTPOINT_CHOICES, validators=[DataRequired()])
+        choices=NUM_TESTPOINTS_CHOICES, validators=[DataRequired()])
     testpoint_list_type = SelectField('TestPoint List Type', render_kw=CUSTOM_SELECT_CLASS,
         choices=TESTPOINT_LIST_TYPE_CHOICES, validators=[DataRequired()])
     testpoint_list = FieldList(FormField(AddTestPointForm))

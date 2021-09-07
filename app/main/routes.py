@@ -224,55 +224,94 @@ def add_channel(group_id):
 
     # Add the group_id from which the new channel was requested by the user to be added to
     form.group_id.data = group_id
+    has_full_scale_range = True
+
+    if request.method == 'POST' and form.full_scale_range.data == None:
+        # Remove the Full Scale Range field off the form if the ErrorType is not %FS
+        del form.full_scale_range
+        has_full_scale_range = False
 
     if form.validate_on_submit():
 
-        # Get the additional info from the form for channel creation
+        '''Extract the form data'''
+        # Basic Channel Info
+        group_id = form.group_id.data
+        base_name = form.name.data
+        suffix = int(form.suffix.data)
+        quantity = int(form.quantity.data)
+
+        # Measurement Info
+        measurement_type = form.measurement_type.data
+        measurement_units = form.measurement_units.data
+        min_range = form.min_range.data
+        max_range = form.max_range.data
+        full_scale_range = form.full_scale_range.data if has_full_scale_range else None
+
+        # Tolerance Info
+        max_error = form.max_error.data
+        error_type = form.error_type.data
+
+        # Signal Injection Info
+        min_injection_range = form.min_injection_range.data
+        max_injection_range = form.max_injection_range.data
+        injection_units = form.injection_units.data
+
+        # TestPoint Info
         testpoint_list_type = form.testpoint_list_type.data
         testpoint_list_data = form.testpoint_list.data
         num_testpoints = int(form.num_testpoints.data)
-        group_id = form.group_id.data
 
-        # Create the new channel and add it to the database
-        channel = Channel(
-            name=form.name.data,
-            group_id=form.group_id.data,
-            measurement_type=form.measurement_type.data,
-            measurement_units=form.measurement_units.data,
-            min_range=form.min_range.data,
-            max_range=form.max_range.data,
-            full_scale_range=form.full_scale_range.data,
-            max_error=form.max_error.data,
-            error_type=form.error_type.data,
-            min_injection_range=form.min_injection_range.data,
-            max_injection_range=form.max_injection_range.data,
-            injection_units=form.injection_units.data,
-        )
-        db.session.add(channel)
-        db.session.commit()
-        
-        # Extract the testpoint_list from the form data
+        # Extract the list of custom TestPoints if selected in the form
         injection_values = []
         test_values = []
-
-        # Extracts the custom TestPoint data only if selected
         if testpoint_list_type == TestPointListType.CUSTOM:
             for i, values in enumerate(testpoint_list_data):
                 injection_values.append(values["injection_value"])
                 test_values.append(values["test_value"])
 
-        # Build the testpoint_list for the new channel
-        channel.build_testpoint_list(num_testpoints, testpoint_list_type,
-            injection_values, test_values)
-
-        # Extract the TestEquipmentTypes selected by the User
+        # Extract the required TestEquipmentTypes selected in the form
+        required_test_equipment_types = []
         for test_equipment_type in test_equipment_types:
             if form.data['checkbox_' + test_equipment_type.name]:
-                channel.add_test_equipment_type(test_equipment_type)
-                print(f'{test_equipment_type} has been added to {channel} as a required TestEquipmentType')
+                required_test_equipment_types.append(test_equipment_type)
+                
+        # Setup variables to prep for the iteration through channel creation
+        start = suffix
+        end = suffix + quantity
 
-        db.session.commit()
-        flash(f'Channel "{channel.name}" has been added to the {channel.group.name} group along with {num_testpoints} testpoints.')
+        for i in range(start, end):
+
+            # Create the new name for the channel
+            name = base_name + f'{i:03d}'
+
+            # Create the new channel and add it to the database
+            channel = Channel(
+                name=name,
+                group_id=group_id,
+                measurement_type=measurement_type,
+                measurement_units=measurement_units,
+                min_range=min_range,
+                max_range=max_range,
+                full_scale_range=full_scale_range,
+                max_error=max_error,
+                error_type=error_type,
+                min_injection_range=min_injection_range,
+                max_injection_range=max_injection_range,
+                injection_units=injection_units,
+            )
+            db.session.add(channel)
+            db.session.commit()            
+
+            # Build the list of TestPoints for the new channel
+            channel.build_testpoint_list(num_testpoints, testpoint_list_type,
+                injection_values, test_values)
+
+            # Add the required TestEquipmentType for the new channel
+            for test_equipment_type in required_test_equipment_types:
+                channel.add_test_equipment_type(test_equipment_type)
+            db.session.commit()
+        
+        flash(f'{quantity} new channels have been added to the {channel.group.name} group each with {num_testpoints} testpoints.')
         
         return redirect(url_for(f'main.channels', group_id=group_id))
 
