@@ -139,6 +139,7 @@ class Channel(db.Model):
     test_equipment = db.relationship('ChannelEquipmentRecord', back_populates='channel')
     required_test_equipment = db.relationship('TestEquipmentType',
         secondary=channel_required_equipment, backref='channel', lazy='dynamic')
+    approvals = db.relationship('ApprovalRecord', back_populates='channel')
 
 
     def __repr__(self):
@@ -517,6 +518,8 @@ class User(UserMixin, db.Model):
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
 
+    # Relationships
+    approvals = db.relationship('ApprovalRecord', back_populates='user')
 
     def __repr__(self):
         return f'<User {self.username}: {self.email}>'
@@ -649,4 +652,18 @@ class ChannelEquipmentRecord(db.Model):
     test_equipment = db.relationship('TestEquipment', back_populates='channels')
 
     def __repr__(self):
-        return f'<ChannelEquipmentRecord for channel {self.channel.name} and {self.test_equipment.name} ({self.test_equipment.asset_id}) at {self.timestamp}>'
+        return f'<ChannelEquipmentRecord for channel id-{self.channel_id} and {self.test_equipment.name} ({self.test_equipment.asset_id}) at {self.timestamp}>'
+
+
+class ApprovalRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    channel = db.relationship('Channel', back_populates='approvals')
+    user = db.relationship('User', back_populates='approvals')
+
+    def __repr__(self):
+        return f'<ApprovalRecord for channel id-{self.channel_id} signed by user id-{self.user_id} at {self.timestamp}>'    

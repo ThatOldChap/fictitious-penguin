@@ -1,8 +1,8 @@
-"""First migration
+"""Restarted migrations
 
-Revision ID: 2b023b98f6c7
+Revision ID: cf0290aee930
 Revises: 
-Create Date: 2021-09-05 15:00:17.612778
+Create Date: 2021-09-07 18:42:48.874018
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '2b023b98f6c7'
+revision = 'cf0290aee930'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -70,6 +70,7 @@ def upgrade():
     )
     op.create_table('job',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=32), nullable=True),
     sa.Column('stage', sa.String(length=16), nullable=True),
     sa.Column('phase', sa.String(length=8), nullable=True),
     sa.Column('status', sa.String(length=16), nullable=True),
@@ -120,14 +121,25 @@ def upgrade():
     sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('approval_record',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('channel_id', sa.Integer(), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('timestamp', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['channel_id'], ['channel.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('channel_equipment_record',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('channel_id', sa.Integer(), nullable=True),
     sa.Column('test_equipment_id', sa.Integer(), nullable=True),
+    sa.Column('test_equipment_type_id', sa.Integer(), nullable=True),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
     sa.Column('calibration_due_date', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['channel_id'], ['channel.id'], ),
     sa.ForeignKeyConstraint(['test_equipment_id'], ['test_equipment.id'], ),
+    sa.ForeignKeyConstraint(['test_equipment_type_id'], ['test_equipment_type.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('channel_required_equipment',
@@ -157,6 +169,7 @@ def downgrade():
     op.drop_table('test_point')
     op.drop_table('channel_required_equipment')
     op.drop_table('channel_equipment_record')
+    op.drop_table('approval_record')
     op.drop_table('channel')
     op.drop_table('group')
     op.drop_table('project_members')
