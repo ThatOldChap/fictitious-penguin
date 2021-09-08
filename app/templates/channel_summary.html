@@ -52,9 +52,15 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="text-center align-middle table-primary">Signatures</td>
+                    <td class="text-center align-middle table-primary">Approvals</td>
                     <td class="text-center align-middle">
-                        <button type="button" class="btn btn-outline-primary badge" data-toggle="buttons">Supplier</button>
+                        {% set approvers = channel.approvals.all() %}                        
+                        {% for approval in approvers %}
+                            <button type="button" class="btn btn-outline-primary badge active" data-toggle="buttons">
+                                {{ approval.user.username }}
+                            </button>
+                        {% endfor %}
+                        <button type="button" class="btn btn-outline-primary badge" data-toggle="buttons">Supplier</button>                       
                         <button type="button" class="btn btn-outline-primary badge" data-toggle="buttons">Client</button>
                     </td>
                 </tr>            

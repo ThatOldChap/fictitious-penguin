@@ -3,12 +3,10 @@ from flask_login import current_user, login_required
 from datetime import datetime
 from app import db
 from app.main import bp
-from app.models import TestPoint, User, Client, Project, Job, Group, Channel, TestEquipmentType, TestEquipment, CalibrationRecord, ChannelEquipmentRecord
-from app.main.forms import AddCalibrationRecordForm, EditProfileForm, AddClientForm, AddProjectForm, AddJobForm, AddGroupForm, AddChannelForm, AddTestEquipmentForm, UpdateProjectForm
-from app.main.forms import ChannelsForm, ChannelForm, TestPointForm
-from app.main.forms import EMPTY_SELECT_CHOICE, CUSTOM_FORM_CLASS
+from app.models import *
+from app.main.forms import *
+from app.utils import *
 from wtforms.fields.core import BooleanField
-from app.utils import TestPointListType, TestResult, none_if_empty
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -19,8 +17,8 @@ def index():
     users = User.query.all()
     summary["users"] = users
 
-    clients = Client.query.all()
-    summary["clients"] = clients
+    companies = Client.query.all() + Supplier.query.all()
+    summary["companies"] = companies
 
     projects = Project.query.all()
     summary["projects"] = projects
@@ -74,24 +72,37 @@ def edit_profile():
     return render_template('edit_profile.html', title='Edit Profile', form=form)
 
 
-@bp.route('/add_client', methods=['GET', 'POST'])
+@bp.route('/add_company', methods=['GET', 'POST'])
 @login_required
-def add_client():
+def add_company():
 
     # Create the form
-    form = AddClientForm()
+    form = AddCompanyForm()
 
     # User has added a new client
     if form.validate_on_submit():
 
-        # Add the new client to the database
-        client = Client(name=form.name.data)
-        db.session.add(client)
+        # Extract the Company's category from the form
+        category = form.category.data
+
+        if category == CompanyCategory.CLIENT.value:
+            company = Client(
+                name=form.name.data,
+                category=category
+            )
+        elif category == CompanyCategory.SUPPLIER.value:
+            company = Supplier(
+                name=form.name.data,
+                category=category
+            )
+
+        db.session.add(company)
         db.session.commit()
-        flash(f'Client "{client.name}" has been added to the database.')
+        flash(f'Company "{company.name}" has been added to the database.')
+
         return redirect(url_for('main.index'))
 
-    return render_template('add_item.html', title='Add Client', form=form, item='Client')
+    return render_template('add_item.html', title='Add Company', form=form, item='Company')
 
 
 @bp.route('/add_project', methods=['GET', 'POST'])
@@ -102,6 +113,7 @@ def add_project():
 
     # Generate the list of SelectField choices to populate in the form
     form.client.choices = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in Client.query.order_by('name')]
+    form.supplier.choices = EMPTY_SELECT_CHOICE + [(s.id, s.name) for s in Supplier.query.order_by('name')]
 
     # User has added a new project
     if form.validate_on_submit():
@@ -110,11 +122,13 @@ def add_project():
         project = Project(
             name=form.name.data,
             number=form.number.data,
-            client_id=form.client.data
-            )
+            client_id=form.client.data,
+            supplier_id=form.supplier.data
+        )
         db.session.add(project)
         db.session.commit()
         flash(f'Project "{project.name}" has been added to the database.')
+
         return redirect(url_for('main.projects'))
 
     return render_template('add_item.html', title='Add Project', form=form, item='Project')
@@ -133,11 +147,14 @@ def add_job(project_id):
 
     # Generate the choices lists for the form's SelectFields
     CLIENT_NAME_CHOICES = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in Client.query.order_by('name')]
+    SUPPLIER_NAME_CHOICES = EMPTY_SELECT_CHOICE + [(s.id, s.name) for s in Supplier.query.order_by('name')]
     PROJECT_NUMBER_CHOICES = EMPTY_SELECT_CHOICE + [(p.id, p.number) for p in Project.query.order_by('number')]
     PROJECT_NAME_CHOICES = EMPTY_SELECT_CHOICE + [(p.id, p.name) for p in Project.query.order_by('name')]
 
     # Get the chosen project 
     project = Project.query.filter_by(id=project_id).first() 
+
+    # TODO: Find the company a User belongs to and only allow them to create Projects for their company
 
     # Create and prepopulate the form
     form = AddJobForm(client_name=project.client_id, project_number=project_id, project_name=project_id)
@@ -147,6 +164,7 @@ def add_job(project_id):
 
     # Assign the SelectField choices to populate in the form
     form.client_name.choices = CLIENT_NAME_CHOICES
+    form.supplier_name.choices = SUPPLIER_NAME_CHOICES
     form.project_number.choices = PROJECT_NUMBER_CHOICES
     form.project_name.choices = PROJECT_NAME_CHOICES
 
@@ -196,6 +214,7 @@ def add_group(job_id):
         db.session.add(group)
         db.session.commit()
         flash(f'Group "{group.name}" has been added to the {group.job.stage} {group.job.phase} job for the {group.job.project.name} project.')
+
         return redirect(url_for('main.groups', job_id=job_id))
 
     return render_template('add_item.html', title='New Group', form=form, item="Group")
@@ -365,14 +384,17 @@ def update_channel():
     NOTES = 'notes'
     LAST_UPDATED = 'last_updated'
     TEST_EQUIPMENT_ID = 'test_equipment_id'
-    TEST_EQUIPMENT_TYPE_ID = 'test_equipment_type_id'
+    TEST_EQUIPMENT_TYPE_ID = 'test_equipment_type_id'    
 
     # Other constants
     MESSAGE = 'message'
+    APPROVAL = 'approval'
+    USER = 'user'
 
     # Variables to keep track of the updated fields
     updated_fields = []
     num_fields = 0
+    last_updated = datetime.utcnow()
 
     # Extract the request's form dictionary
     data = request.form.to_dict()
@@ -389,6 +411,11 @@ def update_channel():
         # Get the test_equipment_type_id from the ajax request and remove it from the keys to check
         test_equipment_type_id = data[TEST_EQUIPMENT_TYPE_ID]
         data.pop(TEST_EQUIPMENT_TYPE_ID)
+
+    if USER in data:
+        # Get the User from the ajax request and remove it from the keys to check
+        user = User.query.filter_by(id=data[USER]).first() 
+        data.pop(USER)
 
     # Calculate the new number of variables to iterate over
     num_fields = len(data)
@@ -421,11 +448,20 @@ def update_channel():
                 channel_id=channel.id,
                 test_equipment_id=new_test_equipment.id,
                 test_equipment_type_id=test_equipment_type_id,
-                timestamp=datetime.utcnow(),
+                timestamp=last_updated,
                 calibration_due_date=new_test_equipment.due_date()
             )
             channel.test_equipment.append(record)
             db.session.commit()
+
+        if key == APPROVAL:
+
+            if value:
+                channel.add_approval(record)
+            else:
+                channel.remove_approval(record)
+
+
 
         # Add the processed key to the list of updated fields
         updated_fields.append(key)
@@ -435,8 +471,7 @@ def update_channel():
     if not num_updated == num_fields:
         raise ValueError(f'Error updating Channel fields. Only {num_updated}/{num_fields} updated successfully.')
     
-    # Update the last_updated time now that changes have been made
-    last_updated = datetime.utcnow()
+    # Update the last_updated time now that changes have been made    
     channel.last_updated = last_updated
 
     # Save the changes to the database
@@ -632,6 +667,8 @@ def edit_project_members(project_id):
     project = Project.query.filter_by(id=project_id).first()
     all_members = project.members.all()
     existing_members = []
+
+    # TODO: Split up form to 2 sections: Supplier and Client
 
     for user in users:
 

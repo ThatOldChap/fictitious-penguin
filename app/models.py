@@ -3,8 +3,7 @@ from time import time
 from flask import current_app
 from flask_login import UserMixin
 from app import db, login
-from app.utils import ErrorType, TestPointListType, TestResult, Status
-from app.utils import channel_stats, channel_progress, calc_percent
+from app.utils import *
 import jwt
 from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -34,6 +33,7 @@ channel_required_equipment = db.Table(
 
 
 class TestPoint(db.Model):
+    __tablename__ = 'testpoint'
     # Basic Info
     id = db.Column(db.Integer, primary_key=True)
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
@@ -54,21 +54,16 @@ class TestPoint(db.Model):
     measured_error = db.Column(db.Float(8))
     test_result = db.Column(db.String(12), default=TestResult.UNTESTED.value)    
 
-    # Foreign Keys
+    # Channel Relationship
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
+    channel = db.relationship('Channel', back_populates='testpoints')
 
     def __repr__(self):
         return f'<TestPoint id-{self.id} for Channel {self.channel.name}>'
 
-
-    def channel(self):
-        return Channel.query.filter_by(id=self.channel_id).first()
-
-
     # Calculates the measured error from a signal injection
     def calc_error(self):
         return self.nominal_test_value - self.measured_test_value
-
 
     # Calculates the maximum error for a measurement based on the error type
     def calc_max_error(self):
@@ -103,6 +98,7 @@ class TestPoint(db.Model):
 
 
 class Channel(db.Model):
+    __tablename__ = 'channel'
     # Basic Info
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32))
@@ -131,22 +127,18 @@ class Channel(db.Model):
     interface = db.Column(db.String(32))
     notes = db.Column(db.String(128))
 
-    # Foreign Keys
+    # Group Relationship
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
+    group = db.relationship('Group', back_populates='channels')
 
-    # Relationships
-    testpoints = db.relationship('TestPoint', backref='channel', lazy='dynamic')
+    # Other Relationships
+    testpoints = db.relationship('TestPoint', back_populates='channel')
     test_equipment = db.relationship('ChannelEquipmentRecord', back_populates='channel')
-    required_test_equipment = db.relationship('TestEquipmentType',
-        secondary=channel_required_equipment, backref='channel', lazy='dynamic')
+    required_test_equipment = db.relationship('TestEquipmentType', secondary=channel_required_equipment, back_populates='channels')
     approvals = db.relationship('ApprovalRecord', back_populates='channel')
-
 
     def __repr__(self):
         return f'<Channel {self.name}>'
-
-    def group(self):
-        return Group.query.filter_by(id=self.group_id).first()
 
     def num_testpoints(self):
         return len(self.testpoints.all())
@@ -296,24 +288,44 @@ class Channel(db.Model):
         # If no record is found, then return None
         return None
 
+    def has_approval_from_user(self, user):
+        return self.approvals.filter(user_id=user.id).count() > 0
+
+    def add_approval(self, user):
+        if not self.has_approval_from_user(user):
+
+            # Create a record of the Channel being signed by the User
+            record = ApprovalRecord(
+                channel_id=self.id,
+                user_id=user.id,
+                timestamp=datetime.utcnow()
+            )
+            self.approvals.append(record)
+
+    def remove_approval(self, user):
+        if self.has_approval_from_user(user):
+
+            # Find the existing record to remove
+            record = self.approvals.filter_by(user_id=user.id).first()
+            self.approvals.remove(record)
+
 
 class Group(db.Model):
+    __tablename__ = 'group'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32))
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(16), default=Status.NOT_STARTED.value)
 
-    # Foreign Keys
+    # Job Relationship
     job_id = db.Column(db.Integer, db.ForeignKey('job.id'))
+    job = db.relationship('Job', back_populates='groups')
 
-    # Relationships
-    channels = db.relationship('Channel', backref='group', lazy='dynamic')
+    # Channel Relationship
+    channels = db.relationship('Channel', back_populates='group')
 
     def __repr__(self):
         return f'<Group {self.name}>'
-
-    def job(self):
-        return Job.query.filter_by(id=self.job_id).first()
 
     def num_channels(self):
         return len(self.channels.all())
@@ -348,6 +360,7 @@ class Group(db.Model):
         
         
 class Job(db.Model):
+    __tablename__ = 'job'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32))
     stage = db.Column(db.String(16))
@@ -355,17 +368,15 @@ class Job(db.Model):
     status = db.Column(db.String(16), default=Status.NOT_STARTED.value)
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Foreign Keys
+    # Project Relationship
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
+    project = db.relationship('Project', back_populates='jobs')
 
-    # Relationships
-    groups = db.relationship('Group', backref='job', lazy='dynamic')
+    # Group Relationship
+    groups = db.relationship('Group', back_populates='job')
 
     def __repr__(self):
         return f'<Job: {self.stage} {self.phase} for the {self.project.name} project>'
-
-    def project(self):
-        return Project.query.filter_by(id=self.project_id).first()
 
     def channels(self):
 
@@ -412,26 +423,27 @@ class Job(db.Model):
 
 
 class Project(db.Model):
+    __tablename__ = 'project'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32))
     number = db.Column(db.Integer)
     status = db.Column(db.String(16), default=Status.NOT_STARTED.value)
 
-    # Foreign Keys
-    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
-
     # Relationships
     jobs = db.relationship('Job', backref='project', lazy='dynamic')
-    members = db.relationship('User', secondary=project_members, backref='projects',
-        lazy='dynamic')
-    test_equipment = db.relationship('TestEquipment', secondary=project_equipment,
-        backref='projects', lazy='dynamic')
+    members = db.relationship('User', secondary=project_members, back_populates='projects')
+    test_equipment = db.relationship('TestEquipment', secondary=project_equipment, back_populates='projects')
+    
+    # Client reference
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
+    client = db.relationship('Client', back_populates='projects')
+
+    # Supplier reference
+    supplier_id = db.Column(db.Integer, db.ForeignKey('supplier.id'))
+    supplier = db.relationship('Supplier', back_populates='projects')
 
     def __repr__(self):
         return f'<Project {self.number}: {self.name}>'
-
-    def client(self):
-        return Client.query.filter_by(id=self.client_id).first()
 
     def channels(self):
 
@@ -499,18 +511,32 @@ class Project(db.Model):
             self.test_equipment.remove(test_equipment)
 
 
-class Client(db.Model):
+class Supplier(db.Model):
+    __tablename__ = 'supplier'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(32))
+    name = db.Column(db.String(48))
 
-    # Relationships
-    projects = db.relationship('Project', backref='client', lazy='dynamic')
+    # Project Relationship
+    projects = db.relationship('Project', back_populates='supplier')
+
+    def __repr__(self):
+        return f'<Supplier: {self.name}>'
+
+
+class Client(db.Model):
+    __tablename__ = 'client'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(48))
+
+    # Project Relationship
+    projects = db.relationship('Project', back_populates='client')
 
     def __repr__(self):
         return f'<Client: {self.name}>'
 
 
 class User(UserMixin, db.Model):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(64), index=True, unique=True)
@@ -519,7 +545,7 @@ class User(UserMixin, db.Model):
     token_expiration = db.Column(db.DateTime)
 
     # Relationships
-    approvals = db.relationship('ApprovalRecord', back_populates='user')
+    approval_records = db.relationship('ApprovalRecord', back_populates='user')
 
     def __repr__(self):
         return f'<User {self.username}: {self.email}>'
@@ -550,13 +576,6 @@ class User(UserMixin, db.Model):
             return
         return User.query.get(id)
 
-    '''
-    Project Relationship:
-    - Use the backref in the Project.members relationship to get the list of projects
-    that belongs to a single User
-    ex. user.projects returns [u1, u2]
-    '''
-
 
 # Keeps track of the logged in user by storing it Flask's user session
 @login.user_loader
@@ -565,6 +584,7 @@ def load_user(id):
 
 
 class TestEquipment(db.Model):
+    __tablename__ = 'test_equipment'
     id = db.Column(db.Integer, primary_key=True)
     asset_id = db.Column(db.String(24))
     name = db.Column(db.String(32))
@@ -572,12 +592,13 @@ class TestEquipment(db.Model):
     model_num = db.Column(db.String(24))
     serial_num = db.Column(db.Integer)
 
-    # Foreign Keys
+    # TestEquipmentType Relationship
     test_equipment_type_id = db.Column(db.Integer, db.ForeignKey('test_equipment_type.id'))
+    test_equipment_type = db.relationship('TestEquipmentType', back_populates='test_equipment')
 
-    # Relationships
-    calibration_records = db.relationship('CalibrationRecord', backref='test_equipment', lazy='dynamic')
-    channels = db.relationship('ChannelEquipmentRecord', back_populates='test_equipment')
+    # Other Relationships
+    calibration_records = db.relationship('CalibrationRecord', back_populates='test_equipment')
+    channel_equipment_records = db.relationship('ChannelEquipmentRecord', back_populates='test_equipment')
     
     def __repr__(self):
 	    return f'<TestEquipment {self.asset_id}: {self.manufacturer} {self.name}>'
@@ -600,12 +621,13 @@ class TestEquipment(db.Model):
 
 
 class TestEquipmentType(db.Model):
+    __tablename__ = 'test_equipment_type'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32))
 
-    # Relationships
-    test_equipment = db.relationship('TestEquipment', backref='test_equipment_type',
-        lazy='dynamic')
+    # TestEquipment Relationship
+    test_equipment = db.relationship('TestEquipment', back_populates='test_equipment_type')
+    channels = db.relationship('Channel', secondary=channel_required_equipment, back_populates='required_test_equipment')
 
     def __repr__(self):
         return f'<TestEquipmentType {self.id}: {self.name}>'
@@ -623,46 +645,54 @@ class TestEquipmentType(db.Model):
 
 
 class CalibrationRecord(db.Model):
+    __tablename__ = 'calibration_record'
     id = db.Column(db.Integer, primary_key=True)
     calibration_date = db.Column(db.DateTime)
     calibration_due_date = db.Column(db.DateTime)
 
-    # Foreign Keys
+    # Test Equipment Relationship
     test_equipment_id = db.Column(db.Integer, db.ForeignKey('test_equipment.id'))
+    test_equipment = db.relationship('TestEquipment', back_populates='calibration_records')
 
     def __repr__(self):
-        test_equipment = self.get_test_equipment()
+        test_equipment = self.test_equipment
         return f'<CalibrationRecord for {test_equipment.name} ({test_equipment.asset_id}) due {self.calibration_due_date}>'
 
-    def get_test_equipment(self):
-        return TestEquipment.query.filter_by(id=self.test_equipment_id).first()
 
 # Stores a record of the TestEquipment used on a channel when tested for comparing calibration due dates to the test date 
 # Ex. Channel id-4 was tested with DMM id-1 at '16:03 July 2, 2021' where DMM id-1 is due for calibration on 00:00 Nov 12, 2021
 class ChannelEquipmentRecord(db.Model):
+    __tablename__ = 'channel_equipment_record'
     id = db.Column(db.Integer, primary_key=True)
-    channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
-    test_equipment_id = db.Column(db.Integer, db.ForeignKey('test_equipment.id'))
-    test_equipment_type_id = db.Column(db.Integer, db.ForeignKey('test_equipment_type.id'))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     calibration_due_date = db.Column(db.DateTime)
 
-    # Relationships
+    # Channel Relationship
+    channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
     channel = db.relationship('Channel', back_populates='test_equipment')
-    test_equipment = db.relationship('TestEquipment', back_populates='channels')
+
+    # TestEquipmentType Relationship
+    test_equipment_type_id = db.Column(db.Integer, db.ForeignKey('test_equipment_type.id'))
+
+    # TestEquipment Relationship
+    test_equipment_id = db.Column(db.Integer, db.ForeignKey('test_equipment.id'))
+    test_equipment = db.relationship('TestEquipment', back_populates='channel_equipment_records')
 
     def __repr__(self):
         return f'<ChannelEquipmentRecord for channel id-{self.channel_id} and {self.test_equipment.name} ({self.test_equipment.asset_id}) at {self.timestamp}>'
 
 
 class ApprovalRecord(db.Model):
+    __tablename__ = 'approval_record'
     id = db.Column(db.Integer, primary_key=True)
-    channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relationships
+    # Channel Relationship
+    channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
     channel = db.relationship('Channel', back_populates='approvals')
+
+    # User Relationship
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', back_populates='approvals')
 
     def __repr__(self):

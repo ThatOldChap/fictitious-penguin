@@ -4,9 +4,8 @@ from wtforms.fields.core import FieldList, FloatField, FormField
 from wtforms.fields.simple import TextAreaField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import ValidationError, DataRequired
-from app.models import User, Client, Project
-from app.utils import JobStage, JobPhase, MeasurementType, EngUnits, ErrorType
-from app.utils import StandardTestEquipmentTypes, TestPointListType, number_list_choices
+from app.models import *
+from app.utils import *
 
 # FormField class constants
 CUSTOM_SELECT_CLASS = {'class': 'custom-select'}
@@ -25,6 +24,7 @@ QUANTITY_CHOICES = number_list_choices(100, 1)
 SUFFIX_CHOICES = number_list_choices(100, 3)
 TESTPOINT_LIST_TYPE_CHOICES = [(t.value, t.value) for t in TestPointListType]
 TEST_EQUIPMENT_TYPE_CHOICES = EMPTY_SELECT_CHOICE + [(t.value, t.value) for t in StandardTestEquipmentTypes]
+COMPANY_CATEGORY_CHOICES = EMPTY_SELECT_CHOICE + [(c.value, c.value) for c in CompanyCategory]
 
 
 class EditProfileForm(FlaskForm):
@@ -45,21 +45,25 @@ class EditProfileForm(FlaskForm):
                 raise ValidationError('Please use a different username.')
 
 
-class AddClientForm(FlaskForm):
+class AddCompanyForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
-    submit = SubmitField('Add Client')
+    category = SelectField('Category', render_kw=CUSTOM_SELECT_CLASS,
+        choices = COMPANY_CATEGORY_CHOICES, validators=[DataRequired()])
+    submit = SubmitField('Add Company')
 
     # Custom validator for ensuring a unique client name is chosen
     def validate_name(self, name):
-        name = Client.query.filter_by(name=name.data).first()
-        if name is not None:
-            raise ValidationError('Client name already exists. Please choose another.')
+        client_name = Client.query.filter_by(name=name.data).first()
+        supplier_name = Supplier.query.filter_by(name=name.data).first()
+        if client_name is not None and supplier_name is not None:
+            raise ValidationError('Company name already exists. Please choose another.')
 
 
 class AddProjectForm(FlaskForm):
     name = StringField('Project Name', validators=[DataRequired()])
     number = IntegerField('Project Number', validators=[DataRequired()])
     client = SelectField('Client', render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
+    supplier = SelectField('Supplier', render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
     submit = SubmitField('Add Project')
 
     # Custom validator for ensuring a unique project number is chosen
@@ -70,6 +74,7 @@ class AddProjectForm(FlaskForm):
 
 
 class AddJobForm(FlaskForm):
+    supplier_name = SelectField('Supplier Name', render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
     client_name = SelectField('Client Name', render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
     project_number = SelectField('Project Number', render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
     project_name = SelectField('Project Name', render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])

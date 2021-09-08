@@ -33,7 +33,11 @@ class EngUnits(enum.Enum):
 class ErrorType(enum.Enum):
     ENG_UNITS = 'Eng Units'
     PERCENT_FULL_SCALE = f'%FS'
-    PERCENT_READING = '%RDG'    
+    PERCENT_READING = '%RDG'
+
+class CompanyCategory(enum.Enum):
+    SUPPLIER = 'Supplier'
+    CLIENT = 'Client'
 
 class JobStage(enum.Enum):
     IN_HOUSE = "In-House"
@@ -165,37 +169,52 @@ def addStandardTestEquipmentTypes():
     print(f'Successfully added the following TestEquipmentTypes:\n{new_equipment_types}')
 
 # Pre-populate the database with test data
-def initDbForTest():
+def init_test_db():
 
-    from app.models import User, Client, Project, Job, Group, TestEquipment, TestEquipmentType, CalibrationRecord
+    from app.models import User, Client, Supplier, Project, Job, Group, TestEquipment
+    from app.models import TestEquipmentType, CalibrationRecord, Supplier, ApprovalRecord
 
     # Create some Users
-    u1 = User(username='Michael', email='michael@example.com')
-    u1.set_password('test')
-    u2 = User(username='Natalie', email='natalie@example.com')
-    u2.set_password('test')
-    u3 = User(username='Eric', email='eric@example.com')
-    u3.set_password('test')
-    u4 = User(username='John', email='john@example.com')
-    u4.set_password('test')    
-    db.session.add_all([u1, u2, u3, u4])
+    usernames = ['Michael', 'Natalie', 'Eric', 'John']
+    for i in range(len(usernames)):
+        name = usernames[i]
+        u = User(
+            username=name,
+            email=name + '@example.com'
+        )
+        u.set_password('test')
+        db.session.add(u)
     db.session.commit()
 
     # Create some Clients
-    c1 = Client(name="Rolls-Royce")
-    c2 = Client(name="Pratt & Whitney")
-    c3 = Client(name="SEBW")
-    db.session.add_all([c1, c2, c3])
+    client_names = ['Rolls-Royce', 'Pratt & Whitney', 'SEBW']
+    for i in range(len(client_names)):
+        c = Client(name=client_names[i])
+        db.session.add(c)
+    db.session.commit()
+
+    # Create some Suppliers
+    supplier_names = ['MDS', 'Lockheed Martin']
+    for i in range(len(supplier_names)):
+        s = Supplier(name=supplier_names[i])
+        db.session.add(s)
     db.session.commit()
 
     # Create some Projects
-    p1 = Project(name='Test Bed 80', number='0542', client_id=c1.id)
-    p2 = Project(name='RTS Development', number='0545', client_id=c1.id)
-    p3 = Project(name='UTRC Compressor', number='0529', client_id=c2.id)
-    p4 = Project(name='Aero E-Fan', number='0551', client_id=c2.id)
-    p5 = Project(name='Core 2 Facility', number='1051', client_id=c3.id)
-    p6 = Project(name='High Altitude Facility', number='1003', client_id=c3.id)
-    db.session.add_all([p1, p2, p3, p4, p5, p6])
+    project_names = ['Test Bed 80', 'RTS Development', 'UTRC Compressor', 'Aero E-Fan',
+        'Core 2 Facility', 'High Altitude Facility']
+    project_numbers = ['0542', '0545', '0529', '0551', '1051', '1003']
+    clients = Client.query.all()
+    supplier = Supplier.query.first()
+    i = 0
+    for c in clients:        
+        p1 = Project(name=project_names[i], number=project_numbers[i],
+            client_id=c.id, supplier_id=supplier[0])
+        i += 1
+        p2 = Project(name=project_names[i], number=project_numbers[i],
+            client_id=c.id, supplier_id=supplier[0])
+        i += 1
+        db.session.add_all([[p1, p2]])
     db.session.commit()
 
     # Create some Jobs for the Projects
