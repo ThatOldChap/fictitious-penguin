@@ -209,12 +209,12 @@ def init_test_db():
     i = 0
     for c in clients:        
         p1 = Project(name=project_names[i], number=project_numbers[i],
-            client_id=c.id, supplier_id=supplier[0])
+            client_id=c.id, supplier_id=supplier.id)
         i += 1
         p2 = Project(name=project_names[i], number=project_numbers[i],
-            client_id=c.id, supplier_id=supplier[0])
+            client_id=c.id, supplier_id=supplier.id)
         i += 1
-        db.session.add_all([[p1, p2]])
+        db.session.add_all([p1, p2])
     db.session.commit()
 
     # Create some Jobs for the Projects

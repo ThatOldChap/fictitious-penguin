@@ -141,7 +141,7 @@ class Channel(db.Model):
         return f'<Channel {self.name}>'
 
     def num_testpoints(self):
-        return len(self.testpoints.all())
+        return len(self.testpoints)
 
     def measurement_range(self):
         return self.max_range - self.min_range
@@ -328,12 +328,12 @@ class Group(db.Model):
         return f'<Group {self.name}>'
 
     def num_channels(self):
-        return len(self.channels.all())
+        return len(self.channels)
 
     def channel_stats(self):
 
         # Return the analyzed list of all the channels in the Group
-        return channel_stats(self.channels.all())
+        return channel_stats(self.channels)
 
     def update_status(self):
 
@@ -383,9 +383,9 @@ class Job(db.Model):
         # List of all the job's channels
         channels = []
         
-        for group in self.groups.all():
+        for group in self.groups:
             # Add the group's list of channels to the job's list of channels
-            channels += group.channels.all()
+            channels += group.channels
         
         return channels
 
@@ -430,7 +430,7 @@ class Project(db.Model):
     status = db.Column(db.String(16), default=Status.NOT_STARTED.value)
 
     # Relationships
-    jobs = db.relationship('Job', backref='project', lazy='dynamic')
+    jobs = db.relationship('Job', back_populates='project')
     members = db.relationship('User', secondary=project_members, back_populates='projects')
     test_equipment = db.relationship('TestEquipment', secondary=project_equipment, back_populates='projects')
     
@@ -450,7 +450,7 @@ class Project(db.Model):
         # List of all the projects channels
         channels = []
 
-        for job in self.jobs.all():
+        for job in self.jobs:
             # Add the jobs's list of channels to the projects's list of channels
             channels += job.channels()
         
@@ -489,7 +489,7 @@ class Project(db.Model):
         return channel_progress(self)
 
     def has_member(self, user):
-        return self.members.filter(project_members.c.user_id == user.id).count() > 0
+        return user in self.members
 
     def add_member(self, user):
         if not self.has_member(user):
@@ -500,7 +500,7 @@ class Project(db.Model):
             self.members.remove(user)  
 
     def has_test_equipment(self, test_equipment):
-        return self.test_equipment.filter_by(id=test_equipment.id).count() > 0
+        return test_equipment in self.test_equipment
 
     def add_test_equipment(self, test_equipment):
         if not self.has_test_equipment(test_equipment):
@@ -509,6 +509,19 @@ class Project(db.Model):
     def remove_test_equipment(self, test_equipment):
         if self.has_test_equipment(test_equipment):
             self.test_equipment.remove(test_equipment)
+    
+    def test_equipment_of_type(self, test_equipment_type):
+
+        # Get a list of all the TestEquipment on the project
+        all_project_test_equipment = self.test_equipment
+        test_equipment_list = []
+
+        # Filter the list to be only TestEquipment with the same TestEquipmentType specified
+        for test_equipment in all_project_test_equipment:
+            if test_equipment.name == test_equipment_type.name:
+                test_equipment_list.append(test_equipment)
+        
+        return test_equipment_list
 
 
 class Supplier(db.Model):
@@ -546,6 +559,7 @@ class User(UserMixin, db.Model):
 
     # Relationships
     approval_records = db.relationship('ApprovalRecord', back_populates='user')
+    projects = db.relationship('Project', secondary=project_members, back_populates='members')
 
     def __repr__(self):
         return f'<User {self.username}: {self.email}>'
@@ -599,6 +613,7 @@ class TestEquipment(db.Model):
     # Other Relationships
     calibration_records = db.relationship('CalibrationRecord', back_populates='test_equipment')
     channel_equipment_records = db.relationship('ChannelEquipmentRecord', back_populates='test_equipment')
+    projects = db.relationship('Project', secondary=project_equipment, back_populates='test_equipment')
     
     def __repr__(self):
 	    return f'<TestEquipment {self.asset_id}: {self.manufacturer} {self.name}>'
@@ -611,7 +626,7 @@ class TestEquipment(db.Model):
 
     def due_date(self):
         # Get the most recent calibration record
-        latest_record = self.calibration_records.filter_by(test_equipment_id=self.id) \
+        latest_record = CalibrationRecord.query.filter_by(test_equipment_id=self.id) \
             .order_by(CalibrationRecord.calibration_due_date.desc()).first()
         
         if latest_record is None:
@@ -633,7 +648,7 @@ class TestEquipmentType(db.Model):
         return f'<TestEquipmentType {self.id}: {self.name}>'
 
     def has_test_equipment(self, test_equipment):
-        return self.test_equipment.filter_by(id=test_equipment.id).count() > 0
+        return test_equipment in self.test_equipment
 
     def add_test_equipment(self, test_equipment):
         if not self.has_test_equipment(test_equipment):
@@ -693,7 +708,7 @@ class ApprovalRecord(db.Model):
 
     # User Relationship
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship('User', back_populates='approvals')
+    user = db.relationship('User', back_populates='approval_records')
 
     def __repr__(self):
         return f'<ApprovalRecord for channel id-{self.channel_id} signed by user id-{self.user_id} at {self.timestamp}>'    

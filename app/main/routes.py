@@ -665,7 +665,7 @@ def edit_project_members(project_id):
 
     # Get a list of the existing members on the Project
     project = Project.query.filter_by(id=project_id).first()
-    all_members = project.members.all()
+    all_members = project.members
     existing_members = []
 
     # TODO: Split up form to 2 sections: Supplier and Client
@@ -713,7 +713,7 @@ def edit_project_members(project_id):
         flash('Project Members have been successfully updated.')
         print(f'The following users were added to the {project.name} project: \
             \nAdded Users: {added_users}\nRemoved Users: {removed_users} \
-            \nUpdated Project Member List: {project.members.all()}')
+            \nUpdated Project Member List: {project.members}')
 
         return redirect(url_for('main.projects', project_id=project_id))
     
@@ -733,11 +733,11 @@ def edit_project_test_equipment(project_id):
     
     # Get a list of the existing TestEquipment that has been assigned to the Project
     project = Project.query.filter_by(id=project_id).first()
-    all_equipment = project.test_equipment.all()
+    all_equipment = project.test_equipment
     existing_equipment_list = []
 
     for test_equipment_type in test_equipment_types:        
-        for test_equipment in test_equipment_type.test_equipment.all():
+        for test_equipment in test_equipment_type.test_equipment:
 
             # Get all the existing equipment on the project to pre-populate the fields
             equipment_exists = all_equipment.count(test_equipment) > 0
@@ -760,7 +760,7 @@ def edit_project_test_equipment(project_id):
 
         # Update the test equipment assigned to the project
         for test_equipment_type in test_equipment_types:
-            for test_equipment in test_equipment_type.test_equipment.all():
+            for test_equipment in test_equipment_type.test_equipment:
 
                 if form.data['checkbox_equipment_' + str(test_equipment.id)]:
 
@@ -782,7 +782,7 @@ def edit_project_test_equipment(project_id):
         flash('Project Equipment List has been successfully updated.')
         print(f'The following test equipment was added to the {project.name} project: \
             \nAdded Equipment: {added_equipment}\nRemoved Equipment: {removed_equipment} \
-            \nUpdated Project Equipment List: {project.test_equipment.all()}')
+            \nUpdated Project Equipment List: {project.test_equipment}')
 
         return redirect(url_for('main.projects', project_id=project_id))
 

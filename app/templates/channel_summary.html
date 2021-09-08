@@ -6,7 +6,7 @@
                     <td class="text-center align-middle table-primary">Test Equipment</td>
                     <td class="text-center">
                     {# Iterate through each of the Required TestEquipment for the channel and add a button for each #}
-                    {% for test_equipment_type in channel.required_test_equipment.all() %}
+                    {% for test_equipment_type in channel.required_test_equipment %}
                         {% set equipment_id = "equipment-{}".format(test_equipment_type.id) %}
                         <div class="row">
                             <div class="col-12 g-1">
@@ -27,7 +27,7 @@
                                     {% endif %}
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         {# Create additional dropdown list items for each TestEquipment item assigned to the Project for the specific TestEquipmentType #}
-                                        {% for test_equipment in group.job.project.test_equipment.filter_by(name=test_equipment_type.name).all() %}
+                                        {% for test_equipment in group.job.project.test_equipment_of_type(test_equipment_type) %}
                                             <li name="equipment-choice" data-equipment-id="{{ test_equipment.id }}">
                                                 <a class="dropdown-item" href="javascript:void(0);">
                                                     <span name="asset-id">{{ test_equipment.asset_id }}</span>: Due {{ moment(test_equipment.due_date()).format("DD-MMM-YYYY") }}
@@ -54,7 +54,7 @@
                 <tr>
                     <td class="text-center align-middle table-primary">Approvals</td>
                     <td class="text-center align-middle">
-                        {% set approvers = channel.approvals.all() %}                        
+                        {% set approvers = channel.approval_records %}                        
                         {% for approval in approvers %}
                             <button type="button" class="btn btn-outline-primary badge active" data-toggle="buttons">
                                 {{ approval.user.username }}
