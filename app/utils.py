@@ -174,18 +174,6 @@ def init_test_db():
     from app.models import User, Client, Supplier, Project, Job, Group, TestEquipment
     from app.models import TestEquipmentType, CalibrationRecord, Supplier, ApprovalRecord
 
-    # Create some Users
-    usernames = ['Michael', 'Natalie', 'Eric', 'John']
-    for i in range(len(usernames)):
-        name = usernames[i]
-        u = User(
-            username=name,
-            email=name + '@example.com'
-        )
-        u.set_password('test')
-        db.session.add(u)
-    db.session.commit()
-
     # Create some Clients
     client_names = ['Rolls-Royce', 'Pratt & Whitney', 'SEBW']
     for i in range(len(client_names)):
@@ -200,12 +188,37 @@ def init_test_db():
         db.session.add(s)
     db.session.commit()
 
+    # Get all the created Companies
+    clients = Client.query.all()
+    supplier = Supplier.query.first()
+
+    # Create some Users
+    client_users = ['Michael', 'Natalie', 'Eric', 'John']
+    supplier_users = ['Tyler', 'Ethan', 'Troy', 'Mark']
+    for i in range(len(client_users)):
+        u1_name = client_users[i]
+        u1 = User(
+            username=u1_name,
+            email=u1_name + '@example.com',
+            company=clients[i].name,
+            company_category=CompanyCategory.CLIENT.value
+        )
+        u1.set_password('test')
+        u2_name = supplier_users[i]
+        u2 = User(
+            username=u2_name,
+            email=u2_name + '@example.com',
+            company=supplier.name,
+            company_category=CompanyCategory.SUPPLIER.value
+        )
+        u2.set_password('test')
+        db.session.add_all([u1, u2])
+    db.session.commit()
+
     # Create some Projects
     project_names = ['Test Bed 80', 'RTS Development', 'UTRC Compressor', 'Aero E-Fan',
         'Core 2 Facility', 'High Altitude Facility']
-    project_numbers = ['0542', '0545', '0529', '0551', '1051', '1003']
-    clients = Client.query.all()
-    supplier = Supplier.query.first()
+    project_numbers = ['0542', '0545', '0529', '0551', '1051', '1003']    
     i = 0
     for c in clients:        
         p1 = Project(name=project_names[i], number=project_numbers[i],

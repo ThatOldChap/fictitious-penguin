@@ -454,7 +454,7 @@ def update_channel():
                 timestamp=last_updated,
                 calibration_due_date=new_test_equipment.due_date()
             )
-            channel.test_equipment.append(record)
+            channel.equipment_records.append(record)
             db.session.commit()
 
         if key == APPROVAL:
@@ -668,7 +668,6 @@ def edit_project_members(project_id):
 
     # Get a list of the existing members on the Project
     project = Project.query.filter_by(id=project_id).first()
-    all_members = project.members
     existing_members = []
 
     # TODO: Split up form to 2 sections: Supplier and Client
@@ -676,7 +675,7 @@ def edit_project_members(project_id):
     for user in users:
 
         # Gather all the existing members on the project to pre-populate the fields
-        member_exists = all_members.count(user) > 0
+        member_exists = project.has_member(user)
         if member_exists:
             existing_members.append(user)
 
@@ -736,14 +735,13 @@ def edit_project_test_equipment(project_id):
     
     # Get a list of the existing TestEquipment that has been assigned to the Project
     project = Project.query.filter_by(id=project_id).first()
-    all_equipment = project.test_equipment
     existing_equipment_list = []
 
     for test_equipment_type in test_equipment_types:        
         for test_equipment in test_equipment_type.test_equipment:
 
             # Get all the existing equipment on the project to pre-populate the fields
-            equipment_exists = all_equipment.count(test_equipment) > 0
+            equipment_exists = project.has_test_equipment(test_equipment)
             if equipment_exists:
                 existing_equipment_list.append(test_equipment)
 

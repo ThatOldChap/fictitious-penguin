@@ -1,8 +1,8 @@
-"""Reworked db relationships
+"""Restarted db
 
-Revision ID: 6b9e3134e630
+Revision ID: 143d8a3aff2e
 Revises: 
-Create Date: 2021-09-08 00:17:41.535357
+Create Date: 2021-09-08 22:54:16.230816
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '6b9e3134e630'
+revision = '143d8a3aff2e'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -125,6 +125,8 @@ def upgrade():
     sa.Column('interface', sa.String(length=32), nullable=True),
     sa.Column('notes', sa.String(length=128), nullable=True),
     sa.Column('group_id', sa.Integer(), nullable=True),
+    sa.Column('supplier_approval', sa.Boolean(), nullable=True),
+    sa.Column('client_approval', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

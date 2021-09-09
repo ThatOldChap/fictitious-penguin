@@ -48,7 +48,7 @@ class EditProfileForm(FlaskForm):
 class AddCompanyForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     category = SelectField('Category', render_kw=CUSTOM_SELECT_CLASS,
-        choices = COMPANY_CATEGORY_CHOICES, validators=[DataRequired()])
+        choices=COMPANY_CATEGORY_CHOICES, validators=[DataRequired()])
     submit = SubmitField('Add Company')
 
     # Custom validator for ensuring a unique client name is chosen

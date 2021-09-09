@@ -132,20 +132,20 @@ class Channel(db.Model):
     group = db.relationship('Group', back_populates='channels')
 
     # Other Relationships
-    testpoints = db.relationship('TestPoint', back_populates='channel')
-    test_equipment = db.relationship('ChannelEquipmentRecord', back_populates='channel')
-    required_test_equipment = db.relationship('TestEquipmentType', secondary=channel_required_equipment, back_populates='channels')
+    testpoints = db.relationship('TestPoint', back_populates='channel', lazy='dynamic')
+    equipment_records = db.relationship('ChannelEquipmentRecord', back_populates='channel', lazy='dynamic')
+    required_test_equipment = db.relationship('TestEquipmentType', secondary=channel_required_equipment, back_populates='channels', lazy='dynamic')
 
     # Approval Fields
-    supplier_approval = db.Column(db.Boolean, default='False')
-    client_approval = db.Column(db.Boolean, default='False')
-    approval_records = db.relationship('ApprovalRecord', back_populates='channel')
+    supplier_approval = db.Column(db.Boolean)
+    client_approval = db.Column(db.Boolean)
+    approval_records = db.relationship('ApprovalRecord', back_populates='channel', lazy='dynamic')
 
     def __repr__(self):
         return f'<Channel {self.name}>'
 
     def num_testpoints(self):
-        return len(self.testpoints)
+        return len(self.testpoints.all())
 
     def measurement_range(self):
         return self.max_range - self.min_range
@@ -214,7 +214,7 @@ class Channel(db.Model):
         num_failed = 0
 
         # Tally up the results
-        for testpoint in self.testpoints:
+        for testpoint in self.testpoints.all():
 
             test_result = testpoint.test_result
 
@@ -272,39 +272,23 @@ class Channel(db.Model):
 
     def current_test_equipment(self, test_equipment_type_id):
 
-        # Sorting criteria to sort by timestamp of a ChannelEquipmentRecord
-        def sort_by_datetime(channel_equipment_record):
-            return channel_equipment_record.timestamp
+        # Get the most recent ChannelEquipmentRecord that has a record of being used on the channel
+        record = self.equipment_records.filter_by(test_equipment_type_id=test_equipment_type_id) \
+            .order_by(ChannelEquipmentRecord.timestamp.desc()).first()
 
-        # Return the TestEquipment that is used on the latest record for a channel
-        records = self.test_equipment
-
-        # Return None if the channel has no history of TestEquipment assigned to it
-        if len(records) == 0:
-            return None
-
-        # Starting at the most recent record, check through all the records for the specified TestEquipmentType
-        records.sort(reverse=True, key=sort_by_datetime)
-        for record in records:
-            if record.test_equipment_type_id == test_equipment_type_id:
-                return TestEquipment.query.filter_by(id=record.test_equipment_id).first()
-
-        # If no record is found, then return None
-        return None
+        return record.test_equipment if record is not None else None
 
     def update_required_approvals(self):
         job_phase = self.group.job.phase
 
         # Add a requirement for the Supplier's approval if the job is for Commissioning
-        if job_phase == JobPhase.COMMISSIONING.value:
-            self.supplier_approval = True
+        self.supplier_approval = job_phase == JobPhase.COMMISSIONING.value
         
         # Add a requirement for a Client's approval if the job is an ATP
-        if job_phase == JobPhase.ATP.value:
-            self.client_approval = True
+        self.client_approval = job_phase == JobPhase.ATP.value
 
     def has_approval_from_user(self, user):
-        return self.approvals.filter(user_id=user.id).count() > 0
+        return self.approval_records.filter(user_id=user.id).count() > 0
 
     def add_approval(self, user):
         if not self.has_approval_from_user(user):
@@ -315,14 +299,17 @@ class Channel(db.Model):
                 user_id=user.id,
                 timestamp=datetime.utcnow()
             )
-            self.approvals.append(record)
+            self.approval_records.append(record)
 
     def remove_approval(self, user):
         if self.has_approval_from_user(user):
 
             # Find the existing record to remove
-            record = self.approvals.filter_by(user_id=user.id).first()
-            self.approvals.remove(record)
+            record = self.approval_records.filter_by(user_id=user.id).first()
+            self.approval_records.remove(record)
+
+    def supplier_approval_record(self):
+        return self.approval_records.filter_by()
 
 
 class Group(db.Model):
@@ -337,18 +324,18 @@ class Group(db.Model):
     job = db.relationship('Job', back_populates='groups')
 
     # Channel Relationship
-    channels = db.relationship('Channel', back_populates='group')
+    channels = db.relationship('Channel', back_populates='group', lazy='dynamic')
 
     def __repr__(self):
         return f'<Group {self.name}>'
 
     def num_channels(self):
-        return len(self.channels)
+        return len(self.channels.all())
 
     def channel_stats(self):
 
         # Return the analyzed list of all the channels in the Group
-        return channel_stats(self.channels)
+        return channel_stats(self.channels.all())
 
     def update_status(self):
 
@@ -388,7 +375,7 @@ class Job(db.Model):
     project = db.relationship('Project', back_populates='jobs')
 
     # Group Relationship
-    groups = db.relationship('Group', back_populates='job')
+    groups = db.relationship('Group', back_populates='job', lazy='dynamic')
 
     def __repr__(self):
         return f'<Job: {self.stage} {self.phase} for the {self.project.name} project>'
@@ -398,9 +385,9 @@ class Job(db.Model):
         # List of all the job's channels
         channels = []
         
-        for group in self.groups:
+        for group in self.groups.all():
             # Add the group's list of channels to the job's list of channels
-            channels += group.channels
+            channels += group.channels.all()
         
         return channels
 
@@ -445,9 +432,9 @@ class Project(db.Model):
     status = db.Column(db.String(16), default=Status.NOT_STARTED.value)
 
     # Relationships
-    jobs = db.relationship('Job', back_populates='project')
-    members = db.relationship('User', secondary=project_members, back_populates='projects')
-    test_equipment = db.relationship('TestEquipment', secondary=project_equipment, back_populates='projects')
+    jobs = db.relationship('Job', back_populates='project', lazy='dynamic')
+    members = db.relationship('User', secondary=project_members, back_populates='projects', lazy='dynamic')
+    test_equipment = db.relationship('TestEquipment', secondary=project_equipment, back_populates='projects', lazy='dynamic')
     
     # Client reference
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
@@ -465,7 +452,7 @@ class Project(db.Model):
         # List of all the projects channels
         channels = []
 
-        for job in self.jobs:
+        for job in self.jobs.all():
             # Add the jobs's list of channels to the projects's list of channels
             channels += job.channels()
         
@@ -527,16 +514,7 @@ class Project(db.Model):
     
     def test_equipment_of_type(self, test_equipment_type):
 
-        # Get a list of all the TestEquipment on the project
-        all_project_test_equipment = self.test_equipment
-        test_equipment_list = []
-
-        # Filter the list to be only TestEquipment with the same TestEquipmentType specified
-        for test_equipment in all_project_test_equipment:
-            if test_equipment.name == test_equipment_type.name:
-                test_equipment_list.append(test_equipment)
-        
-        return test_equipment_list
+        return self.test_equipment.filter_by(name=test_equipment_type.name).all()
 
 
 class Supplier(db.Model):
@@ -545,7 +523,10 @@ class Supplier(db.Model):
     name = db.Column(db.String(48))
 
     # Project Relationship
-    projects = db.relationship('Project', back_populates='supplier')
+    projects = db.relationship('Project', back_populates='supplier', lazy='dynamic')
+
+    # Employee Relationship
+    employees = db.relationship('CompanyEmployeeRecord', back_populates='supplier', lazy='dynamic')
 
     def __repr__(self):
         return f'<Supplier: {self.name}>'
@@ -557,7 +538,10 @@ class Client(db.Model):
     name = db.Column(db.String(48))
 
     # Project Relationship
-    projects = db.relationship('Project', back_populates='client')
+    projects = db.relationship('Project', back_populates='client', lazy='dynamic')
+
+    # Employee Relationship
+    employees = db.relationship('CompanyEmployeeRecord', back_populates='client', lazy='dynamic')
 
     def __repr__(self):
         return f'<Client: {self.name}>'
@@ -573,8 +557,9 @@ class User(UserMixin, db.Model):
     token_expiration = db.Column(db.DateTime)
 
     # Relationships
-    approval_records = db.relationship('ApprovalRecord', back_populates='user')
-    projects = db.relationship('Project', secondary=project_members, back_populates='members')
+    approval_records = db.relationship('ApprovalRecord', back_populates='user', lazy='dynamic')
+    projects = db.relationship('Project', secondary=project_members, back_populates='members', lazy='dynamic')
+
 
     def __repr__(self):
         return f'<User {self.username}: {self.email}>'
@@ -626,9 +611,9 @@ class TestEquipment(db.Model):
     test_equipment_type = db.relationship('TestEquipmentType', back_populates='test_equipment')
 
     # Other Relationships
-    calibration_records = db.relationship('CalibrationRecord', back_populates='test_equipment')
-    channel_equipment_records = db.relationship('ChannelEquipmentRecord', back_populates='test_equipment')
-    projects = db.relationship('Project', secondary=project_equipment, back_populates='test_equipment')
+    calibration_records = db.relationship('CalibrationRecord', back_populates='test_equipment', lazy='dynamic')
+    channel_equipment_records = db.relationship('ChannelEquipmentRecord', back_populates='test_equipment', lazy='dynamic')
+    projects = db.relationship('Project', secondary=project_equipment, back_populates='test_equipment', lazy='dynamic')
     
     def __repr__(self):
 	    return f'<TestEquipment {self.asset_id}: {self.manufacturer} {self.name}>'
@@ -641,13 +626,7 @@ class TestEquipment(db.Model):
 
     def due_date(self):
         # Get the most recent calibration record
-        latest_record = CalibrationRecord.query.filter_by(test_equipment_id=self.id) \
-            .order_by(CalibrationRecord.calibration_due_date.desc()).first()
-        
-        if latest_record is None:
-            return None
-        else:
-            return latest_record.calibration_due_date
+        return self.calibration_records.order_by(CalibrationRecord.calibration_due_date.desc()).first().calibration_due_date
 
 
 class TestEquipmentType(db.Model):
@@ -656,8 +635,8 @@ class TestEquipmentType(db.Model):
     name = db.Column(db.String(32))
 
     # TestEquipment Relationship
-    test_equipment = db.relationship('TestEquipment', back_populates='test_equipment_type')
-    channels = db.relationship('Channel', secondary=channel_required_equipment, back_populates='required_test_equipment')
+    test_equipment = db.relationship('TestEquipment', back_populates='test_equipment_type', lazy='dynamic')
+    channels = db.relationship('Channel', secondary=channel_required_equipment, back_populates='required_test_equipment', lazy='dynamic')
 
     def __repr__(self):
         return f'<TestEquipmentType {self.id}: {self.name}>'
@@ -699,9 +678,9 @@ class ChannelEquipmentRecord(db.Model):
 
     # Channel Relationship
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
-    channel = db.relationship('Channel', back_populates='test_equipment')
+    channel = db.relationship('Channel', back_populates='equipment_records')
 
-    # TestEquipmentType Relationship
+    # TestEquipmentType ForeignKey
     test_equipment_type_id = db.Column(db.Integer, db.ForeignKey('test_equipment_type.id'))
 
     # TestEquipment Relationship
@@ -716,6 +695,7 @@ class ApprovalRecord(db.Model):
     __tablename__ = 'approval_record'
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    company_category = db.Column(db.String())
 
     # Channel Relationship
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
@@ -727,3 +707,18 @@ class ApprovalRecord(db.Model):
 
     def __repr__(self):
         return f'<ApprovalRecord for channel id-{self.channel_id} signed by user id-{self.user_id} at {self.timestamp}>'    
+
+
+class CompanyEmployeeRecord(db.Model):
+    __tablename__ = 'company_employee_record'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    # Supplier Relationship
+    supplier_id = db.Column(db.Integer, db.ForeignKey('supplier.id'))
+    supplier = db.relationship('Supplier', back_populates='employees')
+
+    # Client Relationship
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
+    client = db.relationship('Client', back_populates='employees')
+

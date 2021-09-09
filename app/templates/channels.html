@@ -48,7 +48,7 @@
             {% for channel, channel_form in zip(channels, channels_form.channels) %}
                 {% include 'channel.html' %}
                 {% include 'channel_summary.html' %}                    
-                {% for testpoint, testpoint_form in zip(channel.testpoints, channel_form.testpoints) %}
+                {% for testpoint, testpoint_form in zip(channel.testpoints.all(), channel_form.testpoints) %}
                     {% include 'testpoint.html' %}
                 {% endfor %}
             {% endfor %}
@@ -96,6 +96,8 @@
             let SUMMARY_PARENT_NAME = 'summary-parent';
             let ASSET_ID_NAME = 'asset-id';
             let EQUIPMENT_CHOICE_NAME = 'equipment-choice';
+            let SUPPLIER_APPROVAL_NAME = 'supplier-approval';
+            let CLIENT_APPROVAL_NAME = 'client-approval';
 
             // Update the progress bars as the page is loaded
             updateAllProgressBars(CHANNEL, TESTPOINT);
@@ -227,6 +229,8 @@
                     $(parentButton).removeClass('btn-outline-primary').addClass('btn-primary');
                 }
             });
+
+            $(`[name=${SUPPLIER_APPROVAL_NAME}]`)
 
             // Function for sending an ajax request to update Channel values in the database
             function updateChannel(data, parentChannel) {

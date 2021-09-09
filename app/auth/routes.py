@@ -5,7 +5,8 @@ from app import db
 from app.auth import bp
 from app.auth.forms import LoginForm, RegistrationForm, \
     ResetPasswordRequestForm, ResetPasswordForm
-from app.models import User
+from app.models import Client, Supplier, User
+from app.main.forms import EMPTY_SELECT_CHOICE
 from app.auth.email import send_password_reset_email
 
 
@@ -54,10 +55,20 @@ def register():
 
     # Check to see if a validated form has been submitted in the POST request 
     form = RegistrationForm()
+
+    # Generate the list of SelectField choices to populate in the form
+    companies = Supplier.query.all() + Client.query.all()
+    form.company.choices = EMPTY_SELECT_CHOICE + [(c.name, c.name) for c in companies.sort()]
+    
     if form.validate_on_submit():
 
         # Add the new registered user into the database
-        user = User(username=form.username.data, email=form.email.data)
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            company=form.company.data,
+            company_category=form.company_category.data
+        )
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
