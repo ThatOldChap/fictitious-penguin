@@ -135,7 +135,11 @@ class Channel(db.Model):
     testpoints = db.relationship('TestPoint', back_populates='channel')
     test_equipment = db.relationship('ChannelEquipmentRecord', back_populates='channel')
     required_test_equipment = db.relationship('TestEquipmentType', secondary=channel_required_equipment, back_populates='channels')
-    approvals = db.relationship('ApprovalRecord', back_populates='channel')
+
+    # Approval Fields
+    supplier_approval = db.Column(db.Boolean, default='False')
+    client_approval = db.Column(db.Boolean, default='False')
+    approval_records = db.relationship('ApprovalRecord', back_populates='channel')
 
     def __repr__(self):
         return f'<Channel {self.name}>'
@@ -287,6 +291,17 @@ class Channel(db.Model):
 
         # If no record is found, then return None
         return None
+
+    def update_required_approvals(self):
+        job_phase = self.group.job.phase
+
+        # Add a requirement for the Supplier's approval if the job is for Commissioning
+        if job_phase == JobPhase.COMMISSIONING.value:
+            self.supplier_approval = True
+        
+        # Add a requirement for a Client's approval if the job is an ATP
+        if job_phase == JobPhase.ATP.value:
+            self.client_approval = True
 
     def has_approval_from_user(self, user):
         return self.approvals.filter(user_id=user.id).count() > 0
@@ -704,7 +719,7 @@ class ApprovalRecord(db.Model):
 
     # Channel Relationship
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
-    channel = db.relationship('Channel', back_populates='approvals')
+    channel = db.relationship('Channel', back_populates='approval_records')
 
     # User Relationship
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))

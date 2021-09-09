@@ -328,6 +328,9 @@ def add_channel(group_id):
             # Add the required TestEquipmentType for the new channel
             for test_equipment_type in required_test_equipment_types:
                 channel.add_test_equipment_type(test_equipment_type)
+
+            # Add the required Approvals for the new channel
+            channel.update_required_approvals()
             db.session.commit()
         
         flash(f'{quantity} new channels have been added to the {channel.group.name} group each with {num_testpoints} testpoints.')
