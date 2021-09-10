@@ -140,7 +140,6 @@ def number_list_choices(last_num, num_digits):
         num_list.append((i, value))
     return num_list
 
-
 # Prepopulate the database with the StandardTestEquipmentTypes
 def addStandardTestEquipmentTypes():
     
@@ -171,63 +170,95 @@ def addStandardTestEquipmentTypes():
 # Pre-populate the database with test data
 def init_test_db():
 
-    from app.models import User, Client, Supplier, Project, Job, Group, TestEquipment
-    from app.models import TestEquipmentType, CalibrationRecord, Supplier, ApprovalRecord
+    from app.models import User, Company, Project, Job, Group, TestEquipment
+    from app.models import TestEquipmentType, CalibrationRecord, ApprovalRecord
 
     # Create some Clients
-    client_names = ['Rolls-Royce', 'Pratt & Whitney', 'SEBW']
+    client_names = ['Rolls-Royce', 'Pratt & Whitney', 'SEBW']    
     for i in range(len(client_names)):
-        c = Client(name=client_names[i])
+        c = Company(
+            name=client_names[i],
+            category=CompanyCategory.CLIENT.value
+        )
         db.session.add(c)
     db.session.commit()
 
     # Create some Suppliers
-    supplier_names = ['MDS', 'Lockheed Martin']
+    supplier_names = ['MDS', 'MDS UK']
     for i in range(len(supplier_names)):
-        s = Supplier(name=supplier_names[i])
-        db.session.add(s)
+        c = Company(
+            name=supplier_names[i],
+            category=CompanyCategory.SUPPLIER.value
+        )
+        db.session.add(c)
     db.session.commit()
 
     # Get all the created Companies
-    clients = Client.query.all()
-    supplier = Supplier.query.first()
+    clients = Company.clients()
+    suppliers = Company.suppliers()
 
-    # Create some Users
-    client_users = ['Michael', 'Natalie', 'Eric', 'John']
-    supplier_users = ['Tyler', 'Ethan', 'Troy', 'Mark']
-    for i in range(len(client_users)):
-        u1_name = client_users[i]
-        u1 = User(
-            username=u1_name,
-            email=u1_name + '@example.com',
-            company=clients[i].name,
-            company_category=CompanyCategory.CLIENT.value
-        )
-        u1.set_password('test')
-        u2_name = supplier_users[i]
-        u2 = User(
-            username=u2_name,
-            email=u2_name + '@example.com',
-            company=supplier.name,
-            company_category=CompanyCategory.SUPPLIER.value
-        )
-        u2.set_password('test')
-        db.session.add_all([u1, u2])
+    # Create some Client Users
+    client_user_first_names = ['Steve', 'Joe', 'Darren', 'Paul']    
+    client_user_last_names = ['Chew', 'Brook', 'Till', 'Brass']    
+    for c in clients:
+        for i in range(len(client_user_first_names)):
+            first_name = client_user_first_names[i]
+            last_name = client_user_last_names[i]
+            username = first_name + last_name + str(c.id)
+            u = User(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                email=username + '@example.com',
+                company_id=c.id
+            )
+            u.set_password('test')
+            db.session.add(u)
+            db.session.commit()
+            c.add_employee(u)
+    db.session.commit()
+    
+    # Create some Supplier Users
+    supplier_user_first_names = ['Michael', 'Tyler', 'Ethan', 'Troy']
+    supplier_user_last_names = ['Chaplin', 'Seal', 'Stevens', 'Schultz']
+    for s in suppliers:
+        for i in range(len(supplier_user_first_names)):
+            first_name = supplier_user_first_names[i]
+            last_name = supplier_user_last_names[i]
+            username = first_name + last_name + str(s.id)
+            u = User(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                email=username + '@example.com',
+                company_id=s.id,
+            )
+            u.set_password('test')
+            db.session.add(u)
+            db.session.commit()
+            s.add_employee(u)
     db.session.commit()
 
+    # Get the main supplier
+    supplier = suppliers[0]
+
     # Create some Projects
-    project_names = ['Test Bed 80', 'RTS Development', 'UTRC Compressor', 'Aero E-Fan',
-        'Core 2 Facility', 'High Altitude Facility']
-    project_numbers = ['0542', '0545', '0529', '0551', '1051', '1003']    
-    i = 0
-    for c in clients:        
-        p1 = Project(name=project_names[i], number=project_numbers[i],
-            client_id=c.id, supplier_id=supplier.id)
-        i += 1
-        p2 = Project(name=project_names[i], number=project_numbers[i],
-            client_id=c.id, supplier_id=supplier.id)
-        i += 1
-        db.session.add_all([p1, p2])
+    project_names = [['Test Bed 80', 'RTS Development'], ['UTRC Compressor', 'Aero E-Fan'],
+        ['Core 2 Facility', 'High Altitude Facility']]
+    project_numbers = [['0542', '0545'], ['0529', '0551'], ['1051', '1003']]    
+    for i in range(len(clients)):
+        for j in range(len(project_names[0])):
+            p = Project(
+                name=project_names[i][j],
+                number=project_numbers[i][j]
+            )
+            db.session.add(p)
+            db.session.commit()
+            p.add_company(clients[i])
+            p.add_company(supplier)
+            p.add_members(clients[i].employees.all())
+            p.add_members(supplier.employees.all())
+            db.session.commit()
     db.session.commit()
 
     # Create some Jobs for the Projects

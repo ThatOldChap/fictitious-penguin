@@ -17,7 +17,7 @@ def index():
     users = User.query.all()
     summary["users"] = users
 
-    companies = Client.query.all() + Supplier.query.all()
+    companies = Company.query.all()
     summary["companies"] = companies
 
     projects = Project.query.all()
@@ -83,18 +83,10 @@ def add_company():
     if form.validate_on_submit():
 
         # Extract the Company's category from the form
-        category = form.category.data
-
-        if category == CompanyCategory.CLIENT.value:
-            company = Client(
-                name=form.name.data,
-                category=category
-            )
-        elif category == CompanyCategory.SUPPLIER.value:
-            company = Supplier(
-                name=form.name.data,
-                category=category
-            )
+        company = Company(
+            name=form.name.data,
+            category=form.category.data
+        )
 
         db.session.add(company)
         db.session.commit()
@@ -112,8 +104,8 @@ def add_project():
     form = AddProjectForm()
 
     # Generate the list of SelectField choices to populate in the form
-    form.client.choices = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in Client.query.order_by('name')]
-    form.supplier.choices = EMPTY_SELECT_CHOICE + [(s.id, s.name) for s in Supplier.query.order_by('name')]
+    form.client.choices = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in Company.clients()]
+    form.supplier.choices = EMPTY_SELECT_CHOICE + [(s.id, s.name) for s in Company.suppliers()]
 
     # User has added a new project
     if form.validate_on_submit():
@@ -121,12 +113,18 @@ def add_project():
         # Add the new project to the database
         project = Project(
             name=form.name.data,
-            number=form.number.data,
-            client_id=form.client.data,
-            supplier_id=form.supplier.data
+            number=form.number.data
         )
         db.session.add(project)
         db.session.commit()
+
+        # Add the specified Companies to the project
+        client = Company.query.filter_by(id=form.client.data).first()
+        supplier = Company.query.filter_by(id=form.supplier.data).first()
+        project.add_company(client)
+        project.add_company(supplier)
+        db.session.commit()
+
         flash(f'Project "{project.name}" has been added to the database.')
 
         return redirect(url_for('main.projects'))
@@ -145,19 +143,23 @@ def projects():
 @bp.route('/projects/<project_id>/add_job', methods=['GET', 'POST'])
 def add_job(project_id):
 
+    # Get the associated project information
+    project = Project.query.filter_by(id=project_id).first()
+    client = project.client()
+    supplier = project.supplier()
+
     # Generate the choices lists for the form's SelectFields
-    CLIENT_NAME_CHOICES = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in Client.query.order_by('name')]
-    SUPPLIER_NAME_CHOICES = EMPTY_SELECT_CHOICE + [(s.id, s.name) for s in Supplier.query.order_by('name')]
-    PROJECT_NUMBER_CHOICES = EMPTY_SELECT_CHOICE + [(p.id, p.number) for p in Project.query.order_by('number')]
-    PROJECT_NAME_CHOICES = EMPTY_SELECT_CHOICE + [(p.id, p.name) for p in Project.query.order_by('name')]
-
-    # Get the chosen project 
-    project = Project.query.filter_by(id=project_id).first() 
-
-    # TODO: Find the company a User belongs to and only allow them to create Projects for their company
+    CLIENT_NAME_CHOICES = [(client.id, client.name)]
+    SUPPLIER_NAME_CHOICES = [(supplier.id, supplier.name)]
+    PROJECT_NUMBER_CHOICES = [(project_id, project.number)]
+    PROJECT_NAME_CHOICES = [(project_id, project.name)]
 
     # Create and prepopulate the form
-    form = AddJobForm(client_name=project.client_id, project_number=project_id, project_name=project_id)
+    form = AddJobForm(
+        client_name=client.id,
+        project_number=project_id,
+        project_name=project_id
+    )
 
     # Add the project_id from which the new job was requested by the user to be added to
     form.project_id = project_id
@@ -180,6 +182,7 @@ def add_job(project_id):
         db.session.add(job)
         db.session.commit()
         flash(f'Job "{job.stage} {job.phase}" has been added to the {job.project.name} project.')
+        
         return redirect(url_for('main.jobs', project_id=project_id))
 
     return render_template('add_item.html', title='Add Job', form=form, item='Job')
@@ -391,8 +394,8 @@ def update_channel():
 
     # Other constants
     MESSAGE = 'message'
-    APPROVAL = 'approval'
-    USER = 'user'
+    SUPPLIER_APPROVAL = 'supplier_approval'
+    CLIENT_APPROVAL = 'client_approval'
 
     # Variables to keep track of the updated fields
     updated_fields = []
@@ -414,11 +417,6 @@ def update_channel():
         # Get the test_equipment_type_id from the ajax request and remove it from the keys to check
         test_equipment_type_id = data[TEST_EQUIPMENT_TYPE_ID]
         data.pop(TEST_EQUIPMENT_TYPE_ID)
-
-    if USER in data:
-        # Get the User from the ajax request and remove it from the keys to check
-        user = User.query.filter_by(id=data[USER]).first() 
-        data.pop(USER)
 
     # Calculate the new number of variables to iterate over
     num_fields = len(data)
@@ -457,14 +455,14 @@ def update_channel():
             channel.equipment_records.append(record)
             db.session.commit()
 
-        if key == APPROVAL:
+        if key == SUPPLIER_APPROVAL or key == CLIENT_APPROVAL:
 
-            if value:
-                channel.add_approval(record)
+            # Update the approval status of the channel
+            if value == 'true':
+                channel.add_approval(current_user)
             else:
-                channel.remove_approval(record)
-
-
+                channel.remove_approval(current_user)
+            db.session.commit()
 
         # Add the processed key to the list of updated fields
         updated_fields.append(key)
@@ -622,7 +620,8 @@ def add_test_equipment():
         db.session.commit()
 
         flash(f'Test Equipment "{test_equipment.asset_id}" {test_equipment.name} has been added to the database.')
-        return redirect(url_for('main.index'))
+        
+        return redirect(url_for('main.test_equipment'))
 
     return render_template('add_item.html', title='Add Test Equipment', form=form, item='Test Equipment')
 
@@ -647,7 +646,8 @@ def add_calibration_record(test_equipment_id):
         db.session.add(calibration_record)
         db.session.commit()
         flash(f'Calibration Record has been added for "{test_equipment}" with a due date of {calibration_record.calibration_due_date}.')
-        return redirect(url_for('main.index'))
+
+        return redirect(url_for('main.test_equipment'))
 
     return render_template('add_item.html', title='Add Calibration Record', form=form, item='Calibration Record')
 
@@ -668,7 +668,6 @@ def edit_project_members(project_id):
 
     # Get a list of the existing members on the Project
     project = Project.query.filter_by(id=project_id).first()
-    existing_members = []
 
     # TODO: Split up form to 2 sections: Supplier and Client
 
@@ -676,8 +675,6 @@ def edit_project_members(project_id):
 
         # Gather all the existing members on the project to pre-populate the fields
         member_exists = project.has_member(user)
-        if member_exists:
-            existing_members.append(user)
 
         # Add the button for the User to the form
         id = 'checkbox-user-' + str(user.id)
@@ -724,7 +721,7 @@ def edit_project_members(project_id):
         print(form.errors.items())
 
     return render_template('edit_project_members.html', title='Edit Project Members',
-        form=form, users=users, existing_members=existing_members)
+        form=form, users=users, project=project)
         
 
 @bp.route('/projects/<project_id>/edit_project_test_equipment.html', methods=['GET', 'POST'])

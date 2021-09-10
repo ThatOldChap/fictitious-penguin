@@ -3,9 +3,8 @@ from werkzeug.urls import url_parse
 from flask_login import login_user, logout_user, current_user
 from app import db
 from app.auth import bp
-from app.auth.forms import LoginForm, RegistrationForm, \
-    ResetPasswordRequestForm, ResetPasswordForm
-from app.models import Client, Supplier, User
+from app.auth.forms import *
+from app.models import Company, User
 from app.main.forms import EMPTY_SELECT_CHOICE
 from app.auth.email import send_password_reset_email
 
@@ -57,21 +56,30 @@ def register():
     form = RegistrationForm()
 
     # Generate the list of SelectField choices to populate in the form
-    companies = Supplier.query.all() + Client.query.all()
-    form.company.choices = EMPTY_SELECT_CHOICE + [(c.name, c.name) for c in companies.sort()]
+    companies = Company.query.all()
+    form.company.choices = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in companies.sort()]
     
     if form.validate_on_submit():
+
+        # Extract the selected company from the form
+        company = Company.query.filter_by(id=form.company.data).first()
 
         # Add the new registered user into the database
         user = User(
             username=form.username.data,
+            first_name=form.first_name.data,
+            last_name = form.last_name.data,
             email=form.email.data,
-            company=form.company.data,
-            company_category=form.company_category.data
+            company_id=company.id
         )
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
+
+        # Add the user to the selected company
+        company.add_employee(user)
+        db.session.commit()
+
         flash('Congratulations, you are now a registered user!')
         return redirect(url_for('auth.login'))
 

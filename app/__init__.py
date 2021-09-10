@@ -32,7 +32,7 @@ def create_app(config_class=Config):
     app.jinja_env.globals.update(zip=zip)
 
     # Import the models to allow for migrate to detect any changes
-    from app.models import User, TestPoint, Channel, Group, Job, Project, Client, TestEquipment
+    from app.models import User, TestPoint, Channel, Group, Job, Project, Company, TestEquipment
     from app.models import TestEquipmentType, CalibrationRecord, ChannelEquipmentRecord
 
     # Pass the application context to each of the initialize dependencies

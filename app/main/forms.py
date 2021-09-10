@@ -53,9 +53,8 @@ class AddCompanyForm(FlaskForm):
 
     # Custom validator for ensuring a unique client name is chosen
     def validate_name(self, name):
-        client_name = Client.query.filter_by(name=name.data).first()
-        supplier_name = Supplier.query.filter_by(name=name.data).first()
-        if client_name is not None and supplier_name is not None:
+        name = Company.query.filter_by(name=name.data).first()
+        if name is not None:
             raise ValidationError('Company name already exists. Please choose another.')
 
 

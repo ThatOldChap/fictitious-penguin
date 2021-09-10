@@ -54,20 +54,60 @@
                 <tr>
                     <td class="text-center align-middle table-primary">Approvals</td>
                     <td class="text-center align-middle">
-                        {% if channel.supplier_approval %}
-                            <button type="button" class="btn btn-outline-primary badge" data-toggle="buttons">
-                                {{ approval.user.username }}
-                            </button>
+                        {% if channel.required_supplier_approval %}
+                            {# Check for a Supplier approval on the channel #}
+                            {% set supplier_approval_record = channel.supplier_approval_record() %}
+                            {% if supplier_approval_record == None %}
+                                {# If there is no Supplier approval record, add the name of the Supplier into the button and allow any Supplier employee to approve #}
+                                {% if current_user.company.category == 'Supplier' %}
+                                    <button type="button" class="btn btn-outline-primary badge" name="supplier-approval" data-toggle="buttons">
+                                        {{ group.job.project.supplier().name }}
+                                    </button>
+                                {% else %}
+                                    <button type="button" class="btn btn-outline-primary badge" name="supplier-approval" data-toggle="buttons" disabled>
+                                        {{ group.job.project.supplier().name }}
+                                    </button>
+                                {% endif %}
+                            {% else %}
+                                {# If there is a Supplier approval record, add the name of the User who signed into the button and only allow the approver to unsign #}
+                                {% if supplier_approval_record.user == current_user %}
+                                    <button type="button" class="btn btn-outline-primary badge active" name="supplier-approval" data-toggle="buttons">
+                                        {{ supplier_approval_record.user.full_name() }}
+                                    </button>
+                                {% else %}
+                                    <button type="button" class="btn btn-outline-primary badge active" name="supplier-approval" data-toggle="buttons" disabled>
+                                        {{ supplier_approval_record.user.full_name() }}
+                                    </button>
+                                {% endif %}
+                            {% endif %}
                         {% endif %}
-
-                        {% set approvers = channel.approval_records %}                     
-                        {% for approval in approvers %}
-                            <button type="button" class="btn btn-outline-primary badge active" data-toggle="buttons">
-                                {{ approval.user.username }}
-                            </button>
-                        {% endfor %}
-                        <button type="button" class="btn btn-outline-primary badge" data-toggle="buttons">Supplier</button>                       
-                        <button type="button" class="btn btn-outline-primary badge" data-toggle="buttons">Client</button>
+                        {% if channel.required_client_approval %}
+                            {# Check for a Client approval on the channel #}
+                            {% set client_approval_record = channel.client_approval_record() %}
+                            {% if client_approval_record == None %}
+                                {# If there is no Client approval record, add the name of the Client into the button and allow any Client employee to approve #}
+                                {% if current_user.company.category == 'Client' %}
+                                    <button type="button" class="btn btn-outline-primary badge" name="client-approval" data-toggle="buttons">
+                                        {{ group.job.project.client().name }}
+                                    </button>
+                                {% else %}
+                                    <button type="button" class="btn btn-outline-primary badge" name="client-approval" data-toggle="buttons" disabled>
+                                        {{ group.job.project.client().name }}
+                                    </button>
+                                {% endif %}
+                            {% else %}
+                                {# If there is a Client approval record, add the name of the User who signed into the button and only allow the approver to unsign #}
+                                {% if client_approval_record.user == current_user %}
+                                    <button type="button" class="btn btn-outline-primary badge active" name="client-approval" data-toggle="buttons">
+                                        {{ client_approval_record.user.full_name() }}
+                                    </button>
+                                {% else %}
+                                    <button type="button" class="btn btn-outline-primary badge active" name="client-approval" data-toggle="buttons" disabled>
+                                        {{ client_approval_record.user.full_name() }}
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
                     </td>
                 </tr>            
                 <tr>

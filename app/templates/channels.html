@@ -230,7 +230,59 @@
                 }
             });
 
-            $(`[name=${SUPPLIER_APPROVAL_NAME}]`)
+            $(`[name=${SUPPLIER_APPROVAL_NAME}]`).click(function(event) {
+
+                // Find the parent row element to extract data from
+                let parent = $(this).parents(`[name^="${SUMMARY_PARENT_NAME}"]`).prev(`[name^="${CHANNEL_PARENT}"]`);
+                let parentDataset = parent[0].dataset;
+
+                // Check the approval state of the button
+                let isApproved;
+
+                if ($(this).hasClass('active')) {
+                    // The button has already been clicked so revert the text
+                    $(this).text('{{ group.job.project.supplier().name }}');
+                    isApproved = false;
+                } else {
+                    // Add the user's full name to the button text
+                    $(this).text('{{ current_user.full_name() }}');
+                    isApproved = true;
+                }
+
+                // Update the channel with the change in supplier approval
+                let data = {
+                    channel_id: parentDataset.channelId,
+                    supplier_approval: isApproved
+                }
+                updateChannel(data, parent);
+            });
+
+            $(`[name=${CLIENT_APPROVAL_NAME}]`).click(function(event) {
+
+                // Find the parent row element to extract data from
+                let parent = $(this).parents(`[name^="${SUMMARY_PARENT_NAME}"]`).prev(`[name^="${CHANNEL_PARENT}"]`);
+                let parentDataset = parent[0].dataset;
+
+                // Check the approval state of the button
+                let isApproved;
+
+                if ($(this).hasClass('active')) {
+                    // The button has already been clicked so revert the text
+                    $(this).text('{{ group.job.project.client().name }}');
+                    isApproved = false;
+                } else {
+                    // Add the user's full name to the button text
+                    $(this).text('{{ current_user.full_name() }}');
+                    isApproved = true;
+                }
+
+                // Update the channel with the change in supplier approval
+                let data = {
+                    channel_id: parentDataset.channelId,
+                    client_approval: isApproved
+                }
+                updateChannel(data, parent);
+            });
 
             // Function for sending an ajax request to update Channel values in the database
             function updateChannel(data, parentChannel) {

@@ -17,6 +17,13 @@ project_members = db.Table(
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
 )
 
+# Stores all the Companies involved in a project
+company_projects = db.Table(
+    'company_projects', db.Model.metadata,
+    db.Column('company_id', db.Integer, db.ForeignKey('company.id')),
+    db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
+)
+
 # Stores all the TestEquipment used for a project
 project_equipment = db.Table(
     'project_equipment', db.Model.metadata,
@@ -137,8 +144,8 @@ class Channel(db.Model):
     required_test_equipment = db.relationship('TestEquipmentType', secondary=channel_required_equipment, back_populates='channels', lazy='dynamic')
 
     # Approval Fields
-    supplier_approval = db.Column(db.Boolean)
-    client_approval = db.Column(db.Boolean)
+    required_supplier_approval = db.Column(db.Boolean)
+    required_client_approval = db.Column(db.Boolean)
     approval_records = db.relationship('ApprovalRecord', back_populates='channel', lazy='dynamic')
 
     def __repr__(self):
@@ -281,14 +288,14 @@ class Channel(db.Model):
     def update_required_approvals(self):
         job_phase = self.group.job.phase
 
-        # Add a requirement for the Supplier's approval if the job is for Commissioning
-        self.supplier_approval = job_phase == JobPhase.COMMISSIONING.value
+        # Add a requirement for the Supplier's approval of a channel regardless of the job
+        self.required_supplier_approval = True
         
         # Add a requirement for a Client's approval if the job is an ATP
-        self.client_approval = job_phase == JobPhase.ATP.value
+        self.required_client_approval = job_phase == JobPhase.ATP.value
 
     def has_approval_from_user(self, user):
-        return self.approval_records.filter(user_id=user.id).count() > 0
+        return self.approval_records.filter_by(user_id=user.id).count() > 0
 
     def add_approval(self, user):
         if not self.has_approval_from_user(user):
@@ -297,7 +304,8 @@ class Channel(db.Model):
             record = ApprovalRecord(
                 channel_id=self.id,
                 user_id=user.id,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.utcnow(),
+                company_category=user.company.category
             )
             self.approval_records.append(record)
 
@@ -309,7 +317,10 @@ class Channel(db.Model):
             self.approval_records.remove(record)
 
     def supplier_approval_record(self):
-        return self.approval_records.filter_by()
+        return self.approval_records.filter_by(company_category=CompanyCategory.SUPPLIER.value).first()
+
+    def client_approval_record(self):
+        return self.approval_records.filter_by(company_category=CompanyCategory.CLIENT.value).first()
 
 
 class Group(db.Model):
@@ -435,17 +446,38 @@ class Project(db.Model):
     jobs = db.relationship('Job', back_populates='project', lazy='dynamic')
     members = db.relationship('User', secondary=project_members, back_populates='projects', lazy='dynamic')
     test_equipment = db.relationship('TestEquipment', secondary=project_equipment, back_populates='projects', lazy='dynamic')
-    
-    # Client reference
-    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
-    client = db.relationship('Client', back_populates='projects')
+    companies = db.relationship('Company', secondary=company_projects, back_populates='projects', lazy='dynamic')
 
-    # Supplier reference
-    supplier_id = db.Column(db.Integer, db.ForeignKey('supplier.id'))
-    supplier = db.relationship('Supplier', back_populates='projects')
 
     def __repr__(self):
         return f'<Project {self.number}: {self.name}>'
+
+    def has_company(self, company):
+        return company in self.companies
+
+    def add_company(self, company):
+        if not self.has_company(company):
+            self.companies.append(company)
+
+    def remove_company(self, company):
+        if self.has_company(company):
+            self.companies.remove(company)
+
+    def supplier(self):
+        for company in self.companies.order_by('name').all():
+            if company.category == CompanyCategory.SUPPLIER.value:
+                return company 
+
+        # Return None is no companies are assigned to the project yet
+        return None
+
+    def client(self):
+        for company in self.companies.order_by('name').all():
+            if company.category == CompanyCategory.CLIENT.value:
+                return company 
+
+        # Return None is no companies are assigned to the project yet
+        return None
 
     def channels(self):
 
@@ -497,9 +529,19 @@ class Project(db.Model):
         if not self.has_member(user):
             self.members.append(user)
 
+    def add_members(self, users):
+        for user in users:
+            if not self.has_member(user):
+                self.members.append(user)
+
     def remove_member(self, user):
         if self.has_member(user):
             self.members.remove(user)  
+
+    def remove_members(self, users):
+        for user in users:
+            if self.has_member(user):
+                self.members.remove(user)  
 
     def has_test_equipment(self, test_equipment):
         return test_equipment in self.test_equipment
@@ -513,52 +555,68 @@ class Project(db.Model):
             self.test_equipment.remove(test_equipment)
     
     def test_equipment_of_type(self, test_equipment_type):
+        return self.test_equipment.filter_by(name=test_equipment_type.name).all()    
 
-        return self.test_equipment.filter_by(name=test_equipment_type.name).all()
 
-
-class Supplier(db.Model):
-    __tablename__ = 'supplier'
+class Company(db.Model):
+    __tablename__ = 'company'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(48))
-
-    # Project Relationship
-    projects = db.relationship('Project', back_populates='supplier', lazy='dynamic')
+    category = db.Column(db.String(24))
 
     # Employee Relationship
-    employees = db.relationship('CompanyEmployeeRecord', back_populates='supplier', lazy='dynamic')
-
-    def __repr__(self):
-        return f'<Supplier: {self.name}>'
-
-
-class Client(db.Model):
-    __tablename__ = 'client'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(48))
+    employees = db.relationship('User', back_populates='company', lazy='dynamic')
 
     # Project Relationship
-    projects = db.relationship('Project', back_populates='client', lazy='dynamic')
-
-    # Employee Relationship
-    employees = db.relationship('CompanyEmployeeRecord', back_populates='client', lazy='dynamic')
+    projects = db.relationship('Project', secondary=company_projects, back_populates='companies', lazy='dynamic')    
 
     def __repr__(self):
-        return f'<Client: {self.name}>'
+        return f'<Company ({self.category}): {self.name}>'
+
+    def suppliers():
+        suppliers = []
+        for company in Company.query.order_by('name').all():
+            if company.category == CompanyCategory.SUPPLIER.value:
+                suppliers.append(company)
+        return suppliers
+
+    def clients():
+        clients = []
+        for company in Company.query.order_by('name').all():
+            if company.category == CompanyCategory.CLIENT.value:
+                clients.append(company)
+        return clients
+
+    def has_employee(self, user):
+        return user in self.employees
+
+    def add_employee(self, user):
+        if not self.has_employee:
+            self.employees.append(user)
+    
+    def remove_employee(self, user):
+        if self.has_employee(user):
+            self.employees.remove(user)
 
 
 class User(UserMixin, db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
+    first_name = db.Column(db.String(48))
+    last_name = db.Column(db.String(48))
     email = db.Column(db.String(64), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
 
+    # Company Relationship
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
+    company = db.relationship('Company', back_populates='employees')
+
     # Relationships
-    approval_records = db.relationship('ApprovalRecord', back_populates='user', lazy='dynamic')
     projects = db.relationship('Project', secondary=project_members, back_populates='members', lazy='dynamic')
+    approval_records = db.relationship('ApprovalRecord', back_populates='user', lazy='dynamic')
 
 
     def __repr__(self):
@@ -589,6 +647,9 @@ class User(UserMixin, db.Model):
         except:
             return
         return User.query.get(id)
+
+    def full_name(self):
+        return self.first_name + ' ' + self.last_name
 
 
 # Keeps track of the logged in user by storing it Flask's user session
@@ -695,7 +756,7 @@ class ApprovalRecord(db.Model):
     __tablename__ = 'approval_record'
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    company_category = db.Column(db.String())
+    company_category = db.Column(db.String(16), db.ForeignKey('company.category'))
 
     # Channel Relationship
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
@@ -707,18 +768,4 @@ class ApprovalRecord(db.Model):
 
     def __repr__(self):
         return f'<ApprovalRecord for channel id-{self.channel_id} signed by user id-{self.user_id} at {self.timestamp}>'    
-
-
-class CompanyEmployeeRecord(db.Model):
-    __tablename__ = 'company_employee_record'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-    # Supplier Relationship
-    supplier_id = db.Column(db.Integer, db.ForeignKey('supplier.id'))
-    supplier = db.relationship('Supplier', back_populates='employees')
-
-    # Client Relationship
-    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
-    client = db.relationship('Client', back_populates='employees')
 

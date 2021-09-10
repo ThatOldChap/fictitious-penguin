@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from app.models import User
-from app.main.forms import CUSTOM_SELECT_CLASS, COMPANY_CATEGORY_CHOICES
+from app.main.forms import CUSTOM_SELECT_CLASS
 
 
 class LoginForm(FlaskForm):
@@ -14,8 +14,8 @@ class LoginForm(FlaskForm):
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
-    company_category = StringField('Company Category', render_kw=CUSTOM_SELECT_CLASS,
-        choices=COMPANY_CATEGORY_CHOICES, validators=[DataRequired()])
+    first_name = StringField('First Name', validators=[DataRequired()])
+    last_name = StringField('Last Name', validators=[DataRequired()])
     company = StringField('Company', render_kw=CUSTOM_SELECT_CLASS, validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])

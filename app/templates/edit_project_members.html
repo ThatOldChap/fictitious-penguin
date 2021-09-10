@@ -10,14 +10,14 @@
                 <div class="col">
                     <div class="btn-group-toggle mb-3" role="group" data-toggle="buttons" id="project-members-group">
                         {% for user in users %}
-                            {% if existing_members.count(user) > 0 %}
+                            {% if project.has_member(user) %}
                                 <label class="btn btn-outline-primary mb-1 active" for="checkbox-user-{{ user.id }}">
-                                    {{ user.username }}
+                                    {{ user.first_name }} {{ user.last_name }}
                                     {{ form['checkbox_user_{}'.format(user.id)] }}
                                 </label>
                             {% else %}
                                 <label class="btn btn-outline-primary mb-1" for="checkbox-user-{{ user.id }}">
-                                    {{ user.username }}
+                                    {{ user.first_name }} {{ user.last_name }}
                                     {{ form['checkbox_user_{}'.format(user.id)] }}
                                 </label>
                             {% endif %}
