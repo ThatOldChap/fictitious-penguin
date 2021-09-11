@@ -182,7 +182,7 @@
             let PERCENT_RDG = '%RDG';
 
             // Monitoring variables
-            let oldNumTestpoints = 1;
+            let oldNumTestpoints = 2;
             let currentInjectionUnits = "";
             let currentTestUnits = "";
             let tableDisabled = true;
@@ -270,18 +270,23 @@
             function initTestPointTable() {
                 
                 // Get the values to initially populate the table
-                let numTestpoints = $(`#${NUM_TESTPOINTS}`).val();                
+                let numTestpoints = $(`#${NUM_TESTPOINTS}`).val();
+                let hasHeaders = false;             
                 
-                // Create the TestPoint table with the starting number of rows (1)
-                $(`#${TESTPOINT_LIST}`).attr({style: 'padding-left: 0px;'});
-                $(`#${TESTPOINT_LIST}`).append(
-                    createTestPointTableRow(numTestpoints, EMPTY_VALUE, EMPTY_VALUE, true)
-                );
+                // Create the TestPoint table with the starting number of rows                
+                $(`#${TESTPOINT_LIST}`).attr({style: 'padding-left: 0px;'});                
+                for (i=1; i <= numTestpoints; i++) {
+                    // Create the rows of TestPoints
+                    hasHeaders = (i == 1)
+                    $(`#${TESTPOINT_LIST}`).append(
+                        createTestPointTableRow(i, EMPTY_VALUE, EMPTY_VALUE, hasHeaders)
+                    )
 
-                // Disable the input fields since the TestPointTable type is Standard to start out
-                injectionValueID = `${TESTPOINT_LIST}-1-${INJECTION_VALUE}`;
-                testValueID = `${TESTPOINT_LIST}-1-${TEST_VALUE}`;
-                toggleFieldDisable([injectionValueID, testValueID], ADD_DISABLE);
+                    // Disable the input fields since the TestPointTable type is Standard to start out
+                    injectionValueID = `${TESTPOINT_LIST}-${i}-${INJECTION_VALUE}`;
+                    testValueID = `${TESTPOINT_LIST}-${i}-${TEST_VALUE}`;
+                    toggleFieldDisable([injectionValueID, testValueID], ADD_DISABLE);
+                };                
             }          
 
             // Creates a TestPoint table row DOM element

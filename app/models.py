@@ -4,10 +4,12 @@ from flask import current_app
 from flask_login import UserMixin
 from app import db, login
 from app.utils import *
-import jwt
+import jwt, logging, pprint
 from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# Import the logger assigned to the application
+logger = logging.getLogger(__name__)
 
 '''Many-to-Many Association Tables'''
 # Stores all the Users that have access to a project
@@ -93,11 +95,9 @@ class TestPoint(db.Model):
         elif error_type == ErrorType.PERCENT_READING.value:
             return self.measured_test_value * (max_error / 100)
 
-
     # Calculates the lower limit of an acceptable measurement
     def lower_limit(self):
         return self.nominal_test_value - self.calc_max_error()
-
 
     # Calculates the upper limit of an acceptable measurement
     def upper_limit(self):
@@ -165,7 +165,7 @@ class Channel(db.Model):
         # Debugging variables
         num_added = 0
 
-        # Builds a list of testpoints defined by the user when a new channel is created
+        # Builds a list of custom testpoints defined by the user when a new channel is created
         if testpoint_list_type == TestPointListType.CUSTOM.value:
             for i in range(num_testpoints):
                 testpoint = TestPoint(
@@ -176,7 +176,7 @@ class Channel(db.Model):
                 self.testpoints.append(testpoint)
                 num_added +=1
         
-        # Builds a default list of testpoints with an equal distance between the points
+        # Builds a default list of testpoints with an equal delta between the points
         elif testpoint_list_type == TestPointListType.STANDARD.value:            
 
             # Calculates the nominal signal injection values
@@ -205,13 +205,10 @@ class Channel(db.Model):
         
         num_leftover = num_testpoints - num_added
         if num_leftover > 0:
-            print(f'Error building TestPoint value list. Only {num_testpoints - num_leftover}/{num_testpoints} added successfully.')
-            print(f'TestPointListType = {testpoint_list_type}')
-            print(f'InjectionValueList = {injection_value_list}')
-            print(f'TestValueList = {test_value_list}')
-            print(f'NumTestPoints = {num_testpoints}')
+            logger.error(f'Error building list of TestPoints for Channel ID {self.id}.\n \
+                {pprint.pprint([num_testpoints, testpoint_list_type, injection_value_list, test_value_list])}')
         else:
-            print(f'Successfully built TestPoint list with {num_testpoints} TestPoints.')
+            logger.info(f'Successfully built a list of {num_testpoints} TestPoints for Channel ID {self.id}')
 
     def testpoint_stats(self):
 

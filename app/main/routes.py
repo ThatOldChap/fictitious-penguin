@@ -1,4 +1,4 @@
-from flask import render_template, url_for, request, current_app, redirect, flash, jsonify
+from flask import render_template, url_for, request, redirect, flash, jsonify
 from flask_login import current_user, login_required
 from datetime import datetime
 from app import db
@@ -7,6 +7,10 @@ from app.models import *
 from app.main.forms import *
 from app.utils import *
 from wtforms.fields.core import BooleanField
+import logging
+
+# Import the logger assigned to the application
+logger = logging.getLogger(__name__)
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -37,6 +41,8 @@ def index():
 
     calibration_records = CalibrationRecord.query.all()
     summary["calibration_records"] = calibration_records
+
+    logger.debug(f'Projects = {summary["projects"]}')
 
     return render_template('index.html', title='Home', summary=summary)
 

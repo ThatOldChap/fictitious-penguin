@@ -1,7 +1,7 @@
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
-from flask import Flask, request, current_app
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -84,27 +84,58 @@ def create_app(config_class=Config):
         
         # Configures the logger to the cli stdout to work with Heroku
         if app.config['LOG_TO_STDOUT']:
-            stream_handler = logging.StreamHandler()
-            stream_handler.setLevel(logging.INFO)
-            app.logger(stream_handler)
+
+            # Setup a stream handler
+            stream_handler = setup_stream_handler(logging.DEBUG)
+            app.logger.addHandler(stream_handler)
             
         else:
-            # Setup a directory to store any log files
-            if not os.path.exists('logs'):
-                os.mkdir('logs')
-
-            # Defines and creates the log files
-            file_handler = RotatingFileHandler('logs/icats.log', maxBytes=10240, backupCount=2)
-            file_handler.setFormatter(logging.Formatter(
-                '%(asctime)s %(levelname)s: %(message)s '
-                '[in %(pathname)s:%(lineno)d'
-            ))
-            file_handler.setLevel(logging.INFO)
+            # Setup a file handler
+            file_handler = setup_file_handler(logging.INFO)
             app.logger.addHandler(file_handler)
 
         app.logger.setLevel(logging.INFO)
-        app.logger.info('ICATS')
+        app.logger.info('Starting ICATS application...')
+
+    # Set by using the command "export FLASK_DEBUG=1"
+    elif app.debug:
+
+        # Setup the loggers
+        file_handler = setup_file_handler(logging.DEBUG)
+        stream_handler = setup_stream_handler(logging.DEBUG)
+
+        # Add the loggers to the application
+        app.logger.addHandler(file_handler)
+        app.logger.addHandler(stream_handler)
+        app.logger.debug('Starting ICATS application in DEBUG mode...')
 
     return app
+
+
+# Helper function to setup a logger
+def setup_file_handler(level):
+
+    # Setup a directory to store any log files
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+
+    # Define the file handler and add the proper formatting to the log messages
+    file_handler = RotatingFileHandler('logs/icats.log', maxBytes=10240, backupCount=2)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s '
+        '[in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(level)
+
+    return file_handler
+
+def setup_stream_handler(level):
+
+    # Setup the stream handler for the stdout messages
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(level)
+
+    return stream_handler
+
 
 from app import models

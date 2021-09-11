@@ -128,9 +128,9 @@ def calc_percent(value, total):
     return 0 if (total == 0) else round((value / total) * 100)
 
 # Generates a list of tuples for use in a numeric SelectField form field
-def number_list_choices(last_num, num_digits):
+def number_list_choices(first_num, last_num, num_digits):
     num_list = []
-    for i in range(1, last_num+1):
+    for i in range(first_num, last_num+1):
         if num_digits == 1:
             value = i
         elif num_digits == 2:
