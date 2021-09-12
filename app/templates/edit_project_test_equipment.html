@@ -22,7 +22,7 @@
                                     <div class="col">
                                         <div class="btn-group-toggle" role="group" data-toggle="buttons" id="project-equipment-group">
                                             {% for test_equipment in test_equipment_type.test_equipment %}
-                                                {% if existing_equipment_list.count(test_equipment) > 0 %}
+                                                {% if project.has_test_equipment(test_equipment) %}
                                                     <label class="btn btn-outline-primary mb-1 active" for="checkbox-equipment-{{ test_equipment.id }}">
                                                         {{ test_equipment.asset_id }} (due {{ moment(test_equipment.due_date()).format("DD-MMM-YYYY") }})
                                                         {{ form['checkbox_equipment_{}'.format(test_equipment.id)] }}

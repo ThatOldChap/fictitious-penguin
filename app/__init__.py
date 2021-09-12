@@ -107,7 +107,6 @@ def create_app(config_class=Config):
         # Add the loggers to the application
         app.logger.addHandler(file_handler)
         app.logger.addHandler(stream_handler)
-        app.logger.debug('Starting ICATS application in DEBUG mode...')
 
     return app
 

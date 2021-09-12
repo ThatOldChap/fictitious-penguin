@@ -738,15 +738,12 @@ def edit_project_test_equipment(project_id):
     
     # Get a list of the existing TestEquipment that has been assigned to the Project
     project = Project.query.filter_by(id=project_id).first()
-    existing_equipment_list = []
 
     for test_equipment_type in test_equipment_types:        
         for test_equipment in test_equipment_type.test_equipment:
 
             # Get all the existing equipment on the project to pre-populate the fields
             equipment_exists = project.has_test_equipment(test_equipment)
-            if equipment_exists:
-                existing_equipment_list.append(test_equipment)
 
             # Add a button for the TestEquipment to the form
             id = 'checkbox-equipment-' + str(test_equipment.id)
@@ -786,7 +783,7 @@ def edit_project_test_equipment(project_id):
         flash('Project Equipment List has been successfully updated.')
         print(f'The following test equipment was added to the {project.name} project: \
             \nAdded Equipment: {added_equipment}\nRemoved Equipment: {removed_equipment} \
-            \nUpdated Project Equipment List: {project.test_equipment}')
+            \nUpdated Project Equipment List: {project.test_equipment.all()}')
 
         return redirect(url_for('main.projects', project_id=project_id))
 
@@ -795,5 +792,4 @@ def edit_project_test_equipment(project_id):
         print(form.errors.items())
 
     return render_template('edit_project_test_equipment.html', title='Edit Project Test Equipment',
-        form=form, test_equipment_types=test_equipment_types,
-        existing_equipment_list=existing_equipment_list)
+        form=form, test_equipment_types=test_equipment_types, project=project)

@@ -552,7 +552,10 @@ class Project(db.Model):
             self.test_equipment.remove(test_equipment)
     
     def test_equipment_of_type(self, test_equipment_type):
-        return self.test_equipment.filter_by(name=test_equipment_type.name).all()    
+        return self.test_equipment.filter_by(name=test_equipment_type.name).all()
+
+    def has_test_equipment_of_type(self, test_equipment_type):
+        return len(self.test_equipment_of_type(test_equipment_type)) > 0
 
 
 class Company(db.Model):
@@ -648,6 +651,9 @@ class User(UserMixin, db.Model):
     def full_name(self):
         return self.first_name + ' ' + self.last_name
 
+    def first_letter_last_name(self):
+        return self.first_name[0] + '. ' + self.last_name
+
 
 # Keeps track of the logged in user by storing it Flask's user session
 @login.user_loader
@@ -680,7 +686,7 @@ class TestEquipment(db.Model):
         self.calibration_records.append(calibration_record)
 
     def remove_calibration_record(self, calibration_record):
-        self.calibration_records.append(calibration_record)
+        self.calibration_records.remove(calibration_record)
 
     def due_date(self):
         # Get the most recent calibration record

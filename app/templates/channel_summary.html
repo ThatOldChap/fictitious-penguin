@@ -18,23 +18,32 @@
                                         <button id="{{ equip_id }}" name="equipment-button" type="button" class="btn btn-outline-primary dropdown-toggle badge" data-toggle="dropdown" data-equipment-type-id="{{ test_equipment_type.id }}">
                                             {{ test_equipment_type.name }} 
                                             (<span name="asset-id">None</span>)
-                                        </button>
+                                        </button>                                        
                                     {% else %}
                                         <button id="{{ equip_id }}" name="equipment-button" type="button" class="btn btn-primary dropdown-toggle badge" data-toggle="dropdown" data-equipment-type-id="{{ test_equipment_type.id }}">
                                             {{ test_equipment_type.name }} 
                                             (<span name="asset-id">{{ current_test_equipment.asset_id }}</span>)
-                                        </button>
-                                    {% endif %}
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        {# Create additional dropdown list items for each TestEquipment item assigned to the Project for the specific TestEquipmentType #}
-                                        {% for test_equipment in group.job.project.test_equipment_of_type(test_equipment_type) %}
-                                            <li name="equipment-choice" data-equipment-id="{{ test_equipment.id }}">
-                                                <a class="dropdown-item" href="javascript:void(0);">
-                                                    <span name="asset-id"><b style="color:#244463;">{{ test_equipment.asset_id }}</b></span>: Due {{ moment(test_equipment.due_date()).format("DD-MMM-YYYY") }}
+                                        </button>                                        
+                                    {% endif %}                                    
+                                    <ul class="dropdown-menu dropdown-menu-end">                                        
+                                        {% if channel.group.job.project.has_test_equipment_of_type(test_equipment_type) %}
+                                            {# Create additional dropdown list items for each TestEquipment item assigned to the Project for the specific TestEquipmentType #}
+                                            {% for test_equipment in group.job.project.test_equipment_of_type(test_equipment_type) %}
+                                                <li name="equipment-choice" data-equipment-id="{{ test_equipment.id }}">
+                                                    <a class="dropdown-item" href="javascript:void(0);">
+                                                        <span name="asset-id"><b style="color:#244463;">{{ test_equipment.asset_id }}</b></span>: Due {{ moment(test_equipment.due_date()).format("DD-MMM-YYYY") }}
+                                                    </a>
+                                                </li>
+                                            {% endfor %}
+                                        {% else %}
+                                            {# Add a link to the Project's edit_test_equipment route if there are no assigned assets #}
+                                            <li name="no-equipment-choice">
+                                                <a class="dropdown-item" href="{{ url_for('main.edit_project_test_equipment', project_id=group.job.project.id) }}">
+                                                    <span>Add Test Equipment</span>
                                                 </a>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
+                                            </li>                                            
+                                        {% endif %}
+                                    </ul>                         
                                 </div>
                             </div>
                         </div>                                               
@@ -72,11 +81,11 @@
                                 {# If there is a Supplier approval record, add the name of the User who signed into the button and only allow the approver to unsign #}
                                 {% if supplier_approval_record.user == current_user %}
                                     <button type="button" class="btn btn-outline-primary badge active" name="supplier-approval" data-toggle="buttons">
-                                        {{ supplier_approval_record.user.full_name() }}
+                                        {{ supplier_approval_record.user.first_letter_last_name() }}
                                     </button>
                                 {% else %}
                                     <button type="button" class="btn btn-primary badge active" name="supplier-approval" data-toggle="buttons" disabled>
-                                        {{ supplier_approval_record.user.full_name() }}
+                                        {{ supplier_approval_record.user.first_letter_last_name() }}
                                     </button>
                                 {% endif %}
                             {% endif %}
@@ -99,11 +108,11 @@
                                 {# If there is a Client approval record, add the name of the User who signed into the button and only allow the approver to unsign #}
                                 {% if client_approval_record.user == current_user %}
                                     <button type="button" class="btn btn-outline-primary badge active" name="client-approval" data-toggle="buttons">
-                                        {{ client_approval_record.user.full_name() }}
+                                        {{ client_approval_record.user.first_letter_last_name() }}
                                     </button>
                                 {% else %}
                                     <button type="button" class="btn btn-primary badge active" name="client-approval" data-toggle="buttons" disabled>
-                                        {{ client_approval_record.user.full_name() }}
+                                        {{ client_approval_record.user.first_letter_last_name() }}
                                     </button>
                                 {% endif %}
                             {% endif %}
