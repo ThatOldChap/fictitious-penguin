@@ -160,6 +160,9 @@ class Channel(db.Model):
     def injection_range(self):
         return self.max_injection_range - self.min_injection_range
 
+    def add_testpoint(self, testpoint):
+        self.testpoints.append(testpoint)
+
     def build_testpoint_list(self, num_testpoints, testpoint_list_type, injection_value_list, test_value_list):
         
         # Debugging variables
@@ -170,8 +173,8 @@ class Channel(db.Model):
             for i in range(num_testpoints):
                 testpoint = TestPoint(
                     channel_id = self.id,
-                    injection_value = injection_value_list[i],
-                    test_value = test_value_list[i]
+                    nominal_injection_value = injection_value_list[i],
+                    nominal_test_value = test_value_list[i]
                 )
                 self.testpoints.append(testpoint)
                 num_added +=1
@@ -200,15 +203,13 @@ class Channel(db.Model):
                     nominal_injection_value = injection_values[i],
                     nominal_test_value = test_values[i]
                 )
-                self.testpoints.append(testpoint)
+                self.add_testpoint(testpoint)
                 num_added += 1
         
         num_leftover = num_testpoints - num_added
         if num_leftover > 0:
             logger.error(f'Error building list of TestPoints for Channel ID {self.id}.\n \
                 {pprint.pprint([num_testpoints, testpoint_list_type, injection_value_list, test_value_list])}')
-        else:
-            logger.info(f'Successfully built a list of {num_testpoints} TestPoints for Channel ID {self.id}')
 
     def testpoint_stats(self):
 
@@ -271,8 +272,16 @@ class Channel(db.Model):
             "percent_failed": calc_percent(stats[TestResult.FAIL.value], num_testpoints),
         }
 
+    def has_test_equipment_type(self, test_equipment_type):
+        return test_equipment_type in self.required_test_equipment
+
     def add_test_equipment_type(self, test_equipment_type):
-        self.required_test_equipment.append(test_equipment_type)
+        if not self.has_test_equipment_type(test_equipment_type):
+            self.required_test_equipment.append(test_equipment_type)
+
+    def remove_test_equipment_type(self, test_equipment_type):
+        if self.has_test_equipment_type(test_equipment_type):
+            self.required_test_equipment.remove(test_equipment_type)
 
     def current_test_equipment(self, test_equipment_type_id):
 
@@ -591,7 +600,7 @@ class Company(db.Model):
         return user in self.employees
 
     def add_employee(self, user):
-        if not self.has_employee:
+        if not self.has_employee(user):
             self.employees.append(user)
     
     def remove_employee(self, user):
@@ -682,11 +691,16 @@ class TestEquipment(db.Model):
     def __repr__(self):
 	    return f'<TestEquipment {self.asset_id}: {self.manufacturer} {self.name}>'
 
+    def has_calibration_record(self, calibration_record):
+        return calibration_record in self.calibration_records
+
     def add_calibration_record(self, calibration_record):
-        self.calibration_records.append(calibration_record)
+        if not self.has_calibration_record(calibration_record):
+            self.calibration_records.append(calibration_record)
 
     def remove_calibration_record(self, calibration_record):
-        self.calibration_records.remove(calibration_record)
+        if self.has_calibration_record(calibration_record):
+            self.calibration_records.remove(calibration_record)
 
     def due_date(self):
         # Get the most recent calibration record
