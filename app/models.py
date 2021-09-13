@@ -537,8 +537,7 @@ class Project(db.Model):
 
     def add_members(self, users):
         for user in users:
-            if not self.has_member(user):
-                self.members.append(user)
+            self.add_member(user)
 
     def remove_member(self, user):
         if self.has_member(user):
@@ -546,8 +545,7 @@ class Project(db.Model):
 
     def remove_members(self, users):
         for user in users:
-            if self.has_member(user):
-                self.members.remove(user)  
+            self.remove_member(user)
 
     def has_test_equipment(self, test_equipment):
         return test_equipment in self.test_equipment

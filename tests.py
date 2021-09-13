@@ -875,6 +875,281 @@ class JobModel(unittest.TestCase):
         self.assertEqual(j.status, Status.COMPLETE.value)
 
 
+class ProjectModel(unittest.TestCase):
+
+    # Special method for enabling the Test Config
+    def setUp(self):
+        self.app = create_app(TestConfig)
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        db.create_all()
+
+    # Special method for stopping the Test Config
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
+
+    def test_update_company(self):
+        p = Project()
+        c = Company()
+        db.session.add_all([p, c])
+        db.session.commit()
+
+        # Check that a Company can be added to the Project and checked if it exists
+        p.add_company(c)
+        db.session.commit()
+        self.assertTrue(p.has_company(c))
+
+        # Check to make sure that a duplicate Company can't be added
+        p.add_company(c)
+        db.session.commit()
+        self.assertEqual(p.companies.count(), 1)
+
+        # Check to make sure a Company can be removed from the Company Projects table
+        p.remove_company(c)
+        db.session.commit()
+        self.assertEqual(p.companies.count(), 0)
+
+        # Check to make sure that non-linked Company can't be removed
+        p.remove_company(c)
+        db.session.commit()
+        self.assertEqual(p.companies.count(), 0)
+
+    def test_supplier_and_client(self):
+        p = Project()
+        c1 = Company(category=CompanyCategory.CLIENT.value)
+        c2 = Company(category=CompanyCategory.SUPPLIER.value)        
+        db.session.add_all([p, c1, c2])
+        db.session.commit()
+
+        # Check that no Company is returned when no Project is added
+        self.assertEqual(p.supplier(), None)
+        self.assertEqual(p.client(), None)
+
+        # Add each Company to the Project
+        p.add_company(c1)
+        p.add_company(c2)
+        db.session.commit()
+
+        # Check that the correct Company is returned
+        self.assertEqual(p.supplier(), c2)
+        self.assertEqual(p.client(), c1)
+
+    def test_channels(self):
+        p = Project()
+        j1 = Job(project_id=1)
+        j2 = Job(project_id=1)
+        g1 = Group(job_id=1)
+        g2 = Group(job_id=2)
+        db.session.add_all([p, j1, j2, g1, g2])
+        db.session.commit()
+
+        # Check for the list of Channels under the Project if no Channels are added
+        self.assertEqual(p.channels(), [])
+
+        # Add some Channels into the Project's Job's Groups
+        c1 = Channel(group_id=1)
+        c2 = Channel(group_id=1)
+        c3 = Channel(group_id=2)
+        db.session.add_all([c1, c2, c3])
+        db.session.commit()
+
+        # Check for the total list of Channels under the Job
+        self.assertEqual(p.channels(), [c1, c2, c3])
+
+    def test_num_channels(self):
+        p = Project()
+        j1 = Job(project_id=1)
+        j2 = Job(project_id=1)
+        g1 = Group(job_id=1)
+        g2 = Group(job_id=2)
+        c1 = Channel(group_id=1)
+        c2 = Channel(group_id=1)
+        c3 = Channel(group_id=2)
+        db.session.add_all([p, j1, j2, g1, g2, c1, c2, c3])
+        db.session.commit()
+
+        # Check for the total number of channels
+        self.assertEqual(p.num_channels(), 3)
+
+    def test_channel_stats(self):
+        p = Project()
+        j1 = Job(project_id=1)
+        j2 = Job(project_id=1)
+        g1 = Group(job_id=1)
+        g2 = Group(job_id=2)
+        db.session.add_all([p, j1, j2, g1, g2])
+        db.session.commit()
+
+        # Check the stats of the Project with no Channels
+        stats = p.channel_stats()
+        self.assertEqual(stats[TestResult.UNTESTED.value], 0)
+        self.assertEqual(stats[TestResult.PASS.value], 0)
+        self.assertEqual(stats[TestResult.FAIL.value], 0)
+        self.assertEqual(stats[Status.IN_PROGRESS.value], 0)
+
+        # Add some Channels to the Job's Groups
+        c1 = Channel(group_id=1, status=TestResult.UNTESTED.value)
+        c2 = Channel(group_id=1, status=TestResult.PASS.value)
+        c3 = Channel(group_id=1, status=TestResult.PASS.value)
+        c4 = Channel(group_id=2, status=TestResult.FAIL.value)
+        c5 = Channel(group_id=2, status=Status.IN_PROGRESS.value)
+        c6 = Channel(group_id=2, status=Status.IN_PROGRESS.value)
+        db.session.add_all([c1, c2, c3, c4, c5, c6])
+        db.session.commit()
+
+        # Check the generated Channel status
+        stats = p.channel_stats()
+        self.assertEqual(stats[TestResult.UNTESTED.value], 1)
+        self.assertEqual(stats[TestResult.PASS.value], 2)
+        self.assertEqual(stats[TestResult.FAIL.value], 1)
+        self.assertEqual(stats[Status.IN_PROGRESS.value], 2)
+
+    def test_channel_progress(self):
+        p = Project()
+        j1 = Job(project_id=1)
+        j2 = Job(project_id=1)
+        g1 = Group(job_id=1)
+        g2 = Group(job_id=2)
+        db.session.add_all([p, j1, j2, g1, g2])
+        db.session.commit()
+
+        # Check the progress of the Channels in the Job with no Channels
+        progress = p.channel_progress()
+        self.assertEqual(progress["percent_untested"], 100)
+        self.assertEqual(progress["percent_passed"], 0)
+        self.assertEqual(progress["percent_failed"], 0)
+        self.assertEqual(progress["percent_in_progress"], 0)
+
+        # Add some Channels to the Job's Groups
+        c1 = Channel(group_id=1, status=TestResult.UNTESTED.value)
+        c2 = Channel(group_id=1, status=TestResult.PASS.value)
+        c3 = Channel(group_id=1, status=TestResult.PASS.value)
+        c4 = Channel(group_id=2, status=TestResult.FAIL.value)
+        c5 = Channel(group_id=2, status=Status.IN_PROGRESS.value)
+        db.session.add_all([c1, c2, c3, c4, c5])
+        db.session.commit()
+
+        # Check the progress of the Job with a list of Channels
+        progress = p.channel_progress()
+        self.assertEqual(progress["percent_untested"], 20)
+        self.assertEqual(progress["percent_passed"], 40)
+        self.assertEqual(progress["percent_failed"], 20)
+        self.assertEqual(progress["percent_in_progress"], 20)
+    
+    def test_update_status(self):
+        p = Project()
+        j1 = Job(project_id=1)
+        j2 = Job(project_id=1)
+        g1 = Group(job_id=1)
+        g2 = Group(job_id=2)
+        c1 = Channel(group_id=1, status=TestResult.UNTESTED.value)
+        c2 = Channel(group_id=1, status=TestResult.UNTESTED.value)
+        db.session.add_all([p, j1, j2, g1, g2, c1, c2])
+        db.session.commit()
+
+        # Check that the new status is NOT_STARTED
+        p.update_status()
+        self.assertEqual(p.status, Status.NOT_STARTED.value)
+
+        # Add some additional Channels to the Groups
+        c3 = Channel(group_id=1, status=TestResult.PASS.value)
+        c4 = Channel(group_id=1, status=TestResult.PASS.value)
+        c5 = Channel(group_id=2, status=TestResult.FAIL.value)
+        c6 = Channel(group_id=2, status=Status.IN_PROGRESS.value)
+        db.session.add_all([c3, c4, c5, c6])
+        db.session.commit()
+
+        # Check that the new status is IN_PROGRESS
+        p.update_status()
+        self.assertEqual(p.status, Status.IN_PROGRESS.value)
+
+        # Update the Channels to be all Passed
+        c1.status = TestResult.PASS.value
+        c2.status = TestResult.PASS.value
+        c5.status = TestResult.PASS.value
+        c6.status = TestResult.PASS.value
+        db.session.commit()
+
+        # Check that the new status is COMPLETE
+        p.update_status()
+        self.assertEqual(p.status, Status.COMPLETE.value)
+
+    def test_update_members(self):
+        p = Project()
+        u1 = User()
+        u2 = User()
+        u3 = User()
+        db.session.add_all([p, u1, u2, u3])
+        db.session.commit()
+
+        # Check that a User can be added and checked if it exists
+        p.add_member(u1)
+        db.session.commit()
+        self.assertTrue(p.has_member(u1))
+
+        # Check to make sure that duplicate Users can't be added
+        p.add_members([u1, u2, u3])
+        db.session.commit()
+        self.assertEqual(p.members.count(), 3)
+
+        # Check to make sure a User can be removed
+        p.remove_member(u3)
+        db.session.commit()
+        self.assertEqual(p.members.count(), 2)
+
+        # Check to make sure that non-linked Users can't be removed
+        p.remove_members([u1, u2, u3])
+        db.session.commit()
+        self.assertEqual(p.members.count(), 0)
+
+    def test_update_test_equipment(self):
+        p = Project()
+        t = TestEquipment()
+        db.session.add_all([p, t])
+        db.session.commit()
+
+        # Check that a TestEquipment can be added and checked if it exists
+        p.add_test_equipment(t)
+        db.session.commit()
+        self.assertTrue(p.has_test_equipment(t))
+
+        # Check to make sure that a duplicate TestEquipment can't be added
+        p.add_test_equipment(t)
+        db.session.commit()
+        self.assertEqual(p.test_equipment.count(), 1)
+
+        # Check to make sure a TestEquipment can be removed
+        p.remove_test_equipment(t)
+        db.session.commit()
+        self.assertEqual(p.test_equipment.count(), 0)
+
+        # Check to make sure that non-linked TestEquipment can't be removed
+        p.remove_test_equipment(t)
+        db.session.commit()
+        self.assertEqual(p.test_equipment.count(), 0)
+
+    def test_has_test_equipment_of_type(self):
+        p = Project()
+        te = TestEquipment(test_equipment_type_id=1, name="Oscilloscope")
+        tet = TestEquipmentType(name="Oscilloscope")
+        db.session.add_all([p, te, tet])
+        db.session.commit()
+
+        # Check that there are no TestEquipment to begin with
+        self.assertEqual(p.test_equipment_of_type(tet), [])
+        self.assertFalse(p.has_test_equipment_of_type(tet))
+
+        # Add the TestEquipment to the Project
+        p.add_test_equipment(te)
+        db.session.commit()
+
+        # Check the Project has the TestEquipment of the specified TestEquipmentType
+        self.assertEqual(p.test_equipment_of_type(tet), [te])
+        self.assertTrue(p.has_test_equipment_of_type(tet))
+
+
 class TestUtils(unittest.TestCase):
 
     # Special method for enabling the Test Config
@@ -950,70 +1225,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(number_list_choices(1, 3, 1), [(1, 1), (2, 2), (3, 3)])
         self.assertEqual(number_list_choices(1, 3, 2), [(1, '01'), (2, '02'), (3, '03')])
         self.assertEqual(number_list_choices(1, 3, 3), [(1, '001'), (2, '002'), (3, '003')])
-
-    
-class ProjectModel(unittest.TestCase):
-
-    # Special method for enabling the Test Config
-    def setUp(self):
-        self.app = create_app(TestConfig)
-        self.app_context = self.app.app_context()
-        self.app_context.push()
-        db.create_all()
-
-    # Special method for stopping the Test Config
-    def tearDown(self):
-        db.session.remove()
-        db.drop_all()
-        self.app_context.pop()
-
-    def test_update_company(self):
-        p = Project()
-        c = Company()
-        db.session.add_all([p, c])
-        db.session.commit()
-
-        # Check that a Company can be added to the Project and checked if it exists
-        p.add_company(c)
-        db.session.commit()
-        self.assertTrue(p.has_company(c))
-
-        # Check to make sure that a duplicate Company can't be added
-        p.add_company(c)
-        db.session.commit()
-        self.assertEqual(p.companies.count(), 1)
-
-        # Check to make sure a Company can be removed from the Company Projects table
-        p.remove_company(c)
-        db.session.commit()
-        self.assertEqual(p.companies.count(), 0)
-
-        # Check to make sure that non-linked Company can't be removed
-        p.remove_company(c)
-        db.session.commit()
-        self.assertEqual(p.companies.count(), 0)
-
-    def test_supplier_and_client(self):
-        p = Project()
-        c1 = Company(category=CompanyCategory.CLIENT.value)
-        c2 = Company(category=CompanyCategory.SUPPLIER.value)        
-        db.session.add_all([p, c1, c2])
-        db.session.commit()
-
-        # Check that no Company is returned when no Project is added
-        self.assertEqual(p.supplier(), None)
-        self.assertEqual(p.client(), None)
-
-        # Add each Company to the Project
-        p.add_company(c1)
-        p.add_company(c2)
-        db.session.commit()
-
-        # Check that the correct Company is returned
-        self.assertEqual(p.supplier(), c2)
-        self.assertEqual(p.client(), c1)
-
-    
 
 
 if __name__ == '__main__':
