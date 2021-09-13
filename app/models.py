@@ -474,7 +474,7 @@ class Project(db.Model):
             if company.category == CompanyCategory.SUPPLIER.value:
                 return company 
 
-        # Return None is no companies are assigned to the project yet
+        # Return None if no Supplier companies are assigned to the project yet
         return None
 
     def client(self):
@@ -482,7 +482,7 @@ class Project(db.Model):
             if company.category == CompanyCategory.CLIENT.value:
                 return company 
 
-        # Return None is no companies are assigned to the project yet
+        # Return None if no Client companies are assigned to the project yet
         return None
 
     def channels(self):
