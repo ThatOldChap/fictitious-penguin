@@ -35,8 +35,15 @@
         {% endif %}
     </td>
     <td class="align-middle" name="last-updated">{{ moment(channel.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
-    <td class="align-middle" name="">
-        
+    <td class="align-middle" name="actions">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Add/Edit</button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#">Create New Like</a></li>
+                <li><a class="dropdown-item" href="#">Add New TestPoint</a></li>
+                <li><a class="dropdown-item" href="#">Edit Channel</a></li>
+            </ul>
+        </div>
     </td>
 </tr>
 {% endblock %}

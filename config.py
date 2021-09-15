@@ -13,8 +13,10 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Bootstrap setup
-    # BOOTSTRAP_BOOTSWATCH_THEME = 'flatly'
-    BOOTSTRAP_BOOTSWATCH_THEME = 'sandstone'
+    BOOTSTRAP_BOOTSWATCH_THEME = 'flatly'
+    # BOOTSTRAP_BOOTSWATCH_THEME = 'zephyr'
+    # BOOTSTRAP_BOOTSWATCH_THEME = 'minty'
+    # BOOTSTRAP_BOOTSWATCH_THEME = 'sandstone'
 
     # Mail server setup
     MAIL_SERVER = os.environ.get('MAIL_SERVER')

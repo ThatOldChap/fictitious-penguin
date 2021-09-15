@@ -10,16 +10,18 @@
     <td class="align-middle">
         <div class="row">
             <div class="col">
-                <div class="input-group">
+                <div class="input-group text-primary">
                     {% if testpoint.measured_injection_value == None %}            
                         {{ testpoint_form.injection_value(
                             value="",
-                            placeholder=testpoint.nominal_injection_value)
+                            placeholder=testpoint.nominal_injection_value,
+                            class="text-primary form-control")
                         }}
                     {% else %}
                         {{ testpoint_form.injection_value(
                             value=testpoint.measured_injection_value,
-                            placeholder=testpoint.nominal_injection_value)
+                            placeholder=testpoint.nominal_injection_value,
+                            class="text-primary form-control")
                         }}
                     {% endif %}
                     <span class="input-group-text units">{{ channel.injection_units }}</span>
@@ -35,12 +37,14 @@
                     {% if testpoint.measured_test_value == None %}            
                         {{ testpoint_form.test_value(
                             value="",
-                            placeholder=testpoint.nominal_test_value)
+                            placeholder=testpoint.nominal_test_value,
+                            class="text-primary form-control")
                         }}
                     {% else %}
                         {{ testpoint_form.test_value(
                             value=testpoint.measured_test_value,
-                            placeholder=testpoint.nominal_test_value)
+                            placeholder=testpoint.nominal_test_value,
+                            class="text-primary form-control")
                         }}
                     {% endif %}
                     <span class="input-group-text" name="upper-limit">{{ testpoint.upper_limit() }}</span>
@@ -52,11 +56,11 @@
     <td class="align-middle">
         <div class="row">
             <div class="col">
-                <div class="input-group">
+                <div class="input-group text-primary">
                     {% if testpoint.measured_error == None %}
-                        <input type="text" class="form-control text-center" name="measured-error" placeholder="0.000" value="" readonly>
+                        <input type="text" class="form-control text-center text-primary" name="measured-error" placeholder="0.000" value="" readonly>
                     {% else %}
-                        <input type="text" class="form-control text-center" name="measured-error" placeholder="0.000" value="{{ testpoint.measured_error }}" readonly>
+                        <input type="text" class="form-control text-center text-primary" name="measured-error" placeholder="0.000" value="{{ testpoint.measured_error }}" readonly>
                     {% endif %}
                     <span class="input-group-text units" name="error-units">{{ channel.measurement_units }}</span>
                 </div>

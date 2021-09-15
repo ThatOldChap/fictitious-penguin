@@ -1,7 +1,64 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-    <div>
-        
+    <br>
+    <div class="row">        
+        <div class="col-3" style="padding-right: 0;">
+            <div class="card">
+                <h5 class="card-header text-white bg-primary">Project 542</h5>
+                <div class="card-body">
+                    <h5 class="card-title">Test Bed 80</h5>
+                    <p class="card-text">A next-generation testbed located in Derby, United Kingdown for the purpose of testing the new UltraFan engine.</p>
+                    <br>
+                    <blockquote class="blockquote mb-1">
+                        <footer class="blockquote-footer">MDS, Rolls-Royce</footer>
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+        <hr class="my-3">
+        <h3>Members</h3>
+        <div class="btn-group-toggle mb-3" role="group" data-toggle="buttons" id="project-members-group">
+        {% for member in project.members %}
+            <label class="btn btn-primary mb-1">
+                {{ member.first_name }} {{ member.last_name }}
+            </label>
+        {% endfor %}
+        </div>
+        <hr class="my-3">
+        <h3>Test Equipment</h3>
+        <div class="col-6">
+            <table class="table table-hover table-bordered align-middle">
+                <thead>
+                    <tr class="table-primary text-center align-middle">
+                        <th class="align-middle" width="30%">Test Equipment Type</th>
+                        <th class="align-middle">Assets</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for test_equipment_type in test_equipment_types %}
+                        <tr>
+                            <td class="align-middle text-center">{{ test_equipment_type.name }}</td> 
+                            <td>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="btn-group-toggle" role="group" id="project-equipment-group">
+                                            {% for test_equipment in test_equipment_type.test_equipment %}
+                                                {% if project.has_test_equipment(test_equipment) %}
+                                                    <label class="btn btn-primary mb-1">
+                                                        {{ test_equipment.asset_id }} (due {{ moment(test_equipment.due_date()).format("DD-MMM-YYYY") }})
+                                                    </label>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <br>    
     </div>
 {% endblock %}

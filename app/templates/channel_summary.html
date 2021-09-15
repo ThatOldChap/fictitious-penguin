@@ -1,9 +1,9 @@
 <tr name="summary-parent">
     <td class="text-center" rowspan="{{ channel.num_testpoints() + 1 }}" style="padding: 0">
-        <table class="table table-bordered table-secondary">
+        <table class="table table-bordered">
             <tbody>
                 <tr>
-                    <td class="text-center align-middle table-primary">Test Equipment</td>
+                    <td class="text-center align-middle">Test Equipment</td>
                     <td class="text-center">
                     {# Iterate through each of the Required TestEquipment for the channel and add a button for each #}
                     {% for test_equipment_type in channel.required_test_equipment.order_by('name').all() %}
@@ -15,12 +15,12 @@
                                     {% set current_test_equipment = channel.current_test_equipment(test_equipment_type.id) %}
                                     {# Create the button and populate the text with the name and asset_id of the currently assigned TestEquipment #}
                                     {% if current_test_equipment == None %}                     
-                                        <button id="{{ equip_id }}" name="equipment-button" type="button" class="btn btn-outline-primary dropdown-toggle badge" data-toggle="dropdown" data-equipment-type-id="{{ test_equipment_type.id }}">
+                                        <button id="{{ equip_id }}" name="equipment-button" type="button" class="btn btn-outline-primary dropdown-toggle btn-sm" data-toggle="dropdown" data-equipment-type-id="{{ test_equipment_type.id }}">
                                             {{ test_equipment_type.name }} 
                                             (<span name="asset-id">None</span>)
                                         </button>                                        
                                     {% else %}
-                                        <button id="{{ equip_id }}" name="equipment-button" type="button" class="btn btn-primary dropdown-toggle badge" data-toggle="dropdown" data-equipment-type-id="{{ test_equipment_type.id }}">
+                                        <button id="{{ equip_id }}" name="equipment-button" type="button" class="btn btn-primary dropdown-toggle btn-sm" data-toggle="dropdown" data-equipment-type-id="{{ test_equipment_type.id }}">
                                             {{ test_equipment_type.name }} 
                                             (<span name="asset-id">{{ current_test_equipment.asset_id }}</span>)
                                         </button>                                        
@@ -51,17 +51,17 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="text-center align-middle table-primary">Interface</td>
-                    <td class="text-center align-middle">
+                    <td class="text-center align-middle">Interface</td>
+                    <td class="text-center align-middle text-primary">
                         {% if channel.interface == None %}            
-                            {{ channel_form.interface(value="") }}
+                            {{ channel_form.interface(value="", class="form-control text-primary") }}
                         {% else %}
-                            {{ channel_form.interface(value=channel.interface) }}
+                            {{ channel_form.interface(value=channel.interface, class="form-control text-primary") }}
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
-                    <td class="text-center align-middle table-primary">Approvals</td>
+                    <td class="text-center align-middle">Approvals</td>
                     <td class="text-center align-middle">
                         {% if channel.required_supplier_approval %}
                             {# Check for a Supplier approval on the channel #}
@@ -69,22 +69,22 @@
                             {% if supplier_approval_record == None %}
                                 {# If there is no Supplier approval record, add the name of the Supplier into the button and allow any Supplier employee to approve #}
                                 {% if current_user.company.category == 'Supplier' %}
-                                    <button type="button" class="btn btn-outline-primary badge" name="supplier-approval" data-toggle="buttons">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" name="supplier-approval" data-toggle="buttons">
                                         {{ group.job.project.supplier().name }}
                                     </button>
                                 {% else %}
-                                    <button type="button" class="btn btn-outline-primary badge" name="supplier-approval" data-toggle="buttons" disabled>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" name="supplier-approval" data-toggle="buttons" disabled>
                                         {{ group.job.project.supplier().name }}
                                     </button>
                                 {% endif %}
                             {% else %}
                                 {# If there is a Supplier approval record, add the name of the User who signed into the button and only allow the approver to unsign #}
                                 {% if supplier_approval_record.user == current_user %}
-                                    <button type="button" class="btn btn-outline-primary badge active" name="supplier-approval" data-toggle="buttons">
+                                    <button type="button" class="btn btn-outline-primary btn-sm active" name="supplier-approval" data-toggle="buttons">
                                         {{ supplier_approval_record.user.first_letter_last_name() }}
                                     </button>
                                 {% else %}
-                                    <button type="button" class="btn btn-primary badge active" name="supplier-approval" data-toggle="buttons" disabled>
+                                    <button type="button" class="btn btn-primary btn-sm active" name="supplier-approval" data-toggle="buttons" disabled>
                                         {{ supplier_approval_record.user.first_letter_last_name() }}
                                     </button>
                                 {% endif %}
@@ -96,22 +96,22 @@
                             {% if client_approval_record == None %}
                                 {# If there is no Client approval record, add the name of the Client into the button and allow any Client employee to approve #}
                                 {% if current_user.company.category == 'Client' %}
-                                    <button type="button" class="btn btn-outline-primary badge" name="client-approval" data-toggle="buttons">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" name="client-approval" data-toggle="buttons">
                                         {{ group.job.project.client().name }}
                                     </button>
                                 {% else %}
-                                    <button type="button" class="btn btn-outline-primary badge" name="client-approval" data-toggle="buttons" disabled>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" name="client-approval" data-toggle="buttons" disabled>
                                         {{ group.job.project.client().name }}
                                     </button>
                                 {% endif %}
                             {% else %}
                                 {# If there is a Client approval record, add the name of the User who signed into the button and only allow the approver to unsign #}
                                 {% if client_approval_record.user == current_user %}
-                                    <button type="button" class="btn btn-outline-primary badge active" name="client-approval" data-toggle="buttons">
+                                    <button type="button" class="btn btn-outline-primary btn-sm active" name="client-approval" data-toggle="buttons">
                                         {{ client_approval_record.user.first_letter_last_name() }}
                                     </button>
                                 {% else %}
-                                    <button type="button" class="btn btn-primary badge active" name="client-approval" data-toggle="buttons" disabled>
+                                    <button type="button" class="btn btn-primary btn-sm active" name="client-approval" data-toggle="buttons" disabled>
                                         {{ client_approval_record.user.first_letter_last_name() }}
                                     </button>
                                 {% endif %}
@@ -120,8 +120,8 @@
                     </td>
                 </tr>            
                 <tr>
-                    <td class="text-center align-middle table-primary">Notes</td>
-                    <td class="text-center align-middle">
+                    <td class="text-center align-middle">Notes</td>
+                    <td class="text-center align-middle text-primary">
                         {{ channel_form.notes.data }}
                     </td>
                 </tr>

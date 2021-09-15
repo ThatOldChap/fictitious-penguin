@@ -30,31 +30,35 @@
         </button>
     </div>         
 </div>
-<form action="" method="POST" name="channels_form">
-    {{ channels_form.hidden_tag() }}
-    <table class="table table-hover table-bordered align-middle">
-        <thead>
-            <tr class="table-secondary text-center align-middle">
-                <th class="align-middle">Channel Summary</th>
-                <th class="align-middle">Injection Value</th>
-                <th class="align-middle">Test Value</th>
-                <th class="align-middle">Error</th>
-                <th class="align-middle">Result</th>
-                <th class="align-middle">Last Updated</th>
-                <th class="align-middle">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for channel, channel_form in zip(channels, channels_form.channels) %}
-                {% include 'channel.html' %}
-                {% include 'channel_summary.html' %}                    
-                {% for testpoint, testpoint_form in zip(channel.testpoints.all(), channel_form.testpoints) %}
-                    {% include 'testpoint.html' %}
-                {% endfor %}
-            {% endfor %}
-        </tbody>
-    </table>
-</form>
+<div class="row">
+    <div class="col-11">
+        <form action="" method="POST" name="channels_form">
+            {{ channels_form.hidden_tag() }}
+            <table class="table table-hover table-bordered align-middle">
+                <thead>
+                    <tr class="text-center align-middle">
+                        <th class="align-middle">Channel Summary</th>
+                        <th class="align-middle">Injection Value</th>
+                        <th class="align-middle">Test Value</th>
+                        <th class="align-middle">Error</th>
+                        <th class="align-middle">Result</th>
+                        <th class="align-middle">Last Updated</th>
+                        <th class="align-middle">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for channel, channel_form in zip(channels, channels_form.channels) %}
+                        {% include 'channel.html' %}
+                        {% include 'channel_summary.html' %}                    
+                        {% for testpoint, testpoint_form in zip(channel.testpoints.all(), channel_form.testpoints) %}
+                            {% include 'testpoint.html' %}
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -72,6 +76,7 @@
             let INJECTION_VALUE = 'injection_value';
             let TEST_VALUE = 'test_value';
             let NOTES = 'notes';
+            let INTERFACE = 'interface';
             let LAST_UPDATED = 'last_updated';
             let LAST_UPDATED_FORMAT = 'hh:mm A, DD-MMM-YYYY';
             let UPDATE_TESTPOINT_URL = '/update_testpoint';
@@ -175,7 +180,6 @@
                 updateBadgeClass(parentTestpoint, TEST_RESULT_NAME, newBadgeClass);
             });
 
-
             // Listener function for the Notes fields
             $(`[id$="${NOTES}"]`).change(function(event) {
 
@@ -188,6 +192,24 @@
                 let data = {
                     channel_id: dataset.channelId,
                     notes: notesElement.value
+                }
+
+                // Update the Channel
+                updateChannel(data, parent);
+            });
+
+            // Listener function for the Interface fields
+            $(`[id$="${INTERFACE}"]`).change(function(event) {
+
+                // Find the elements to get the data from
+                let interfaceElement = event.target;
+                let parent = $(this).parents(`[name^="${SUMMARY_PARENT_NAME}"]`).prev(`[name^="${CHANNEL_PARENT}"]`);
+                let dataset = parent[0].dataset;
+
+                // Prepare the data package
+                let data = {
+                    channel_id: dataset.channelId,
+                    interface: interfaceElement.value
                 }
 
                 // Update the Channel

@@ -670,7 +670,7 @@ def test_equipment():
 def edit_project_members(project_id):
 
     # Get a list of all the users
-    users = User.query.all()
+    users = User.query.order_by('first_name').all()
 
     # Get a list of the existing members on the Project
     project = Project.query.filter_by(id=project_id).first()
@@ -793,3 +793,13 @@ def edit_project_test_equipment(project_id):
 
     return render_template('edit_project_test_equipment.html', title='Edit Project Test Equipment',
         form=form, test_equipment_types=test_equipment_types, project=project)
+
+
+@bp.route('/test', methods=['GET', 'POST'])
+def test():
+
+    project = Project.query.first()
+    test_equipment_types = TestEquipmentType.query.all()
+
+    return render_template('project.html', title='Test Project', project=project,
+        test_equipment_types=test_equipment_types)
