@@ -39,9 +39,11 @@
         <div class="btn-group" role="group">
             <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Add/Edit</button>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="#">Create New Like</a></li>
-                <li><a class="dropdown-item" href="#">Add New TestPoint</a></li>
-                <li><a class="dropdown-item" href="#">Edit Channel</a></li>
+                <li name="edit-channel"><a class="dropdown-item" href="#">Edit Channel</a></li>                
+                <li>
+                    <a class="dropdown-item" name="add-new-testpoint-option" data-toggle="modal" data-target="#add-new-testpoint-dialog" type="button">Add New TestPoint</a>
+                </li>  
+                <li name="create-new-like"><a class="dropdown-item" href="#">Create New Like</a></li>
             </ul>
         </div>
     </td>

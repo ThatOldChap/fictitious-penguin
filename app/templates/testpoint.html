@@ -24,7 +24,7 @@
                             class="text-primary form-control")
                         }}
                     {% endif %}
-                    <span class="input-group-text units">{{ channel.injection_units }}</span>
+                    <span class="input-group-text units" name="injection-units">{{ channel.injection_units }}</span>
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
                         }}
                     {% endif %}
                     <span class="input-group-text" name="upper-limit">{{ testpoint.upper_limit() }}</span>
-                    <span class="input-group-text units">{{ channel.measurement_units }}</span>
+                    <span class="input-group-text units" name="test-units">{{ channel.measurement_units }}</span>
                 </div>
             </div>
         </div>
@@ -77,6 +77,11 @@
         {% endif %}
     </td>
     <td class="align-middle" name="last-updated">{{ moment(testpoint.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
-    <td class="align-middle"></td>
+    <td class="align-middle" width="">
+        {#
+        <button type="button" class="btn btn-sm btn-success" name="add-testpoint">Add</button>
+        <button type="button" class="btn btn-sm btn-danger" name="remove-testpoint">Remove</button>
+        #}
+    </td>
 </tr>
 {% endblock %}

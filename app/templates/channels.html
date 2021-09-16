@@ -59,6 +59,38 @@
         </form>
     </div>
 </div>
+<div class="modal fade" id="add-new-testpoint-dialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Add New TestPoint</h5>
+            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-6">
+                    <label for="new_injection_value">Nominal Injection Value</label>
+                    <div class="input-group">
+                        <input class="form-control" id="new_injection_value" name="injection_value" type="text">
+                        <span class="input-group-text" name="new-testpoint-injection-units"></span>
+                    </div>                   
+                </div>
+                <div class="col-6">
+                    <label for="new_test_value">Nominal Test Value</label>
+                    <div class="input-group">
+                        <input class="form-control" id="new_test_value" name="test_value" type="text">
+                        <span class="input-group-text" name="new-testpoint-test-units"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" name="add-new-testpoint" data-dismiss="modal">Add TestPoint</button>
+        </div>
+        </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block scripts %}
@@ -103,6 +135,9 @@
             let EQUIPMENT_CHOICE_NAME = 'equipment-choice';
             let SUPPLIER_APPROVAL_NAME = 'supplier-approval';
             let CLIENT_APPROVAL_NAME = 'client-approval';
+
+            // Temporary Variables
+            let newTestPointData = {};
 
             // Update the progress bars as the page is loaded
             updateAllProgressBars(CHANNEL, TESTPOINT);
@@ -305,6 +340,72 @@
                 }
                 updateChannel(data, parent);
             });
+
+            // Listener function for the Injection Value fields
+            $(`[name="add-new-testpoint-option"]`).click(function(event) {
+
+                // Get the current units of the selected Channel's TestPoints
+                channelElement = $(this).parents('tr')       
+                testpointElement = $(channelElement).nextAll('[name="testpoint-parent"]').first();
+                currentInjectionUnits = $(testpointElement).find(`[name="injection-units"]`).text();                
+                currentTestUnits = $(testpointElement).find(`[name="test-units"]`).text();
+
+                // Prepare a data package of all the info about a new TestPoint creation
+                let testpointDataset = testpointElement[0].dataset;
+                newTestPointData = {
+                    currentInjectionUnits: $(testpointElement).find(`[name="injection-units"]`).text(),
+                    currentTestUnits: $(testpointElement).find(`[name="test-units"]`).text(),
+                    testPointId: testpointDataset.testpointId,
+                    channelId: testpointDataset.channelId,
+                    channelElement: channelElement,
+                    testpointElement: $(testpointElement).clone()
+                };
+                console.log(newTestPointData)
+
+                // Update the modal dialog with the current Channel's units
+                $('[name="new-testpoint-injection-units"]').text(newTestPointData["currentInjectionUnits"]);
+                $('[name="new-testpoint-test-units"]').text(newTestPointData["currentTestUnits"]);                
+                
+                /*// Find the elements to get the data from
+                let oldTestPointElement = $(this).parents('tr');
+                let newTestPointElement = $(oldTestPointElement).clone();
+                let dataset = oldTestPointElement[0].dataset;
+
+                // Prepare the data package
+                let data = {
+                    testpoint_id: dataset.testpointId,
+                    channel_id: dataset.channelId,
+                    measured_injection_value: parseFloat(injectionValueElement.value)
+                }
+
+                // Update the TestPoint
+                updateTestPoint(data, parent);
+                */
+            });
+
+            // Listener function for dynamically the Adding a new TestPoint
+            $(`[name="add-new-testpoint"]`).click(function(event) {
+
+                // Find the parent dialog element to extract the new data from
+                dialogElement = $(this).parents('#add-new-testpoint-dialog');
+                let newInjectionValue = 1.50;
+                let newTestValue = 2.50;
+
+                // Extract the data for the new TestPoint
+                newData = newTestPointData;
+
+                // Increment the rowspan of the summary-parent element to account for the new TestPoint row
+                channelElement = newTestPointData["channelElement"];
+                summaryElement = $(channelElement).next().children('td');
+                currentRowSpan = $(summaryElement).attr("rowspan");
+                $(summaryElement).attr("rowspan", parseInt(currentRowSpan) + 1);
+
+                // Add the new TestPoint row in at the end of the Channel's list of TestPoints
+                nextChannelElement = $(channelElement).nextAll('[name="channel-parent"]').first()
+                newTestPointElement = newTestPointData["testpointElement"];
+                $(nextChannelElement).before(newTestPointElement);
+            });
+
 
             // Function for sending an ajax request to update Channel values in the database
             function updateChannel(data, parentChannel) {
