@@ -396,12 +396,15 @@ def update_channel():
     NOTES = 'notes'
     LAST_UPDATED = 'last_updated'
     TEST_EQUIPMENT_ID = 'test_equipment_id'
-    TEST_EQUIPMENT_TYPE_ID = 'test_equipment_type_id'    
+    TEST_EQUIPMENT_TYPE_ID = 'test_equipment_type_id'
 
     # Other constants
     MESSAGE = 'message'
     SUPPLIER_APPROVAL = 'supplier_approval'
     CLIENT_APPROVAL = 'client_approval'
+    ADD_TESTPOINT = 'addTestPoint'
+    NOMINAL_INJECTION_VALUE = 'nominal_injection_value'
+    NOMINAL_TEST_VALUE = 'nominal_test_value'
 
     # Variables to keep track of the updated fields
     updated_fields = []
@@ -470,13 +473,25 @@ def update_channel():
                 channel.remove_approval(current_user)
             db.session.commit()
 
+        if key == ADD_TESTPOINT:
+
+            # Extract the TestPoint data from the request
+            if NOMINAL_INJECTION_VALUE in data:
+                nominal_injection_value = data[NOMINAL_INJECTION_VALUE]
+
+            if NOMINAL_TEST_VALUE in data:
+                nominal_test_value = data[NOMINAL_TEST_VALUE]
+
+            new_testpoint = TestPoint(
+                channel_id = channel.id,
+                nominal_injection_value = nominal_injection_value,
+                nominal_test_value = nominal_test_value
+            )
+            channel.add_testpoint(new_testpoint)
+            db.session.commit()
+
         # Add the processed key to the list of updated fields
         updated_fields.append(key)
-
-     # Check to make sure any fields got updated
-    num_updated = len(updated_fields)
-    if not num_updated == num_fields:
-        raise ValueError(f'Error updating Channel fields. Only {num_updated}/{num_fields} updated successfully.')
     
     # Update the last_updated time now that changes have been made    
     channel.last_updated = last_updated
@@ -490,6 +505,25 @@ def update_channel():
         LAST_UPDATED: last_updated
     }
     
+    if ADD_TESTPOINT in data:
+
+        # Figure out the position of the new TestPoint in the existing list of TestPoints
+        new_position = 0
+        for testpoint in channel.testpoints.order_by('nominal_injection_value').all():
+            if testpoint.nominal_injection_value >= new_testpoint.nominal_injection_value:
+                break
+            new_position += 1
+
+        # Add the necessary TestPoint data to aid in the new TestPoint being created
+        response["testpoint_data"] = {
+            "nominal_injection_value": new_testpoint.nominal_injection_value,
+            "nominal_test_value": new_testpoint.nominal_test_value,
+            "num_testpoints": channel.num_testpoints() ,
+            "lower_limit": new_testpoint.lower_limit(),
+            "upper_limit": new_testpoint.upper_limit(),
+            "new_position": new_position
+        }
+
     return jsonify(response)
 
 @bp.route('/update_testpoint', methods=['POST'])

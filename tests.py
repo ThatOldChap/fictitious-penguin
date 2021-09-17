@@ -275,7 +275,7 @@ class TestPointModel(unittest.TestCase):
 
     def test_calc_max_error_percent_reading(self):
         c = Channel(error_type=ErrorType.PERCENT_READING.value, max_error=0.1)
-        t = TestPoint(measured_test_value=15)
+        t = TestPoint(nominal_test_value=15)
         db.session.add_all([c, t])
         db.session.commit()
 
@@ -283,8 +283,13 @@ class TestPointModel(unittest.TestCase):
         c.add_testpoint(t)
         db.session.commit()
 
-        # Check the Channel's max error is calculated properly
+        # Check the Channel's max error is calculated properly when None
         self.assertEqual(t.calc_max_error(), 0.015)
+
+        # Check the Channel's max error when a value has been measured
+        t.measured_test_value = 15.5
+        db.session.commit()
+        self.assertEqual(t.calc_max_error(), 0.0155)
 
     def test_upper_and_lower_limits(self):
         c = Channel(error_type=ErrorType.ENG_UNITS.value, max_error=1.5)

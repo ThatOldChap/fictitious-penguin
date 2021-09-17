@@ -50,7 +50,7 @@
                     {% for channel, channel_form in zip(channels, channels_form.channels) %}
                         {% include 'channel.html' %}
                         {% include 'channel_summary.html' %}                    
-                        {% for testpoint, testpoint_form in zip(channel.testpoints.all(), channel_form.testpoints) %}
+                        {% for testpoint, testpoint_form in zip(channel.testpoints.order_by('nominal_injection_value').all(), channel_form.testpoints) %}
                             {% include 'testpoint.html' %}
                         {% endfor %}
                     {% endfor %}
@@ -71,14 +71,14 @@
                 <div class="col-6">
                     <label for="new_injection_value">Nominal Injection Value</label>
                     <div class="input-group">
-                        <input class="form-control" id="new_injection_value" name="injection_value" type="text">
+                        <input class="form-control" id="injection_value_dialog" name="injection_value_dialog" type="text">
                         <span class="input-group-text" name="new-testpoint-injection-units"></span>
                     </div>                   
                 </div>
                 <div class="col-6">
                     <label for="new_test_value">Nominal Test Value</label>
                     <div class="input-group">
-                        <input class="form-control" id="new_test_value" name="test_value" type="text">
+                        <input class="form-control" id="test_value_dialog" name="test_value_dialog" type="text">
                         <span class="input-group-text" name="new-testpoint-test-units"></span>
                     </div>
                 </div>
@@ -356,56 +356,51 @@
                     currentInjectionUnits: $(testpointElement).find(`[name="injection-units"]`).text(),
                     currentTestUnits: $(testpointElement).find(`[name="test-units"]`).text(),
                     testPointId: testpointDataset.testpointId,
+                    maxError: testpointDataset.maxError,
                     channelId: testpointDataset.channelId,
                     channelElement: channelElement,
-                    testpointElement: $(testpointElement).clone()
+                    testpointElement: $(testpointElement).clone()                    
                 };
                 console.log(newTestPointData)
 
                 // Update the modal dialog with the current Channel's units
                 $('[name="new-testpoint-injection-units"]').text(newTestPointData["currentInjectionUnits"]);
                 $('[name="new-testpoint-test-units"]').text(newTestPointData["currentTestUnits"]);                
-                
-                /*// Find the elements to get the data from
-                let oldTestPointElement = $(this).parents('tr');
-                let newTestPointElement = $(oldTestPointElement).clone();
-                let dataset = oldTestPointElement[0].dataset;
-
-                // Prepare the data package
-                let data = {
-                    testpoint_id: dataset.testpointId,
-                    channel_id: dataset.channelId,
-                    measured_injection_value: parseFloat(injectionValueElement.value)
-                }
-
-                // Update the TestPoint
-                updateTestPoint(data, parent);
-                */
+            
             });
 
             // Listener function for dynamically the Adding a new TestPoint
             $(`[name="add-new-testpoint"]`).click(function(event) {
 
-                // Find the parent dialog element to extract the new data from
+                // TODO: Add a disable/enable for the submit button to not allow blank TestPoints to be created
+
+                // Find the parent dialog element to extract the entered data from the user
                 dialogElement = $(this).parents('#add-new-testpoint-dialog');
-                let newInjectionValue = 1.50;
-                let newTestValue = 2.50;
+                let newInjectionValue = $(dialogElement).find('#injection_value_dialog').val();
+                let newTestValue = $(dialogElement).find('#test_value_dialog').val();
 
-                // Extract the data for the new TestPoint
-                newData = newTestPointData;
-
-                // Increment the rowspan of the summary-parent element to account for the new TestPoint row
+                // Get the relevant elements from the temporary data package
                 channelElement = newTestPointData["channelElement"];
-                summaryElement = $(channelElement).next().children('td');
-                currentRowSpan = $(summaryElement).attr("rowspan");
-                $(summaryElement).attr("rowspan", parseInt(currentRowSpan) + 1);
-
-                // Add the new TestPoint row in at the end of the Channel's list of TestPoints
-                nextChannelElement = $(channelElement).nextAll('[name="channel-parent"]').first()
                 newTestPointElement = newTestPointData["testpointElement"];
-                $(nextChannelElement).before(newTestPointElement);
-            });
 
+                // Wipe the value from the error field
+                $(newTestPointElement).find('[name="measured-error"]').val("");
+
+                // Wipe the new values from the dialog box
+                $(dialogElement).find('#injection_value_dialog').val("");
+                $(dialogElement).find('#test_value_dialog').val("");                              
+
+                // Send an ajax command to create the new TestPoint
+                data = {
+                    testpoint_id: newTestPointData["testpointId"],
+                    channel_id: newTestPointData["channelId"],
+                    addTestPoint: true,
+                    nominal_injection_value: newInjectionValue,
+                    nominal_test_value: newTestValue
+                };
+                addTestPoint(data, channelElement, newTestPointElement);
+
+            });
 
             // Function for sending an ajax request to update Channel values in the database
             function updateChannel(data, parentChannel) {
@@ -425,6 +420,75 @@
                 });
             }
 
+            // Function for sending an ajax request to add a new TestPoint to the Channel
+            function addTestPoint(data, channelElement, newTestPointElement) {
+
+                // Build the ajax request
+                $.ajax({
+                    type: POST,
+                    url: UPDATE_CHANNEL_URL,
+                    data: data,
+                    success: function(response) {
+                        console.log(response);
+
+                        // Extract the TestPoint data from the response
+                        testPointData = response["testpoint_data"];
+                        numTestPoints = testPointData["num_testpoints"];
+                        nominalInjectionValue = testPointData["nominal_injection_value"];
+                        nominalTestValue = testPointData["nominal_test_value"];
+                        newPosition = testPointData["new_position"];
+
+                        // Increment the rowspan of the summary-parent element to account for the new TestPoint row
+                        summaryElement = $(channelElement).next().children('td');
+                        currentRowSpan = $(summaryElement).attr("rowspan");
+                        $(summaryElement).attr("rowspan", parseInt(currentRowSpan) + 1);
+
+                        /*  Update the Injection Value Element  */
+                        // Update the placeholder with the new user-defined value and wipe the existing values
+                        let injectionValueElement = $(newTestPointElement).find('[name$="injection_value"]')
+                        $(injectionValueElement).attr("placeholder", nominalInjectionValue.toString());
+                        $(injectionValueElement).val("");
+
+                        // Modify the ID of the field to make it unique
+                        currentInjectionElementID = $(injectionValueElement).attr('id').split('-');
+                        currentInjectionElementID[3] = numTestPoints;
+                        $(injectionValueElement).attr('id', currentInjectionElementID.join('-'));
+
+                        /*  Update the Test Value Element  */
+                        // Update the placeholder with the new user-defined value and wipe the existing values
+                        let testValueElement = $(newTestPointElement).find('[name$="test_value"]')
+                        $(testValueElement).attr("placeholder", nominalTestValue.toString());
+                        $(testValueElement).val("");
+
+                        // Modify the ID of the field to make it unique
+                        currentTestValueElementID = $(testValueElement).attr('id').split('-');
+                        currentTestValueElementID[3] = numTestPoints;
+                        $(testValueElement).attr('id', currentTestValueElementID.join('-'));
+
+                        // Update the upper/lower limit values on the Test Value's input group
+                        $(newTestPointElement).find('[name="lower-limit"]').text(testPointData["lower_limit"]);
+                        $(newTestPointElement).find('[name="upper-limit"]').text(testPointData["upper_limit"]);
+
+                        // TODO: Update the data-testpoint-id value
+
+                        // Add the new TestPoint row in at the end of the Channel's list of TestPoints
+                        let startingElement = $(channelElement).nextAll('[name="testpoint-parent"]').first();
+
+                        // Determine the appropriate location for the new TestPoint
+                        newTestPointElementSibling = traverseNextByNum(startingElement, newPosition);
+                        console.log(newPosition)
+                        console.log(startingElement)
+                        console.log(newTestPointElementSibling)
+                        $(newTestPointElementSibling).before(newTestPointElement);                   
+
+                    },
+                    error: function(error) {
+                        console.log('Error adding testpoint.');
+                        console.log(error);
+                    }
+                });
+            }
+
             // Function for sending an ajax request to update TestPoint values in the database
             function updateTestPoint(data, parentTestpoint, parentChannel) {
 
@@ -435,6 +499,7 @@
                     data: data,
                     success: function(response) {
                         console.log(response[MESSAGE]);
+                        console.log(response)
 
                         // Extract the required data from the response
                         let lastUpdated = response[LAST_UPDATED];
@@ -467,6 +532,14 @@
                         console.log(error);
                     }
                 });                
+            }
+
+            // Function for traversing sibling DOM elements
+            function traverseNextByNum(element, numElements) {
+                for (i=0; i < numElements; i++) {
+                    element = $(element).next()
+                }
+                return element
             }
 
         });

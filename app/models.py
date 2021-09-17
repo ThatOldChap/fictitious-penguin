@@ -93,7 +93,10 @@ class TestPoint(db.Model):
         # Returns an error based on the measured/read value being evaluated
         # ex. max_error of 0.1 %RDG is equivalent to 0.015 Hz at a measured value of 15 Hz
         elif error_type == ErrorType.PERCENT_READING.value:
-            return self.measured_test_value * (max_error / 100)
+            if self.measured_test_value == None:
+                return self.nominal_test_value * (max_error / 100)
+            else:
+                return self.measured_test_value * (max_error / 100)
 
     # Calculates the lower limit of an acceptable measurement
     def lower_limit(self):
