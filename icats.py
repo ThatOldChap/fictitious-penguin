@@ -25,8 +25,7 @@ def make_shell_context():
         'init_test_db': init_test_db
     }
 
-'''
-@app.context_processor
+
+""" @app.context_processor
 def utility_processor():
-    return dict(round=round)
-'''
+    return dict() """

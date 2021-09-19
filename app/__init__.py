@@ -8,6 +8,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
+from flask_babel import Babel, format_decimal
 from config import Config
 
 # Instantiate all the main dependencies
@@ -16,6 +17,7 @@ migrate = Migrate()
 mail = Mail()
 bootstrap = Bootstrap()
 moment = Moment()
+babel = Babel()
 
 # Setup the LoginManager for the all the user authentication
 login = LoginManager()
@@ -30,6 +32,7 @@ def create_app(config_class=Config):
 
     # Add the zip function into the jinja template functionality
     app.jinja_env.globals.update(zip=zip)
+    app.jinja_env.filters['format_decimal'] = format_decimal  
 
     # Import the models to allow for migrate to detect any changes
     from app.models import User, TestPoint, Channel, Group, Job, Project, Company, TestEquipment
@@ -42,6 +45,7 @@ def create_app(config_class=Config):
     mail.init_app(app)
     bootstrap.init_app(app)
     moment.init_app(app)
+    babel.init_app(app)
 
     # Register each blueprint section
     from app.errors import bp as errors_bp

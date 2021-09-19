@@ -14,13 +14,13 @@
                     {% if testpoint.measured_injection_value == None %}            
                         {{ testpoint_form.injection_value(
                             value="",
-                            placeholder=testpoint.nominal_injection_value,
+                            placeholder=testpoint.nominal_injection_value|round(5),
                             class="text-primary form-control")
                         }}
                     {% else %}
                         {{ testpoint_form.injection_value(
-                            value=testpoint.measured_injection_value,
-                            placeholder=testpoint.nominal_injection_value,
+                            value=testpoint.measured_injection_value|round(5),
+                            placeholder=testpoint.nominal_injection_value|round(5),
                             class="text-primary form-control")
                         }}
                     {% endif %}
@@ -33,21 +33,22 @@
         <div class="row">
             <div class="col">
                 <div class="input-group">
-                    <span class="input-group-text" name="lower-limit">{{ testpoint.lower_limit() }}</span>
+                    {#<span class="input-group-text" name="lower-limit">{{ '%0.4f' % testpoint.lower_limit()|round(5) }}</span>#}
+                    <span class="input-group-text" name="lower-limit">{{ testpoint.lower_limit()|format_decimal(format='####0.#####') }}</span>
                     {% if testpoint.measured_test_value == None %}            
                         {{ testpoint_form.test_value(
                             value="",
-                            placeholder=testpoint.nominal_test_value,
+                            placeholder=testpoint.nominal_test_value|round(5),
                             class="text-primary form-control")
                         }}
                     {% else %}
                         {{ testpoint_form.test_value(
-                            value=testpoint.measured_test_value,
-                            placeholder=testpoint.nominal_test_value,
+                            value=testpoint.measured_test_value|round(5),
+                            placeholder=testpoint.nominal_test_value|round(5),
                             class="text-primary form-control")
                         }}
                     {% endif %}
-                    <span class="input-group-text" name="upper-limit">{{ testpoint.upper_limit() }}</span>
+                    <span class="input-group-text" name="upper-limit">{{ testpoint.upper_limit()|format_decimal(format='####0.#####') }}</span>
                     <span class="input-group-text units" name="test-units">{{ channel.measurement_units }}</span>
                 </div>
             </div>
@@ -58,9 +59,9 @@
             <div class="col">
                 <div class="input-group text-primary">
                     {% if testpoint.measured_error == None %}
-                        <input type="text" class="form-control text-center text-primary" name="measured-error" placeholder="0.000" value="" readonly>
+                        <input type="text" class="form-control text-center" name="measured-error" placeholder="0.000" value="" readonly>
                     {% else %}
-                        <input type="text" class="form-control text-center text-primary" name="measured-error" placeholder="0.000" value="{{ testpoint.measured_error }}" readonly>
+                        <input type="text" class="form-control text-center" name="measured-error" placeholder="0.000" value="{{ testpoint.measured_error|format_decimal(format='####0.#####') }}" readonly>
                     {% endif %}
                     <span class="input-group-text units" name="error-units">{{ channel.measurement_units }}</span>
                 </div>
