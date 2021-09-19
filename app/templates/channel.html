@@ -8,9 +8,11 @@
     <th class="align-middle text-center">{{ channel.name }}</th>
     <td class="align-middle" colspan="3">
         <div class="row justify-content-between">            
-            <div class="col-1" name="percent-passed">{{ progress['percent_passed'] }}%</div>
-            <div class="col-1">
-                <span name="num-passed">{{ channel.testpoint_stats()['Pass'] }}</span>/{{ channel.num_testpoints() }}
+            <div class="col-2 text-start" name="percent-passed">{{ progress['percent_passed'] }}%</div>
+            <div class="col-2 text-end">
+                <span name="num-passed">{{ channel.testpoint_stats()['Pass'] }}</span>
+                /
+                <span name="num-total">{{ channel.num_testpoints() }}</span>
             </div>
         </div>
         <div class="row">

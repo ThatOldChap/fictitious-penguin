@@ -128,6 +128,7 @@
             let LAST_UPDATED_NAME = 'last-updated';
             let TEST_RESULT_NAME = 'test-result';
             let NUM_PASSED_NAME = 'num-passed';
+            let NUM_TOTAL_NAME = 'num-total';
             let PERCENT_PASSED_NAME = 'percent-passed';
             let CHANNEL_STATUS_NAME = 'channel-status';
             let SUMMARY_PARENT_NAME = 'summary-parent';
@@ -386,6 +387,10 @@
                 // Wipe the value from the error field
                 $(newTestPointElement).find('[name="measured-error"]').val("");
 
+                // Changed the test result to Untested                
+                updateBadgeClass(newTestPointElement, TEST_RESULT_NAME, 'bg-secondary');
+                updateFieldTextByName(newTestPointElement, TEST_RESULT_NAME, 'Untested');
+
                 // Wipe the new values from the dialog box
                 $(dialogElement).find('#injection_value_dialog').val("");
                 $(dialogElement).find('#test_value_dialog').val("");                              
@@ -432,36 +437,35 @@
                         console.log(response);
 
                         // Extract the TestPoint data from the response
-                        testPointData = response["testpoint_data"];
-                        numTestPoints = testPointData["num_testpoints"];
-                        nominalInjectionValue = testPointData["nominal_injection_value"];
-                        nominalTestValue = testPointData["nominal_test_value"];
-                        newPosition = testPointData["new_position"];
-
+                        let testPointData = response["testpoint_data"];
+                        let numTestPoints = testPointData["num_testpoints"];             
+                        
                         // Increment the rowspan of the summary-parent element to account for the new TestPoint row
-                        summaryElement = $(channelElement).next().children('td');
-                        currentRowSpan = $(summaryElement).attr("rowspan");
+                        let summaryElement = $(channelElement).next().children('td');
+                        let currentRowSpan = $(summaryElement).attr("rowspan");
                         $(summaryElement).attr("rowspan", parseInt(currentRowSpan) + 1);
 
                         /*  Update the Injection Value Element  */
                         // Update the placeholder with the new user-defined value and wipe the existing values
+                        let nominalInjectionValue = testPointData["nominal_injection_value"];
                         let injectionValueElement = $(newTestPointElement).find('[name$="injection_value"]')
                         $(injectionValueElement).attr("placeholder", nominalInjectionValue.toString());
                         $(injectionValueElement).val("");
 
                         // Modify the ID of the field to make it unique
-                        currentInjectionElementID = $(injectionValueElement).attr('id').split('-');
+                        let currentInjectionElementID = $(injectionValueElement).attr('id').split('-');
                         currentInjectionElementID[3] = numTestPoints;
                         $(injectionValueElement).attr('id', currentInjectionElementID.join('-'));
 
                         /*  Update the Test Value Element  */
                         // Update the placeholder with the new user-defined value and wipe the existing values
+                        let nominalTestValue = testPointData["nominal_test_value"];   
                         let testValueElement = $(newTestPointElement).find('[name$="test_value"]')
                         $(testValueElement).attr("placeholder", nominalTestValue.toString());
                         $(testValueElement).val("");
 
                         // Modify the ID of the field to make it unique
-                        currentTestValueElementID = $(testValueElement).attr('id').split('-');
+                        let currentTestValueElementID = $(testValueElement).attr('id').split('-');
                         currentTestValueElementID[3] = numTestPoints;
                         $(testValueElement).attr('id', currentTestValueElementID.join('-'));
 
@@ -469,23 +473,41 @@
                         $(newTestPointElement).find('[name="lower-limit"]').text(testPointData["lower_limit"]);
                         $(newTestPointElement).find('[name="upper-limit"]').text(testPointData["upper_limit"]);
 
-                        // TODO: Update the data-testpoint-id value
+                        // Update the data-testpoint-id value with the new ID
+                        let testPointId = testPointData["testpoint_id"];
+                        $(newTestPointElement).attr('data-testpoint-id', testPointId);
 
-                        // TODO: Change the badge to untested
+                        // Update the Channel's progress bar widths
+                        let progress = testPointData["progress"];
+                        let percentPassed = progress[PERCENT_PASSED];
+                        let percentFailed = progress[PERCENT_FAILED];
+                        updateProgressBar(channelElement, TESTPOINT, percentPassed, percentFailed, 0);                        
 
-                        // TODO: Update the Channel's progress bar
+                        // Update the additional progress bar details
+                        let numPassed = testPointData["num_passed"];                       
+                        updateFieldTextByName(channelElement, NUM_PASSED_NAME, numPassed);
+                        updateFieldTextByName(channelElement, NUM_TOTAL_NAME, numTestPoints);
+                        updateFieldTextByName(channelElement, PERCENT_PASSED_NAME, percentPassed + '%');
 
-                        // TODO: Update the 
+                        // Update the Channel's latest status
+                        let status = testPointData["status"];
+                        updateFieldTextByName(channelElement, CHANNEL_STATUS_NAME, status);
+                        let newStatusBadgeClass = getStatusBadgeClass(status);
+                        updateBadgeClass(channelElement, CHANNEL_STATUS_NAME, newStatusBadgeClass);
+
+                        // Update the last-updated for the Channel and TestPoint
+                        let lastUpdated = response["last_updated"];
+                        let lastUpdatedValue = moment(lastUpdated).format(LAST_UPDATED_FORMAT);
+                        updateFieldTextByName(channelElement, LAST_UPDATED_NAME, lastUpdatedValue);
+                        updateFieldTextByName(newTestPointElement, LAST_UPDATED_NAME, lastUpdatedValue);
 
                         // Add the new TestPoint row in at the end of the Channel's list of TestPoints
                         let startingElement = $(channelElement).nextAll('[name="testpoint-parent"]').first();
 
-                        // Determine the appropriate location for the new TestPoint
-                        newTestPointElementSibling = traverseNextByNum(startingElement, newPosition);
-                        console.log(newPosition)
-                        console.log(startingElement)
-                        console.log(newTestPointElementSibling)
-                        $(newTestPointElementSibling).before(newTestPointElement);                   
+                        // Determine the appropriate location for the new TestPoint and add it into the DOM
+                        let newPosition = testPointData["new_position"]; 
+                        let newTestPointElementSibling = traverseNextByNum(startingElement, newPosition);
+                        $(newTestPointElementSibling).before(newTestPointElement);
 
                     },
                     error: function(error) {

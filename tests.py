@@ -500,6 +500,9 @@ class ChannelModel(unittest.TestCase):
         self.assertEqual(progress["percent_passed"], 50)
         self.assertEqual(progress["percent_failed"], 25)
 
+    def test_update_each_parent_status(self):
+        pass
+
     def test_update_test_equipment_type(self):
         c = Channel()
         t = TestEquipmentType()

@@ -262,6 +262,12 @@ class Channel(db.Model):
         # Save the results
         db.session.commit()
 
+    def update_each_parent_status(self):
+        self.update_status()
+        self.group.update_status()
+        self.group.job.update_status()
+        self.group.job.project.update_status()
+
     def testpoint_progress(self):
 
         # Get the testpoint stats

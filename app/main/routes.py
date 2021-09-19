@@ -7,7 +7,7 @@ from app.models import *
 from app.main.forms import *
 from app.utils import *
 from wtforms.fields.core import BooleanField
-import logging
+import logging, math
 
 # Import the logger assigned to the application
 logger = logging.getLogger(__name__)
@@ -408,7 +408,6 @@ def update_channel():
 
     # Variables to keep track of the updated fields
     updated_fields = []
-    num_fields = 0
     last_updated = datetime.utcnow()
 
     # Extract the request's form dictionary
@@ -426,9 +425,6 @@ def update_channel():
         # Get the test_equipment_type_id from the ajax request and remove it from the keys to check
         test_equipment_type_id = data[TEST_EQUIPMENT_TYPE_ID]
         data.pop(TEST_EQUIPMENT_TYPE_ID)
-
-    # Calculate the new number of variables to iterate over
-    num_fields = len(data)
 
     # Iterate through each field in the request and update the Channel accordingly
     for key, value in data.items():        
@@ -493,8 +489,9 @@ def update_channel():
         # Add the processed key to the list of updated fields
         updated_fields.append(key)
     
-    # Update the last_updated time now that changes have been made    
+    # Update the status and last_updated time on each parent item
     channel.last_updated = last_updated
+    channel.update_each_parent_status()
 
     # Save the changes to the database
     db.session.commit()
@@ -510,18 +507,24 @@ def update_channel():
         # Figure out the position of the new TestPoint in the existing list of TestPoints
         new_position = 0
         for testpoint in channel.testpoints.order_by('nominal_injection_value').all():
+
+            # Finds the first TestPoint with a larger value so that the new TestPoint can be added before it
             if testpoint.nominal_injection_value >= new_testpoint.nominal_injection_value:
                 break
             new_position += 1
 
         # Add the necessary TestPoint data to aid in the new TestPoint being created
         response["testpoint_data"] = {
+            "testpoint_id": new_testpoint.id,
             "nominal_injection_value": new_testpoint.nominal_injection_value,
             "nominal_test_value": new_testpoint.nominal_test_value,
-            "num_testpoints": channel.num_testpoints() ,
-            "lower_limit": new_testpoint.lower_limit(),
-            "upper_limit": new_testpoint.upper_limit(),
-            "new_position": new_position
+            "num_testpoints": channel.num_testpoints(),
+            "lower_limit": round(new_testpoint.lower_limit(), 5),
+            "upper_limit": round(new_testpoint.upper_limit(), 5),
+            "new_position": new_position,
+            "progress": channel.testpoint_progress(),
+            "num_passed": channel.testpoint_stats()[TestResult.PASS.value],
+            "status": channel.status
         }
 
     return jsonify(response)
@@ -605,10 +608,7 @@ def update_testpoint():
     # Update the status and last_update time of the updated channel, group, job and project
     if has_channel:
         channel.last_updated = last_updated
-        channel.update_status()
-        channel.group.update_status()
-        channel.group.job.update_status()
-        channel.group.job.project.update_status()
+        channel.update_each_parent_status()
 
     # Save the changes to the database
     db.session.commit()
