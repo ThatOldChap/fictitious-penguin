@@ -478,6 +478,8 @@ def update_channel():
             if NOMINAL_TEST_VALUE in data:
                 nominal_test_value = data[NOMINAL_TEST_VALUE]
 
+            # TODO: Add a check for if the nominal_injection_value is > the max_range or < min_range, to update
+
             new_testpoint = TestPoint(
                 channel_id = channel.id,
                 nominal_injection_value = nominal_injection_value,

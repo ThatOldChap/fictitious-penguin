@@ -31,7 +31,7 @@
                                             {% for test_equipment in group.job.project.test_equipment_of_type(test_equipment_type) %}
                                                 <li name="equipment-choice" data-equipment-id="{{ test_equipment.id }}">
                                                     <a class="dropdown-item" href="javascript:void(0);">
-                                                        <span name="asset-id"><b style="color:#244463;">{{ test_equipment.asset_id }}</b></span>: Due {{ moment(test_equipment.due_date()).format("DD-MMM-YYYY") }}
+                                                        <span name="asset-id"><b>{{ test_equipment.asset_id }}</b></span>: Due {{ moment(test_equipment.due_date()).format("DD-MMM-YYYY") }}
                                                     </a>
                                                 </li>
                                             {% endfor %}
