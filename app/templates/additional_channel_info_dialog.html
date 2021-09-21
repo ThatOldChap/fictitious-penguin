@@ -1,5 +1,5 @@
 <div class="modal fade" id="additional-channel-info-dialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">Channel Information</h5>
@@ -15,7 +15,6 @@
                 - Max Error
                 - Error Type  
                 - Full-Scale Range
-                - Required Equipment Types  
             #}
             <div class="row">
                 <div class="col-7 g-2">
@@ -41,7 +40,7 @@
                     <input class="form-control" id="dialog-maximum-range" type="text" disabled>
                 </div>
                 <div class="col-4 g-2">
-                    <label for="dialog-test-units">Measurement Units</label>
+                    <label for="dialog-test-units">Test Units</label>
                     <select class="custom-select text-center" id="dialog-test-units" disabled>
                         {% for unit in eng_units() %}
                             <option value="{{ unit }}">{{ unit }}</option>
@@ -69,11 +68,11 @@
             </div>
             <div class="row">
                 <div class="col-4 g-2">
-                    <label for="dialog-minimum-injection-range">Min. Injection Range</label>
+                    <label for="dialog-minimum-injection-range">Minimum Injection Range</label>
                     <input class="form-control" id="dialog-minimum-injection-range" type="text" disabled>
                 </div>
                 <div class="col-4 g-2">
-                    <label for="dialog-maximum-injection-range">Max. Injection Range</label>
+                    <label for="dialog-maximum-injection-range">Maximum Injection Range</label>
                     <input class="form-control" id="dialog-maximum-injection-range" type="text" disabled>
                 </div>
                 <div class="col-4 g-2">

@@ -72,7 +72,9 @@
 <div name="dialog-holder-4">
     {% include 'update_units_dialog.html' %}
 </div>
-
+<div name="dialog-holder-5">
+    {% include 'delete_channel_dialog.html' %}
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -123,6 +125,7 @@
             let newTestPointData = {};
             let updateChannelNameData = {};
             let updateChannelUnitsData = {};
+            let deleteChannelData = {};
 
             // Update the progress bars as the page is loaded
             updateAllProgressBars(CHANNEL, TESTPOINT);
@@ -435,7 +438,7 @@
             // Listener for selecting the 'Update Units' option from the Actions button
             $(`[name="update-units-option"]`).click(function(event) {
 
-                // Get the current units for the channel
+                // Get the current units for the channel element and units
                 let channelElement = $(this).parents('tr');
                 let testpointElement = $(channelElement).nextAll('[name="testpoint-parent"]').first();
                 let currentInjectionUnits = $(testpointElement).find(`[name="injection-units"]`).text();                
@@ -486,6 +489,39 @@
                     // Update the Error's Units
                     $(element).find('[name="error-units"]').text(newTestUnits);
                 });
+            });
+
+            // Listener for selecting the 'Delete Channel' option from the Actions button
+            $(`[name="delete-channel-option"]`).click(function(event) {
+
+                // Get the current channel element and associated information
+                let channelElement = $(this).parents('tr');
+                let numTestPoints = $(channelElement).find(`[name="num-total"]`).text();
+                let channelName = $(channelElement).find('[name="channel-name"]').text();
+
+                // Prepare a data package for the name change
+                let channelDataset = channelElement[0].dataset
+                deleteChannelData = {
+                    channelElement: channelElement,
+                    channelId: channelDataset.channelId,
+                    numTestPoints: numTestPoints,
+                    channelName: channelName
+                }
+
+                // Update the modal dialog with the current appropriate channel information
+                $('#channel-name-dialog').text(channelName);
+                $('#num-testpoints-dialog').text(numTestPoints);
+
+            });
+
+            // Listener for a confirmation of deleting a Channel from the dialog
+            $(`[name="delete-channel-submit"]`).click(function(event) {
+
+                // Get the current channel element
+                let channelElement = $(this).parents('tr');
+
+
+
             });
 
             // Function for sending an ajax request to update Channel values in the database
