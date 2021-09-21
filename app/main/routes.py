@@ -403,6 +403,9 @@ def update_channel():
     SUPPLIER_APPROVAL = 'supplier_approval'
     CLIENT_APPROVAL = 'client_approval'
     ADD_TESTPOINT = 'addTestPoint'
+    NEW_CHANNEL_NAME = 'newChannelName'
+    NEW_INJECTION_UNITS = 'newInjectionUnits'
+    NEW_TEST_UNITS = 'newTestUnits'
     NOMINAL_INJECTION_VALUE = 'nominal_injection_value'
     NOMINAL_TEST_VALUE = 'nominal_test_value'
 
@@ -487,6 +490,15 @@ def update_channel():
             )
             channel.add_testpoint(new_testpoint)
             db.session.commit()
+        
+        if key == NEW_CHANNEL_NAME:
+            channel.name = none_if_empty(value)
+        
+        if key == NEW_INJECTION_UNITS:
+            channel.injection_units = value
+
+        if key == NEW_TEST_UNITS:  
+            channel.measurement_units = value
 
         # Add the processed key to the list of updated fields
         updated_fields.append(key)

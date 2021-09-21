@@ -5,7 +5,8 @@
     data-progress-passed="{{ progress['percent_passed'] }}"
     data-progress-failed="{{ progress['percent_failed'] }}"
     data-progress-untested="{{ progress['percent_untested'] }}">
-    <th class="align-middle text-center">{{ channel.name }}</th>
+
+    <th class="align-middle text-center" name="channel-name">{{ channel.name }}</th>
     <td class="align-middle" colspan="3">
         <div class="row justify-content-between">            
             <div class="col-2 text-start" name="percent-passed">{{ progress['percent_passed'] }}%</div>
@@ -40,10 +41,16 @@
     <td class="align-middle" name="actions">
         <div class="btn-group" role="group">
             <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Add/Edit</button>
-            <ul class="dropdown-menu dropdown-menu-end">
+            <ul class="dropdown-menu dropdown-menu-end">                
+                <li>
+                    <a class="dropdown-item" name="rename-channel-option" href="#rename-channel-dialog" data-toggle="modal" type="button">Rename Channel</a>
+                </li> 
+                <li>
+                    <a class="dropdown-item" name="update-units-option" href="#update-units-dialog" data-toggle="modal" type="button">Update Units</a>
+                </li>
                 <li>
                     <a class="dropdown-item" name="channel-information-option" href="#additional-channel-info-dialog" data-toggle="modal" type="button">Additional Info</a>
-                </li>                
+                </li>          
                 <li>
                     <a class="dropdown-item" name="add-new-testpoint-option" href="#add-new-testpoint-dialog" data-toggle="modal" type="button">Add New TestPoint</a>
                 </li>  

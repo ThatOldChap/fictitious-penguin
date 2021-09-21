@@ -1,0 +1,43 @@
+<div class="modal fade" id="update-units-dialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Update Units</h5>
+            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-6 g-2">
+                    <label for="current-injection-units">Injection Units</label>
+                    <input class="form-control" id="current-injection-units" name="current-injection-units" type="text" disabled>
+                </div>
+                <div class="col-6 g-2">
+                    <label for="new-injection-units">New Units</label>
+                    <select class="custom-select text-center" id="new-injection-units">
+                        {% for unit in eng_units() %}
+                            <option value="{{ unit }}">{{ unit }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6 g-2">
+                    <label for="current-test-units">Test Units</label>
+                    <input class="form-control" id="current-test-units" name="current-test-units" type="text" disabled>
+                </div>
+                <div class="col-6 g-2">
+                    <label for="new-test-units">New Units</label>
+                    <select class="custom-select text-center" id="new-test-units">
+                        {% for unit in eng_units() %}
+                            <option value="{{ unit }}">{{ unit }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" name="update-units-submit" data-dismiss="modal">Update</button>
+        </div>
+    </div>
+</div>

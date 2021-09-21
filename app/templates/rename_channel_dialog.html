@@ -1,0 +1,25 @@
+<div class="modal fade" id="rename-channel-dialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Rename Channel</h5>
+            <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-6">
+                    <label for="current-channel-name">Current Channel Name</label>
+                    <input class="form-control" id="current-channel-name" name="current-channel-name" type="text" disabled>
+                </div>
+                <div class="col-6">
+                    <label for="new-channel-name">New Channel Name</label>
+                    <input class="form-control" id="new-channel-name" name="new-channel-name" type="text">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" name="update-channel-name" data-dismiss="modal">Update</button>
+        </div>
+    </div>
+</div>

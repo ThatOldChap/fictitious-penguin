@@ -59,9 +59,20 @@
         </form>
     </div>
 </div>
-{# Dialog modals for the Channe's action buttons #}
-{% include 'add_new_testpoint_dialog.html' %}
-{% include 'additional_channel_info.html' %}
+{# Dialog modals for the Channel's action buttons #}
+<div name="dialog-holder-1">
+    {% include 'additional_channel_info_dialog.html' %}
+</div>
+<div name="dialog-holder-2">
+    {% include 'add_new_testpoint_dialog.html' %}
+</div>
+<div name="dialog-holder-3">
+    {% include 'rename_channel_dialog.html' %}
+</div>
+<div name="dialog-holder-4">
+    {% include 'update_units_dialog.html' %}
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -110,6 +121,8 @@
 
             // Temporary Variables
             let newTestPointData = {};
+            let updateChannelNameData = {};
+            let updateChannelUnitsData = {};
 
             // Update the progress bars as the page is loaded
             updateAllProgressBars(CHANNEL, TESTPOINT);
@@ -317,10 +330,10 @@
             $(`[name="add-new-testpoint-option"]`).click(function(event) {
 
                 // Get the current units of the selected Channel's TestPoints
-                channelElement = $(this).parents('tr')       
-                testpointElement = $(channelElement).nextAll('[name="testpoint-parent"]').first();
-                currentInjectionUnits = $(testpointElement).find(`[name="injection-units"]`).text();                
-                currentTestUnits = $(testpointElement).find(`[name="test-units"]`).text();
+                let channelElement = $(this).parents('tr')       
+                let testpointElement = $(channelElement).nextAll('[name="testpoint-parent"]').first();
+                let currentInjectionUnits = $(testpointElement).find(`[name="injection-units"]`).text();                
+                let currentTestUnits = $(testpointElement).find(`[name="test-units"]`).text();
 
                 // Prepare a data package of all the info about a new TestPoint creation
                 let testpointDataset = testpointElement[0].dataset;
@@ -333,7 +346,6 @@
                     channelElement: channelElement,
                     testpointElement: $(testpointElement).clone()                    
                 };
-                console.log(newTestPointData)
 
                 // Update the modal dialog with the current Channel's units
                 $('[name="new-testpoint-injection-units"]').text(newTestPointData["currentInjectionUnits"]);
@@ -341,21 +353,13 @@
             
             });
 
-            // Listener for selecting the Add New TestPoint option from the Actions button
-            $(`[name="edit-channel-option"]`).click(function(event) {
-
-                // Get the current units of the selected Channel's TestPoints
-                channelElement = $(this).parents('tr')
-
-            });
-
-            // Listener function for dynamically the Adding a new TestPoint
+            // Listener function for submitting a new TestPoint to be added to a Channel
             $(`[name="add-new-testpoint"]`).click(function(event) {
 
                 // TODO: Add a disable/enable for the submit button to not allow blank TestPoints to be created
 
                 // Find the parent dialog element to extract the entered data from the user
-                dialogElement = $(this).parents('#add-new-testpoint-dialog');
+                let dialogElement = $(this).parents('#add-new-testpoint-dialog');
                 let newInjectionValue = $(dialogElement).find('#injection_value_dialog').val();
                 let newTestValue = $(dialogElement).find('#test_value_dialog').val();
 
@@ -384,6 +388,104 @@
                 };
                 addTestPoint(data, channelElement, newTestPointElement);
 
+            });
+
+            // Listener for selecting the 'Rename Channel' option from the Actions button
+            $(`[name="rename-channel-option"]`).click(function(event) {
+
+                // Get the current channel name
+                let channelElement = $(this).parents('tr');
+                currentChannelName = $(channelElement).find('[name="channel-name"]').text();
+
+                // Prepare a data package for the name change
+                let channelDataset = channelElement[0].dataset
+                updateChannelNameData = {
+                    channelElement: channelElement,
+                    channelId: channelDataset.channelId
+                }
+
+                // Update the modal dialog with the current Channel's name
+                $('#current-channel-name').val(currentChannelName);
+
+            });
+
+            // Listener function for submitting a Channel name change
+            $('[name="update-channel-name"]').click(function(event) {
+
+                // TODO: Add a disable/enable for the submit button to not allow blank TestPoints to be created
+
+                // Find the parent dialog element to extract the entered data from the user
+                let dialogElement = $(this).parents('#rename-channel-dialog');
+                let newChannelName = $(dialogElement).find('#new-channel-name').val();
+
+                // Get the relevant elements from the temporary data package
+                channelElement = updateChannelNameData["channelElement"];
+                $(channelElement).find('[name="channel-name"]').text(newChannelName);
+
+                // Send an ajax command to update the Channel name
+                data = {
+                    channel_id: updateChannelNameData["channelId"],
+                    newChannelName: newChannelName
+                }
+
+                updateChannel(data, channelElement)
+
+            });
+
+            // Listener for selecting the 'Update Units' option from the Actions button
+            $(`[name="update-units-option"]`).click(function(event) {
+
+                // Get the current units for the channel
+                let channelElement = $(this).parents('tr');
+                let testpointElement = $(channelElement).nextAll('[name="testpoint-parent"]').first();
+                let currentInjectionUnits = $(testpointElement).find(`[name="injection-units"]`).text();                
+                let currentTestUnits = $(testpointElement).find(`[name="test-units"]`).text();
+
+                // Prepare a data package for the name change
+                let channelDataset = channelElement[0].dataset
+                updateChannelUnitsData = {
+                    channelElement: channelElement,
+                    channelId: channelDataset.channelId
+                }
+
+                // Update the modal dialog with the current Channel's units
+                $('#current-injection-units').val(currentInjectionUnits);
+                $('#current-test-units').val(currentTestUnits);
+
+            });
+
+            // Listener function for submitting a Units change on a Channel
+            $('[name="update-units-submit"]').click(function(event) {
+
+                // Find the parent dialog element to extract the entered data from the user
+                let dialogElement = $(this).parents('#update-units-dialog');
+                let newInjectionUnits = $(dialogElement).find('#new-injection-units').val();
+                let newTestUnits = $(dialogElement).find('#new-test-units').val();
+
+                // Get the relevant elements from the temporary data package
+                channelElement = updateChannelUnitsData["channelElement"];
+
+                // Send an ajax command to update the Channel name
+                data = {
+                    channel_id: updateChannelUnitsData["channelId"],               
+                    newInjectionUnits: newInjectionUnits,
+                    newTestUnits: newTestUnits
+                }
+                updateChannel(data, channelElement)
+
+                // Get each TestPoint element to update
+                let testpointList = $(channelElement).next().nextUntil('[name="channel-parent"]');
+                $(testpointList).each(function(index, element) {
+
+                    // Update the Injection Units
+                    $(element).find('[name="injection-units"]').text(newInjectionUnits);
+
+                    // Update the Test Units
+                    $(element).find('[name="test-units"]').text(newTestUnits);
+
+                    // Update the Error's Units
+                    $(element).find('[name="error-units"]').text(newTestUnits);
+                });
             });
 
             // Function for sending an ajax request to update Channel values in the database
