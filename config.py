@@ -1,4 +1,4 @@
-import os
+import os, psycopg2
 from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -11,6 +11,8 @@ class Config(object):
         'postgres://', 'postgresql://') or \
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    conn = psycopg2.connect('DATABASE_URL', sslmode='require')
 
     # Bootstrap setup
     BOOTSTRAP_BOOTSWATCH_THEME = 'flatly'
