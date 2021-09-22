@@ -387,6 +387,32 @@ def channels(group_id):
         channels_form=channels_form, group=group)
 
 
+@bp.route('/delete_channel', methods=['POST'])
+def delete_channel():
+
+    # Extract the request's form dictionary
+    data = request.form.to_dict()
+    print(data)
+    CHANNEL_ID = 'channel_id'
+
+    if CHANNEL_ID in data:
+
+        # Get the channel from the ajax request
+        channel = Channel.query.filter_by(id=data[CHANNEL_ID]).first()
+
+        # Delete the channel and all its dependencies
+        channel.delete_all_records()
+        db.session.delete(channel)
+        db.session.commit()
+    else:
+        raise ValueError(f'{CHANNEL_ID} not found in ajax request:\n{data}')
+        
+    response = {
+        'message': f'{channel} has been successfully deleted.'
+    }
+    return jsonify(response)
+
+
 @bp.route('/update_channel', methods=['POST'])
 def update_channel():
 

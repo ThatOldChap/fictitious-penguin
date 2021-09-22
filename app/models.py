@@ -68,7 +68,7 @@ class TestPoint(db.Model):
     channel = db.relationship('Channel', back_populates='testpoints')
 
     def __repr__(self):
-        return f'<TestPoint id-{self.id} for Channel {self.channel.name}>'
+        return f'<TestPoint id-{self.id} for Channel>'
 
     # Calculates the measured error from a signal injection
     def calc_error(self):
@@ -153,6 +153,20 @@ class Channel(db.Model):
 
     def __repr__(self):
         return f'<Channel {self.name}>'
+
+    def delete_all_records(self):
+
+        for testpoint in self.testpoints.all():
+            self.testpoints.remove(testpoint)
+        
+        for equipment_record in self.equipment_records.all():
+            self.equipment_records.remove(equipment_record)
+
+        for test_equipment_type in self.required_test_equipment.all():
+            self.required_test_equipment.remove(test_equipment_type)
+
+        for approval_record in self.approval_records.all():
+            self.approval_records.remove(approval_record)
 
     def num_testpoints(self):
         return len(self.testpoints.all())

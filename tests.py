@@ -320,6 +320,49 @@ class ChannelModel(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
+
+    def test_delete_channel(self):
+        c = Channel()
+        t1 = TestPoint(channel_id=1)
+        t2 = TestPoint(channel_id=1)
+        tet1 = TestEquipmentType()
+        tet2 = TestEquipmentType()
+        te1 = TestEquipment()
+        te2 = TestEquipment()
+        u1 = User()
+        u2 = User()
+        cp = Company(category=CompanyCategory.SUPPLIER.value)
+        db.session.add_all([c, t1, t2, tet1, tet2, te1, te2, u1, u2, cp])
+        db.session.commit()
+
+        # Add the necessary records to the Channel
+        c.add_test_equipment_type(tet1)
+        c.add_test_equipment_type(tet2)
+        tet1.add_test_equipment(te1)
+        tet2.add_test_equipment(te2)
+        cp.add_employee(u1)
+        cp.add_employee(u2)
+        db.session.commit()
+        cer1 = ChannelEquipmentRecord(channel_id=1, test_equipment_type_id=1, test_equipment_id=1)
+        cer2 = ChannelEquipmentRecord(channel_id=1, test_equipment_type_id=2, test_equipment_id=2)
+        c.add_approval(u1)
+        c.add_approval(u2)
+        c.equipment_records.append(cer1)
+        c.equipment_records.append(cer2)
+        db.session.commit()
+
+        # Confirm the records are in stored and linked properly
+        self.assertEqual(c.testpoints.all(), [t1, t2])
+        self.assertEqual(c.equipment_records.all(), [cer1, cer2])
+        self.assertEqual(c.required_test_equipment.all(), [tet1, tet2])
+        self.assertEqual(c.approval_records.count(), 2)
+
+        # Delete the channel links and records
+        c.delete_all_records()
+        self.assertEqual(c.testpoints.all(), [])
+        self.assertEqual(c.equipment_records.all(), [])
+        self.assertEqual(c.required_test_equipment.all(), [])
+        self.assertEqual(c.approval_records.all(), [])
     
     def test_add_testpoint(self):
         c = Channel()

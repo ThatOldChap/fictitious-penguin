@@ -97,6 +97,7 @@
             let LAST_UPDATED_FORMAT = 'hh:mm A, DD-MMM-YYYY';
             let UPDATE_TESTPOINT_URL = '/update_testpoint';
             let UPDATE_CHANNEL_URL = '/update_channel';
+            let DELETE_CHANNEL_URL = '/delete_channel';
             let POST = 'POST';
             let PROGRESS = 'progress';
             let MESSAGE = 'message';
@@ -466,10 +467,10 @@
                 let newTestUnits = $(dialogElement).find('#new-test-units').val();
 
                 // Get the relevant elements from the temporary data package
-                channelElement = updateChannelUnitsData["channelElement"];
+                let channelElement = updateChannelUnitsData["channelElement"];
 
                 // Send an ajax command to update the Channel name
-                data = {
+                let data = {
                     channel_id: updateChannelUnitsData["channelId"],               
                     newInjectionUnits: newInjectionUnits,
                     newTestUnits: newTestUnits
@@ -518,10 +519,17 @@
             $(`[name="delete-channel-submit"]`).click(function(event) {
 
                 // Get the current channel element
-                let channelElement = $(this).parents('tr');
+                let channelElement = deleteChannelData["channelElement"];
 
+                let data = {
+                    channel_id: deleteChannelData["channelId"],
+                }
+                deleteChannel(data, channelElement)
 
-
+                // Remove the Channel's Summary table, TestPoint rows and itself
+                $(channelElement).next().remove()
+                $(channelElement).nextUntil('[name="channel-parent"]').remove()
+                $(channelElement).remove()
             });
 
             // Function for sending an ajax request to update Channel values in the database
@@ -537,6 +545,23 @@
                     },
                     error: function(error) {
                         console.log('Error updating testpoint.');
+                        console.log(error);
+                    }
+                });
+            }
+
+            function deleteChannel(data) {
+
+                // Build the ajax request
+                $.ajax({
+                    type: POST,
+                    url: DELETE_CHANNEL_URL,
+                    data: data,
+                    success: function(response) {
+                        console.log(response[MESSAGE]);
+                    },
+                    error: function(error) {
+                        console.log('Error deleting Channel.');
                         console.log(error);
                     }
                 });
