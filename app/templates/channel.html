@@ -4,8 +4,15 @@
     data-channel-id="{{ channel.id }}"
     data-progress-passed="{{ progress['percent_passed'] }}"
     data-progress-failed="{{ progress['percent_failed'] }}"
-    data-progress-untested="{{ progress['percent_untested'] }}">
-
+    data-progress-untested="{{ progress['percent_untested'] }}"
+    data-measurement-type="{{ channel.measurement_type }}"
+    data-minimum-range="{{ channel.min_range }}"
+    data-maximum-range="{{ channel.max_range }}"
+    data-full-scale-range="{{ channel.full_scale_range }}"
+    data-error-type="{{ channel.error_type }}"
+    data-minimum-injection-range="{{ channel.min_injection_range }}"
+    data-maximum-injection-range="{{ channel.max_injection_range }}"
+    >
     <th class="align-middle text-center" name="channel-name">{{ channel.name }}</th>
     <td class="align-middle" colspan="3">
         <div class="row justify-content-between">            
@@ -49,7 +56,7 @@
                     <a class="dropdown-item" name="update-units-option" href="#update-units-dialog" data-toggle="modal" type="button">Update Units</a>
                 </li>
                 <li>
-                    <a class="dropdown-item" name="channel-information-option" href="#additional-channel-info-dialog" data-toggle="modal" type="button">Additional Info</a>
+                    <a class="dropdown-item" name="additional-channel-info-option" href="#additional-channel-info-dialog" data-toggle="modal" type="button">Additional Info</a>
                 </li>          
                 <li>
                     <a class="dropdown-item" name="add-new-testpoint-option" href="#add-new-testpoint-dialog" data-toggle="modal" type="button">Add New TestPoint</a>

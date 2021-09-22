@@ -1,89 +1,69 @@
 <div class="modal fade" id="additional-channel-info-dialog" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
         <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">Channel Information</h5>
             <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            {#  
-                Fields:
-                - Channel Name
-                - Channel Type
-                - Test Units
-                - Injection Units
-                - Max Error
-                - Error Type  
-                - Full-Scale Range
-            #}
             <div class="row">
-                <div class="col-7 g-2">
+                <div class="col-6 g-2">
                     <label for="dialog-channel-name">Channel Name</label>
-                    <input class="form-control" id="dialog-channel-name" type="text" disabled>
+                    <input class="form-control" id="dialog-channel-name" type="text">
                 </div>
-                <div class="col-5 g-2">
-                    <label for="dialog-channel-name">Measurement Type</label>
-                    <select class="custom-select text-center" id="dialog-measurement-type" name="measurement-type" disabled>
-                        {% for measurement_type in measurement_types() %}
-                            <option value="{{ measurement_type }}">{{ measurement_type }}</option>
-                        {% endfor %}
-                    </select>
+                <div class="col-6 g-2">
+                    <label for="dialog-measurement-type">Measurement Type</label>
+                    <input class="form-control" id="dialog-measurement-type" type="text">
                 </div>
             </div>
             <div class="row">
-                <div class="col-4 g-2">
-                    <label for="dialog-minimum-range">Minimum Range</label>
-                    <input class="form-control" id="dialog-minimum-range" type="text" disabled>
+                <div class="col-6 g-2">
+                    <label for="dialog-minimum-range">Minimum Test Range</label>
+                    <div class="input-group">                        
+                        <input class="form-control" id="dialog-minimum-range" type="text">
+                        <span class="input-group-text" name="dialog-test-units"></span>
+                    </div>                     
                 </div>
-                <div class="col-4 g-2">
-                    <label for="dialog-maximum-range">Maximum Range</label>
-                    <input class="form-control" id="dialog-maximum-range" type="text" disabled>
-                </div>
-                <div class="col-4 g-2">
-                    <label for="dialog-test-units">Test Units</label>
-                    <select class="custom-select text-center" id="dialog-test-units" disabled>
-                        {% for unit in eng_units() %}
-                            <option value="{{ unit }}">{{ unit }}</option>
-                        {% endfor %}
-                    </select>
+                <div class="col-6 g-2">
+                    <label for="dialog-maximum-range">Maximum Test Range</label>
+                    <div class="input-group">                        
+                        <input class="form-control" id="dialog-maximum-range" type="text">
+                        <span class="input-group-text" name="dialog-test-units"></span>
+                    </div>                    
                 </div>
             </div>
             <div class="row">
-                <div class="col-4 g-2">
-                    <label for="dialog-maximum-error">Maximum Error</label>
-                    <input class="form-control" id="dialog-maximum-error" type="text" disabled>
+                <div class="col-6 g-2">
+                    <label for="dialog-minimum-injection-range">Minimum Injection Range</label>              
+                    <div class="input-group">                        
+                        <input class="form-control" id="dialog-minimum-injection-range" type="text">
+                        <span class="input-group-text" name="dialog-injection-units"></span>
+                    </div>
                 </div>
-                <div class="col-4 g-2">
-                    <label for="dialog-error-type">Error Type</label>
-                    <select class="custom-select text-center" id="dialog-error-type" disabled>
-                        {% for error_type in error_types() %}
-                            <option value="{{ error_type }}">{{ error_type }}</option>
-                        {% endfor %}
-                    </select>
+                <div class="col-6 g-2">
+                    <label for="dialog-maximum-injection-range">Maximum Injection Range</label>              
+                    <div class="input-group">                        
+                        <input class="form-control" id="dialog-maximum-injection-range" type="text">
+                        <span class="input-group-text" name="dialog-injection-units"></span>
+                    </div>
                 </div>
-                <div class="col-4 g-2">
+            </div>
+            <div class="row">
+                <div class="col-6 g-2">
+                    <label for="dialog-maximum-error">Maximum Error</label>              
+                    <div class="input-group">                        
+                        <input class="form-control" id="dialog-maximum-error" type="text">
+                        <span class="input-group-text" id="dialog-error-type"></span>
+                    </div>
+                </div>                
+                <div class="col-6 g-2">
                     <label for="dialog-full-scale-range">Full-Scale Range</label>
-                    <input class="form-control" id="dialog-full-scale-range" type="text" disabled>
+                    <div class="input-group">                        
+                        <input class="form-control" id="dialog-full-scale-range" type="text">
+                        <span class="input-group-text" name="dialog-test-units"></span>
+                    </div>                    
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-4 g-2">
-                    <label for="dialog-minimum-injection-range">Minimum Injection Range</label>
-                    <input class="form-control" id="dialog-minimum-injection-range" type="text" disabled>
-                </div>
-                <div class="col-4 g-2">
-                    <label for="dialog-maximum-injection-range">Maximum Injection Range</label>
-                    <input class="form-control" id="dialog-maximum-injection-range" type="text" disabled>
-                </div>
-                <div class="col-4 g-2">
-                    <label for="dialog-test-units">Injection Units</label>
-                    <select class="custom-select text-center" id="dialog-injection-units" disabled>
-                        {% for unit in eng_units() %}
-                            <option value="{{ unit }}">{{ unit }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+            </div>            
         </div>
     </div>
 </div>

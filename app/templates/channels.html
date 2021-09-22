@@ -125,6 +125,7 @@
             // Temporary Variables
             let newTestPointData = {};
             let updateChannelNameData = {};
+            let additionalChannelInfoData = {};
             let updateChannelUnitsData = {};
             let deleteChannelData = {};
 
@@ -399,11 +400,11 @@
 
                 // Get the current channel name
                 let channelElement = $(this).parents('tr');
-                currentChannelName = $(channelElement).find('[name="channel-name"]').text();
+                let currentChannelName = $(channelElement).find('[name="channel-name"]').text();
 
                 // Prepare a data package for the name change
                 let channelDataset = channelElement[0].dataset
-                updateChannelNameData = {
+                let updateChannelNameData = {
                     channelElement: channelElement,
                     channelId: channelDataset.channelId
                 }
@@ -423,11 +424,11 @@
                 let newChannelName = $(dialogElement).find('#new-channel-name').val();
 
                 // Get the relevant elements from the temporary data package
-                channelElement = updateChannelNameData["channelElement"];
+                let channelElement = updateChannelNameData["channelElement"];
                 $(channelElement).find('[name="channel-name"]').text(newChannelName);
 
                 // Send an ajax command to update the Channel name
-                data = {
+                let data = {
                     channel_id: updateChannelNameData["channelId"],
                     newChannelName: newChannelName
                 }
@@ -435,6 +436,52 @@
                 updateChannel(data, channelElement)
 
             });
+
+            // Listener for selecting the 'Additional Info' option from the Actions button
+            $(`[name="additional-channel-info-option"]`).click(function(event) {
+
+                // Get the main elements to extract information from
+                let channelElement = $(this).parents('tr');
+                let channelDataset = channelElement[0].dataset;
+                let testpointElement = $(channelElement).nextAll('[name="testpoint-parent"]').first();
+                let testpointDataset = testpointElement[0].dataset;
+
+                // Get all the additional channel information from data attributes and fields
+                let channelName = $(channelElement).find('[name="channel-name"]').text();
+                let measurementType = channelDataset.measurementType;
+                let minimumRange = channelDataset.minimumRange;
+                let maximumRange = channelDataset.maximumRange;
+                let testUnits = $(testpointElement).find(`[name="test-units"]`).text();
+                let maxError = testpointDataset.maxError;
+                let errorType = channelDataset.errorType;
+                let fullScaleRange = channelDataset.fullScaleRange;
+                let minimumInjectionRange = channelDataset.minimumInjectionRange;
+                let maximumInjectionRange = channelDataset.maximumInjectionRange;
+                let injectionUnits = $(testpointElement).find(`[name="injection-units"]`).text();                
+
+                // Modify some of the data for the dialog
+                if (errorType == 'Eng Units') {
+                    errorType = testUnits;
+                }
+                if (fullScaleRange == 'None') {
+                    fullScaleRange = parseFloat(maximumRange) - parseFloat(minimumRange);
+                }
+
+                // Update the fields on the dialog box with the additional channel information
+                $('#dialog-channel-name').val(channelName);
+                $('#dialog-measurement-type').val(measurementType);
+                $('#dialog-minimum-range').val(minimumRange);
+                $('#dialog-maximum-range').val(maximumRange);
+                $('[name="dialog-test-units"]').text(testUnits);
+                $('#dialog-maximum-error').val(maxError);
+                $('#dialog-error-type').text(errorType);
+                $('#dialog-full-scale-range').val(fullScaleRange);
+                $('#dialog-minimum-injection-range').val(minimumInjectionRange);
+                $('#dialog-maximum-injection-range').val(maximumInjectionRange);
+                $('[name="dialog-injection-units"]').text(injectionUnits);
+            });
+
+
 
             // Listener for selecting the 'Update Units' option from the Actions button
             $(`[name="update-units-option"]`).click(function(event) {
