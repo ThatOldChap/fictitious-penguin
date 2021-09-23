@@ -111,27 +111,27 @@ class Channel(db.Model):
     __tablename__ = 'channel'
     # Basic Info
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(32))
+    name = db.Column(db.String(64))
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Measurement Info
     measurement_type = db.Column(db.String(32))
-    measurement_units = db.Column(db.String(16))
+    measurement_units = db.Column(db.String(32))
     min_range = db.Column(db.Float(16))
     max_range = db.Column(db.Float(16))
     full_scale_range = db.Column(db.Float(16))
 
     # Tolerance Info
     max_error = db.Column(db.Float(8))
-    error_type = db.Column(db.String(8))
+    error_type = db.Column(db.String(16))
 
     # Signal Injection Info
     min_injection_range = db.Column(db.Float(16))
     max_injection_range = db.Column(db.Float(16))
-    injection_units = db.Column(db.String(16))
+    injection_units = db.Column(db.String(32))
 
     # Metrics
-    status = db.Column(db.String(16), default=TestResult.UNTESTED.value)
+    status = db.Column(db.String(32), default=TestResult.UNTESTED.value)
 
     # Summary Info
     interface = db.Column(db.String(32))

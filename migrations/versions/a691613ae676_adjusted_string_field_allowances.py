@@ -1,8 +1,8 @@
-"""restarted migrations, removed ApprovalRecord category foreignkey
+"""Adjusted string field allowances
 
-Revision ID: 4bc9c5e71ef2
+Revision ID: a691613ae676
 Revises: 
-Create Date: 2021-09-22 22:43:50.480976
+Create Date: 2021-09-22 22:53:52.046104
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '4bc9c5e71ef2'
+revision = 'a691613ae676'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -111,19 +111,19 @@ def upgrade():
     )
     op.create_table('channel',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=32), nullable=True),
+    sa.Column('name', sa.String(length=64), nullable=True),
     sa.Column('last_updated', sa.DateTime(), nullable=True),
     sa.Column('measurement_type', sa.String(length=32), nullable=True),
-    sa.Column('measurement_units', sa.String(length=16), nullable=True),
+    sa.Column('measurement_units', sa.String(length=32), nullable=True),
     sa.Column('min_range', sa.Float(precision=16), nullable=True),
     sa.Column('max_range', sa.Float(precision=16), nullable=True),
     sa.Column('full_scale_range', sa.Float(precision=16), nullable=True),
     sa.Column('max_error', sa.Float(precision=8), nullable=True),
-    sa.Column('error_type', sa.String(length=8), nullable=True),
+    sa.Column('error_type', sa.String(length=16), nullable=True),
     sa.Column('min_injection_range', sa.Float(precision=16), nullable=True),
     sa.Column('max_injection_range', sa.Float(precision=16), nullable=True),
-    sa.Column('injection_units', sa.String(length=16), nullable=True),
-    sa.Column('status', sa.String(length=16), nullable=True),
+    sa.Column('injection_units', sa.String(length=32), nullable=True),
+    sa.Column('status', sa.String(length=32), nullable=True),
     sa.Column('interface', sa.String(length=32), nullable=True),
     sa.Column('notes', sa.String(length=128), nullable=True),
     sa.Column('group_id', sa.Integer(), nullable=True),
