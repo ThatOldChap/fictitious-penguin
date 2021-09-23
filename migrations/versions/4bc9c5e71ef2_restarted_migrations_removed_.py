@@ -1,8 +1,8 @@
 """restarted migrations, removed ApprovalRecord category foreignkey
 
-Revision ID: 44cd67fb1c8f
+Revision ID: 4bc9c5e71ef2
 Revises: 
-Create Date: 2021-09-22 22:36:16.936811
+Create Date: 2021-09-22 22:43:50.480976
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '44cd67fb1c8f'
+revision = '4bc9c5e71ef2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -46,7 +46,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=32), nullable=True),
     sa.Column('stage', sa.String(length=16), nullable=True),
-    sa.Column('phase', sa.String(length=8), nullable=True),
+    sa.Column('phase', sa.String(length=16), nullable=True),
     sa.Column('status', sa.String(length=16), nullable=True),
     sa.Column('last_updated', sa.DateTime(), nullable=True),
     sa.Column('project_id', sa.Integer(), nullable=True),

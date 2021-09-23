@@ -406,7 +406,7 @@ class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32))
     stage = db.Column(db.String(16))
-    phase = db.Column(db.String(8))
+    phase = db.Column(db.String(16))
     status = db.Column(db.String(16), default=Status.NOT_STARTED.value)
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
 
