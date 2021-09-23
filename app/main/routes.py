@@ -358,7 +358,7 @@ def channels(group_id):
 
     # Get a list of all the specified Group's Channels
     group = Group.query.filter_by(id=group_id).first()
-    channels = Channel.query.filter_by(group_id=group_id).all()
+    channels = Channel.query.filter_by(group_id=group_id).order_by('name').all()
 
     # Create the master form to add each channel_form into
     channels_form = ChannelsForm()
