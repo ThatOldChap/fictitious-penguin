@@ -794,7 +794,7 @@ class ApprovalRecord(db.Model):
     __tablename__ = 'approval_record'
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    company_category = db.Column(db.String(16), db.ForeignKey('company.category'))
+    company_category = db.Column(db.String(16))
 
     # Channel Relationship
     channel_id = db.Column(db.Integer, db.ForeignKey('channel.id'))
