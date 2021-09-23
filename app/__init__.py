@@ -34,10 +34,6 @@ def create_app(config_class=Config):
     app.jinja_env.globals.update(zip=zip)
     app.jinja_env.filters['format_decimal'] = format_decimal  
 
-    # Import the models to allow for migrate to detect any changes
-    from app.models import User, TestPoint, Channel, Group, Job, Project, Company, TestEquipment
-    from app.models import TestEquipmentType, CalibrationRecord, ChannelEquipmentRecord
-
     # Pass the application context to each of the initialize dependencies
     db.init_app(app)
     migrate.init_app(app, db)
@@ -141,4 +137,4 @@ def setup_stream_handler(level):
     return stream_handler
 
 
-from app import models
+from app.models import *
