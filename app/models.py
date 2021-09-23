@@ -698,7 +698,7 @@ class TestEquipment(db.Model):
     name = db.Column(db.String(32))
     manufacturer = db.Column(db.String(24))
     model_num = db.Column(db.String(24))
-    serial_num = db.Column(db.Integer)
+    serial_num = db.Column(db.String(32))
 
     # TestEquipmentType Relationship
     test_equipment_type_id = db.Column(db.Integer, db.ForeignKey('test_equipment_type.id'))

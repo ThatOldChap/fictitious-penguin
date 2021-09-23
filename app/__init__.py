@@ -24,6 +24,10 @@ login = LoginManager()
 login.login_view = 'auth.login'
 login.login_message = 'Please log in to access this page'
 
+# Import all the models to allow Alembic/Flask-Migrate to recongize schema changes better
+from app.models import TestPoint, Channel, Group, Job, Project, TestEquipment, TestEquipmentType
+from app.models import User, Company, CalibrationRecord, ApprovalRecord, ChannelEquipmentRecord
+
 # Initializing the modules within the app
 def create_app(config_class=Config):
     # Assign a config to the app instance
@@ -33,6 +37,8 @@ def create_app(config_class=Config):
     # Add the zip function into the jinja template functionality
     app.jinja_env.globals.update(zip=zip)
     app.jinja_env.filters['format_decimal'] = format_decimal
+
+    
 
     # Pass the application context to each of the initialize dependencies
     db.init_app(app)
