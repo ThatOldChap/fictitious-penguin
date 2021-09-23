@@ -36,9 +36,7 @@ def create_app(config_class=Config):
 
     # Add the zip function into the jinja template functionality
     app.jinja_env.globals.update(zip=zip)
-    app.jinja_env.filters['format_decimal'] = format_decimal
-
-    
+    app.jinja_env.filters['format_decimal'] = format_decimal    
 
     # Pass the application context to each of the initialize dependencies
     db.init_app(app)
