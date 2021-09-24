@@ -1,0 +1,537 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <div>        
+        <br>
+        <br>
+        <div class="row">
+            <div class="col-5">
+                <h2>ATP Requirement Completion Tracking</h2>                
+            </div>
+            <div class="col-7">                
+                <button type="button" class="btn btn-secondary" data-toggle="buttons">All Untested</button>
+                <button type="button" class="btn btn-success" data-toggle="buttons">All Passed</button>
+                <button type="button" class="btn btn-danger" data-toggle="buttons">All Failed</button>
+            </div>
+        </div>        
+        <table class="table table-hover table-bordered align-middle">
+            <thead>
+                <tr class="table-primary text-center align-middle">
+                    <th class="align-middle">Item #</th>
+                    <th class="align-middle">Req. #</th>
+                    <th class="align-middle" width="25%">Requirement</th>
+                    <th class="align-middle" width="20%">Expected Result</th>
+                    <th class="align-middle">Comments</th>
+                    <th class="align-middle" width="10%">Result</th>
+                    <th class="align-middle" width="15%">Approvals</th>
+                    <th class="align-middle" width="10%">Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th class="align-middle text-center">3.1</th>
+                    <td class="align-middle text-center">2621</th>
+                    <td class="align-middle">
+                        The TDAS Communication Bandwidth on the DDS network shall not be less than 1GbE and capable of extending to 10GbE
+                    </td>
+                    <td class="align-middle">
+                        All ethernet circuits pass a CAT6A network test
+                    </td>
+                    <td class="align-middle">
+                        <textarea class="form-control text-primary"></textarea>
+                    </th>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>    
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>  
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-primary" data-toggle="buttons">MDS</button>    
+                        <button type="button" class="btn btn-outline-primary" data-toggle="buttons" disabled="">Rolls-Royce</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">3.5.1</th>
+                    <td class="align-middle text-center">3603</th>
+                    <td class="align-middle">
+                        Simulate up to four Type-K thermocouple signals from one or more measured/calculated channels
+                    </td>
+                    <td class="align-middle">
+                        See results from commissioning
+                    </td>
+                    <td class="align-middle">
+                        <textarea class="form-control text-primary">All circuits were tested in the Simulated Thermocouples Group</textarea>
+                    </th>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-success" data-toggle="buttons">Pass</button>    
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons" disabled>Fail</button>
+                    </td>  
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-primary" data-toggle="buttons">M. Chaplin</button>    
+                        <button type="button" class="btn btn-primary" data-toggle="buttons" disabled="">S. Chew</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">3.5.2</th>
+                    <td class="align-middle text-center">3604</th>
+                    <td class="align-middle">
+                        Compensate for the cold junction temperature
+                    </td>
+                    <td class="align-middle">
+                        Refer to OEM datasheet for cold junction compensation (CJC) capability
+                    </td>
+                    <td class="align-middle">
+                        <textarea class="form-control text-primary">Demonstrated in the Simulated Thermocouples ATP Job</textarea>
+                    </th>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-success" data-toggle="buttons">Pass</button>    
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons" disabled>Fail</button>
+                    </td>   
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-primary" data-toggle="buttons">M. Chaplin</button>    
+                        <button type="button" class="btn btn-primary" data-toggle="buttons" disabled="">S. Chew</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">3.5.3</th>
+                    <td class="align-middle text-center">3605</th>
+                    <td class="align-middle">
+                        The minimum update rate shall be 100 samples/sec (Hz)
+                    </td>
+                    <td class="align-middle">
+                        Data log shows 100 samples being collected over a 1 second time period when configured for 100 Hz
+                    </td>
+                    <td class="align-middle">
+                        <textarea class="form-control text-primary">Channel rate can only be set to 50 Hz, will request deviation</textarea>
+                    </th>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>    
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>  
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-primary" data-toggle="buttons">MDS</button>    
+                        <button type="button" class="btn btn-outline-primary" data-toggle="buttons" disabled="">Rolls-Royce</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <br>
+        <div class="row">
+            <div class="col-5">
+                <h2>Control's Commissioning Tracking</h2>                
+            </div>
+            <div class="col-7">          
+                <button type="button" class="btn btn-secondary" data-toggle="buttons">All Untested</button>
+                <button type="button" class="btn btn-success" data-toggle="buttons">All Passed</button>
+                <button type="button" class="btn btn-danger" data-toggle="buttons">All Failed</button>
+            </div>
+        </div>        
+        <table class="table table-hover table-bordered align-middle">
+            <thead>
+                <tr class="table-primary text-center align-middle">
+                    <th class="align-middle">Item #</th>
+                    <th class="align-middle" width="30%">Step-By-Step Procedure</th>
+                    <th class="align-middle">Expected Result</th>
+                    <th class="align-middle">Comments</th>
+                    <th class="align-middle">Result</th>
+                    <th class="align-middle">Approvals</th>
+                    <th class="align-middle">Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="7" class="bg-info text-white">Fuel System</td></tr>
+                <tr>
+                    <th class="align-middle text-center">8.4.7.1</th>
+                    <td class="align-middle">
+                        Fuel system is started and ready (PT0103 is reading within limits)
+                    </td>
+                    <td class="align-middle">
+                        Green 119
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="PT0103 ready +0.2 psi">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-success result-badge">Passed</span>
+                    </td>  
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-primary" data-toggle="buttons">D. Patel</button>    
+                    </td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">8.4.7.2</th>
+                    <td class="align-middle">
+                        Fuel Day Tank Area Ready
+                    </td>
+                    <td class="align-middle">
+                        Green 120
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="Buzzer not working, need to fix">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-danger result-badge">Failed</span>
+                    </td>  
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-primary" data-toggle="buttons">D. Patel</button>    
+                    </td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">8.4.7.3</th>
+                    <td class="align-middle">
+                        Emergency Fuel Tank pressure is OK (PT0102)
+                    </td>
+                    <td class="align-middle">
+                        Green 121
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-secondary result-badge">Untested</span>
+                    </td>  
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-primary" data-toggle="buttons">MDS</button>    
+                    </td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">8.4.7.4</th>
+                    <td class="align-middle">
+                        Emergency Fuel Tank level is OK (LT0103))
+                    </td>
+                    <td class="align-middle">
+                        Green 122
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-secondary result-badge">Untested</span>
+                    </td>  
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-primary" data-toggle="buttons">MDS</button>    
+                    </td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">8.4.7.5</th>
+                    <td class="align-middle">
+                        Fuel filter is not dirty
+                    </td>
+                    <td class="align-middle">
+                        Green 123
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-secondary result-badge">Untested</span>
+                    </td>  
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-primary" data-toggle="buttons">MDS</button>    
+                    </td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">8.4.7.6</th>
+                    <td class="align-middle">
+                        Reservoir leak detect alarm is not active
+                    </td>
+                    <td class="align-middle">
+                        Green 124
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-secondary result-badge">Untested</span>
+                    </td>  
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-primary" data-toggle="buttons">MDS</button>    
+                    </td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                
+            </tbody>
+        </table>
+        <br>
+        <br>
+        <div class="row">
+            <div class="col-5">
+                <h2>Channel Commissioning Buzzout/Polarity Checks</h2>                
+            </div>
+            <div class="col-7">                
+                <button type="button" class="btn btn-secondary" data-toggle="buttons">All Untested</button>
+                <button type="button" class="btn btn-success" data-toggle="buttons">All Passed</button>
+                <button type="button" class="btn btn-danger" data-toggle="buttons">All Failed</button>
+            </div>
+        </div>        
+        <table class="table table-hover table-bordered align-middle">
+            <thead>
+                <tr class="table-primary text-center align-middle">
+                    <th class="align-middle">Cable/Channel ID</th>
+                    <th class="align-middle">Injection Interface</th>
+                    <th class="align-middle">Buzzout</th>
+                    <th class="align-middle">Polarity</th>
+                    <th class="align-middle">Comments</th>
+                    <th class="align-middle">Status</th>
+                    <th class="align-middle">Performed By</th>
+                    <th class="align-middle">Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="8" class="bg-info text-white">Upper Slave Panel</td></tr>
+                <tr>
+                <tr>
+                    <th class="align-middle text-center">A-0001360-001</th>                   
+                    <td class="align-middle text-center">JB1026-J1-A/B/C</td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons" disabled>Fail</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons" disabled>Fail</button>
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-success result-badge">Passed</span>
+                    </td>  
+                    <td class="align-middle text-center">M. Chaplin</td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">A-0001360-002</th>                   
+                    <td class="align-middle text-center">JB1026-J1-D/E/F</td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons" disabled>Fail</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons" disabled>Fail</button>
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-success result-badge">Passed</span>
+                    </td>  
+                    <td class="align-middle text-center">M. Chaplin</td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">A-0001360-003</th>                   
+                    <td class="align-middle text-center">JB1026-J1-H/J/K</td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons" disabled>Fail</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons" disabled>Pass</button>  
+                        <button type="button" class="btn btn-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-danger result-badge">Failed</span>
+                    </td>  
+                    <td class="align-middle text-center">M. Chaplin</td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">A-0001360-004</th>                   
+                    <td class="align-middle text-center">JB1026-J2-A/B/C</td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-secondary result-badge">Untested</span>
+                    </td>  
+                    <td class="align-middle text-center">N/A</td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">A-0001360-005</th>                   
+                    <td class="align-middle text-center">JB1026-J2-D/E/F</td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-secondary result-badge">Untested</span>
+                    </td> 
+                    <td class="align-middle text-center">N/A</td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">A-0001360-006</th>                   
+                    <td class="align-middle text-center">JB1026-J2-H/J/K</td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-secondary result-badge">Untested</span>
+                    </td> 
+                    <td class="align-middle text-center">N/A</td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">A-0001360-007</th>                   
+                    <td class="align-middle text-center">JB1026-J3-A/B/C</td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-secondary result-badge">Untested</span>
+                    </td> 
+                    <td class="align-middle text-center">N/A</td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">A-0001360-008</th>                   
+                    <td class="align-middle text-center">JB1026-J3-D/E/F</td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-secondary result-badge">Untested</span>
+                    </td> 
+                    <td class="align-middle text-center">N/A</td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">A-0001360-009</th>                   
+                    <td class="align-middle text-center">JB1026-J3-H/J/K</td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-secondary result-badge">Untested</span>
+                    </td> 
+                    <td class="align-middle text-center">N/A</td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="align-middle text-center">A-0001360-010</th>                   
+                    <td class="align-middle text-center">JB1026-J4-A/B/C</td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-outline-success" data-toggle="buttons">Pass</button>  
+                        <button type="button" class="btn btn-outline-danger" data-toggle="buttons">Fail</button>
+                    </td>
+                    <td class="align-middle">
+                        <input type="text" class="form-control text-primary" value="">
+                    </th>
+                    <td class="align-middle text-center">
+                        <span class="badge bg-secondary result-badge">Untested</span>
+                    </td> 
+                    <td class="align-middle text-center">N/A</td>
+                    <td class="align-middle text-center">
+                        <span class="" data-timestamp="2021-09-23T23:04:55Z" data-function="format" data-format="hh:mm A, DD-MMM-YYYY" data-refresh="0" style="">07:04 PM, 23-Sep-2021</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

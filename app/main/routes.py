@@ -877,3 +877,8 @@ def test():
 
     return render_template('project.html', title='Test Project', project=project,
         test_equipment_types=test_equipment_types)
+
+@bp.route('/test2', methods=['GET', 'POST'])
+def test2():
+
+    return render_template('test2.html', title="Test Items")
