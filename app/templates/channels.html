@@ -18,16 +18,20 @@
         {# Back Button for navigating back to the Groups Page #}
         <button type="button" class="btn btn-primary">
             <a style="color:#FFFFFF;" href="{{ url_for('main.groups', job_id=group.job.id) }}">Back to Groups</a>
-        </button>              
+        </button>
+        <button type="button" class="btn btn-success">
+            <a style="color:#FFFFFF;" href="{{ url_for('main.add_channel', group_id=group.id) }}">Add Channel</a>
+        </button>         
     </div>
     <div class="col-auto">
         <h1>{{ group.name }} Channels</h1>
     </div>
     <div class="col-auto">
-        {# Create Button for creating a new Channel #}
-        <button type="button" class="btn btn-success">
-            <a style="color:#FFFFFF;" href="{{ url_for('main.add_channel', group_id=group.id) }}">Add Channel</a>
-        </button>
+        {# Create Button for creating a new Channel #}        
+        <button type="button" class="btn btn-primary" data-toggle="buttons">All Channels</button>
+        <button type="button" class="btn btn-secondary" data-toggle="buttons">All Untested</button>
+        <button type="button" class="btn btn-success" data-toggle="buttons">All Passed</button>
+        <button type="button" class="btn btn-danger" data-toggle="buttons">All Failed</button>
     </div>         
 </div>
 <div class="row">
