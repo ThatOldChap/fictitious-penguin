@@ -407,8 +407,8 @@
                 let currentChannelName = $(channelElement).find('[name="channel-name"]').text();
 
                 // Prepare a data package for the name change
-                let channelDataset = channelElement[0].dataset
-                let updateChannelNameData = {
+                let channelDataset = channelElement[0].dataset                
+                updateChannelNameData = {
                     channelElement: channelElement,
                     channelId: channelDataset.channelId
                 }
@@ -436,9 +436,7 @@
                     channel_id: updateChannelNameData["channelId"],
                     newChannelName: newChannelName
                 }
-
                 updateChannel(data, channelElement)
-
             });
 
             // Listener for selecting the 'Additional Info' option from the Actions button
@@ -593,7 +591,7 @@
                         console.log(response[MESSAGE]);
                     },
                     error: function(error) {
-                        console.log('Error updating testpoint.');
+                        console.log('Error updating channel.');
                         console.log(error);
                     }
                 });
