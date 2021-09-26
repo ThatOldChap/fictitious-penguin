@@ -28,10 +28,11 @@
     </div>
     <div class="col-auto">
         {# Create Button for creating a new Channel #}        
-        <button type="button" class="btn btn-primary" data-toggle="buttons">All Channels</button>
-        <button type="button" class="btn btn-secondary" data-toggle="buttons">All Untested</button>
-        <button type="button" class="btn btn-success" data-toggle="buttons">All Passed</button>
-        <button type="button" class="btn btn-danger" data-toggle="buttons">All Failed</button>
+        <button type="button" class="btn btn-primary" id="filter-all" data-toggle="buttons">All Channels</button>
+        <button type="button" class="btn btn-secondary" id="filter-untested" data-toggle="buttons">All Untested</button>
+        <button type="button" class="btn btn-info" id="filter-in-progress" data-toggle="buttons">All In-Progress</button>
+        <button type="button" class="btn btn-success" id="filter-passed" data-toggle="buttons">All Passed</button>
+        <button type="button" class="btn btn-danger" id="filter-failed" data-toggle="buttons">All Failed</button>
     </div>         
 </div>
 <div class="row">
@@ -111,6 +112,11 @@
             let PERCENT_UNTESTED = 'percent_untested';
             let PERCENT_PASSED = 'percent_passed';
             let PERCENT_FAILED = 'percent_failed';
+            let UNTESTED = 'Untested';
+            let IN_PROGRESS = 'In-Progress';
+            let FAIL = 'Fail';
+            let PASS = 'Pass';
+            let ALL = 'All';
 
             // Name Constants
             let MEASURED_ERROR_NAME = 'measured-error';
@@ -125,6 +131,7 @@
             let EQUIPMENT_CHOICE_NAME = 'equipment-choice';
             let SUPPLIER_APPROVAL_NAME = 'supplier-approval';
             let CLIENT_APPROVAL_NAME = 'client-approval';
+            let TESTPOINT_PARENT_NAME = 'testpoint-parent';
 
             // Temporary Variables
             let newTestPointData = {};
@@ -134,7 +141,36 @@
             let deleteChannelData = {};
 
             // Update the progress bars as the page is loaded
-            updateAllProgressBars(CHANNEL, TESTPOINT);
+            updateAllProgressBars(CHANNEL, TESTPOINT);            
+           
+            // Sets the filter buttons to filter all the Channels based on their Status
+            $('#filter-untested').click(function(event) {filterChannels(UNTESTED);});
+            $('#filter-passed').click(function(event) {filterChannels(PASS);});
+            $('#filter-failed').click(function(event) {filterChannels(FAIL);});
+            $('#filter-in-progress').click(function(event) {filterChannels(IN_PROGRESS);});
+            $('#filter-all').click(function(event) {filterChannels(ALL);});
+
+            function filterChannels(statusFilter) {
+
+                // Get a list of all Channel rows to check through
+                $(`[name="${CHANNEL_PARENT}"]`).each(function(index, element) {
+
+                    // Collapse all the channels any time the list is filtered                    
+                    $(element).find(`[name="channel-toggle"]`).attr('aria-expanded', false);
+
+                    // Unfilter all the channels before applying the next filter
+                    $(element).removeClass('d-none');
+                    $(element).nextUntil(`[name="${CHANNEL_PARENT}"`).removeClass('show');
+
+                    if (statusFilter != ALL) {
+                        // Hide any channel that does not match the filter criteria
+                        let channelStatus = $(element).find('[name="channel-status"]').text();
+                        if (channelStatus != statusFilter) {
+                            $(element).addClass('d-none');
+                        }
+                    }
+                });
+            }
 
             // Listener function for the Injection Value fields
             $(`[id$="${INJECTION_VALUE}"]`).change(function(event) {

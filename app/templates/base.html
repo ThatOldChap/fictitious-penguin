@@ -24,6 +24,12 @@
             .result-badge {
                 font-size: 1.1em;
             }
+            [name=channel-toggle][aria-expanded=false] .bi-chevron-bar-up {
+                display: none;
+            }
+            [name=channel-toggle][aria-expanded=true] .bi-chevron-bar-down {
+                display: none;
+            }
         </style>
 
     {% endblock %}

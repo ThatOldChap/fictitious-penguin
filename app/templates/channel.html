@@ -1,6 +1,6 @@
 {% block app_content %}
 {% set progress = channel.testpoint_progress() %}
-<tr class="text-center table-primary" name="channel-parent" id="channel-id-{{ channel.id }}"    
+<tr class="text-center table-primary" name="channel-parent" id="channel-id-{{ channel.id }}"
     data-channel-id="{{ channel.id }}"
     data-progress-passed="{{ progress['percent_passed'] }}"
     data-progress-failed="{{ progress['percent_failed'] }}"
@@ -14,10 +14,13 @@
     data-maximum-injection-range="{{ channel.max_injection_range }}">
     <th class="align-middle text-center">
         <div class="row">
-            <div class="col-2" type="button" data-toggle="collapse" data-target='[id^="channel-{{ channel.id }}-"]'>
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-arrow-bar-down" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M1 3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5zM8 6a.5.5 0 0 1 .5.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 .708-.708L7.5 12.293V6.5A.5.5 0 0 1 8 6z"/>
+            <div class="col-auto p-0 ms-3" name="channel-toggle" type="button" role="button" data-toggle="collapse" data-target='[id^="channel-{{ channel.id }}-"]' aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chevron-bar-down" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M3.646 4.146a.5.5 0 0 1 .708 0L8 7.793l3.646-3.647a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 0-.708zM1 11.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5z"/>
                 </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chevron-bar-up" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M3.646 11.854a.5.5 0 0 0 .708 0L8 8.207l3.646 3.647a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 0 0 0 .708zM2.4 5.2c0 .22.18.4.4.4h10.4a.4.4 0 0 0 0-.8H2.8a.4.4 0 0 0-.4.4z"/>
+                </svg>                
             </div>
             <div class="col-10 align-self-center fs-5">
                 <div class="align-middle" name="channel-name">{{ channel.name }}</div>
