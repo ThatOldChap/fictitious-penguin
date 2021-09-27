@@ -104,6 +104,7 @@ def add_company():
 
 
 @bp.route('/add_project', methods=['GET', 'POST'])
+@login_required
 def add_project():
 
     # Create the form
@@ -139,6 +140,7 @@ def add_project():
 
 
 @bp.route('/projects', methods=['GET', 'POST'])
+@login_required
 def projects():
 
     projects = Project.query.all()
@@ -147,6 +149,7 @@ def projects():
 
 
 @bp.route('/projects/<project_id>/add_job', methods=['GET', 'POST'])
+@login_required
 def add_job(project_id):
 
     # Get the associated project information
@@ -195,6 +198,7 @@ def add_job(project_id):
 
 
 @bp.route('/projects/<project_id>/jobs', methods=['GET', 'POST'])
+@login_required
 def jobs(project_id):
 
     project = Project.query.filter_by(id=project_id).first()
@@ -204,6 +208,7 @@ def jobs(project_id):
 
 
 @bp.route('/job/<job_id>/add_group', methods=['GET', 'POST'])
+@login_required
 def add_group(job_id):
 
     # Create the form
@@ -229,6 +234,7 @@ def add_group(job_id):
     return render_template('add_item.html', title='New Group', form=form, item="Group")
 
 @bp.route('/job/<job_id>/groups', methods=['GET', 'POST'])
+@login_required
 def groups(job_id):
 
     job = Job.query.filter_by(id=job_id).first()
@@ -238,6 +244,7 @@ def groups(job_id):
 
 
 @bp.route('/group/<group_id>/add_channel', methods=['GET', 'POST'])
+@login_required
 def add_channel(group_id):
 
     # Pre-load checkbox-style buttons for each TestEquipmentType into the form
@@ -354,6 +361,7 @@ def add_channel(group_id):
 
 
 @bp.route('/group/<group_id>/channels', methods=['GET', 'POST'])
+@login_required
 def channels(group_id):
 
     # Get a list of all the specified Group's Channels
@@ -388,6 +396,7 @@ def channels(group_id):
 
 
 @bp.route('/delete_channel', methods=['POST'])
+@login_required
 def delete_channel():
 
     # Extract the request's form dictionary
@@ -414,6 +423,7 @@ def delete_channel():
 
 
 @bp.route('/update_channel', methods=['POST'])
+@login_required
 def update_channel():
 
     # Channel Field Constants
@@ -570,6 +580,7 @@ def update_channel():
     return jsonify(response)
 
 @bp.route('/update_testpoint', methods=['POST'])
+@login_required
 def update_testpoint():
     
     # TestPoint and Channel Field Constants
@@ -666,6 +677,7 @@ def update_testpoint():
 
 
 @bp.route('/add_test_equipment', methods=['GET', 'POST'])
+@login_required
 def add_test_equipment():
 
     # Create the form
@@ -707,6 +719,7 @@ def add_test_equipment():
 
 
 @bp.route('/test_equipment/<test_equipment_id>/add_calibration_record', methods=['GET', 'POST'])
+@login_required
 def add_calibration_record(test_equipment_id):
 
     test_equipment = TestEquipment.query.filter_by(id=test_equipment_id).first()
@@ -733,6 +746,7 @@ def add_calibration_record(test_equipment_id):
 
 
 @bp.route('/test_equipment', methods=['GET', 'POST'])
+@login_required
 def test_equipment():
 
     test_equipment = TestEquipment.query.all()
@@ -741,6 +755,7 @@ def test_equipment():
 
 
 @bp.route('/projects/<project_id>/edit_project_members', methods=['GET', 'POST'])
+@login_required
 def edit_project_members(project_id):
 
     # Get a list of all the users
@@ -805,6 +820,7 @@ def edit_project_members(project_id):
         
 
 @bp.route('/projects/<project_id>/edit_project_test_equipment.html', methods=['GET', 'POST'])
+@login_required
 def edit_project_test_equipment(project_id):
 
     # Get a list of the TestEquipmentTypes
@@ -870,6 +886,7 @@ def edit_project_test_equipment(project_id):
 
 
 @bp.route('/test', methods=['GET', 'POST'])
+@login_required
 def test():
 
     project = Project.query.first()
@@ -879,6 +896,7 @@ def test():
         test_equipment_types=test_equipment_types)
 
 @bp.route('/test2', methods=['GET', 'POST'])
+@login_required
 def test2():
 
     return render_template('test2.html', title="Test Items")

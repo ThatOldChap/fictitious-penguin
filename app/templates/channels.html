@@ -28,11 +28,24 @@
     </div>
     <div class="col-auto">
         {# Create Button for creating a new Channel #}        
-        <button type="button" class="btn btn-primary" id="filter-all" data-toggle="buttons">All Channels</button>
-        <button type="button" class="btn btn-secondary" id="filter-untested" data-toggle="buttons">All Untested</button>
-        <button type="button" class="btn btn-info" id="filter-in-progress" data-toggle="buttons">All In-Progress</button>
-        <button type="button" class="btn btn-success" id="filter-passed" data-toggle="buttons">All Passed</button>
-        <button type="button" class="btn btn-danger" id="filter-failed" data-toggle="buttons">All Failed</button>
+        <button type="button" class="btn btn-primary" id="filter-all" data-toggle="buttons">
+            All Channels (<span id="filter-all-count"></span>)
+        </button>
+        <button type="button" class="btn btn-secondary" id="filter-untested" data-toggle="buttons">
+            All Untested (<span id="filter-untested-count"></span>)
+        </button>
+        <button type="button" class="btn btn-info" id="filter-in-progress" data-toggle="buttons">
+            All In-Progress (<span id="filter-in-progress-count"></span>)
+        </button>
+        <button type="button" class="btn btn-success" id="filter-passed" data-toggle="buttons">
+            All Passed (<span id="filter-passed-count"></span>)
+        </button>
+        <button type="button" class="btn btn-danger" id="filter-failed" data-toggle="buttons">
+            All Failed (<span id="filter-failed-count"></span>)
+        </button>
+        <button type="button" class="btn btn-warning" id="filter-unsigned" data-toggle="buttons">
+            All Unsigned (<span id="filter-unsigned-count"></span>)
+        </button>
     </div>         
 </div>
 <div class="row">
@@ -117,6 +130,8 @@
             let FAIL = 'Fail';
             let PASS = 'Pass';
             let ALL = 'All';
+            let SUPPLIER = 'supplier';
+            let CLIENT = 'client';
 
             // Name Constants
             let MEASURED_ERROR_NAME = 'measured-error';
@@ -141,16 +156,18 @@
             let deleteChannelData = {};
 
             // Update the progress bars as the page is loaded
-            updateAllProgressBars(CHANNEL, TESTPOINT);            
+            updateAllProgressBars(CHANNEL, TESTPOINT);
+            updateFilterButtonCounts();
            
             // Sets the filter buttons to filter all the Channels based on their Status
-            $('#filter-untested').click(function(event) {filterChannels(UNTESTED);});
-            $('#filter-passed').click(function(event) {filterChannels(PASS);});
-            $('#filter-failed').click(function(event) {filterChannels(FAIL);});
-            $('#filter-in-progress').click(function(event) {filterChannels(IN_PROGRESS);});
-            $('#filter-all').click(function(event) {filterChannels(ALL);});
+            $('#filter-all').click(function(event) {filterChannelResults(ALL);});
+            $('#filter-untested').click(function(event) {filterChannelResults(UNTESTED);});
+            $('#filter-in-progress').click(function(event) {filterChannelResults(IN_PROGRESS);});
+            $('#filter-passed').click(function(event) {filterChannelResults(PASS);});
+            $('#filter-failed').click(function(event) {filterChannelResults(FAIL);});
+            $('#filter-unsigned').click(function(event) {filterUnsignedChannels();});
 
-            function filterChannels(statusFilter) {
+            function filterChannelResults(statusFilter) {
 
                 // Get a list of all Channel rows to check through
                 $(`[name="${CHANNEL_PARENT}"]`).each(function(index, element) {
@@ -170,6 +187,101 @@
                         }
                     }
                 });
+            }
+
+            function filterUnsignedChannels() {
+
+                let hasSupplierApproval = false;
+                let hasClientApproval = false;
+
+                // Get a list of all Channel rows to check through
+                $(`[name="${CHANNEL_PARENT}"]`).each(function(index, element) {
+
+                    // Collapse all the channels any time the list is filtered                    
+                    $(element).find(`[name="channel-toggle"]`).attr('aria-expanded', false);
+
+                    // Unfilter all the channels before applying the next filter
+                    $(element).removeClass('d-none');
+                    $(element).nextUntil(`[name="${CHANNEL_PARENT}"`).removeClass('show');
+
+                    // Check the Channel Summary to see which approvals are required
+                    let channelSummaryElement = $(element).next();
+                    let hasRequiredSupplierApproval = hasApprovalType(channelSummaryElement, SUPPLIER);
+                    let hasRequiredClientApproval = hasApprovalType(channelSummaryElement, CLIENT);
+
+                    // Check if the required approvals are signed by checking the buttons
+                    hasSupplierApproval = isApprovedBy(channelSummaryElement, SUPPLIER);
+                    hasClientApproval = isApprovedBy(channelSummaryElement, CLIENT);
+
+                    // Filter out the Channel if it has the required approvals
+                    if (hasOnlySupplierApproval(hasRequiredSupplierApproval, hasSupplierApproval) || 
+                    hasSupplierAndClientApproval(hasRequiredSupplierApproval, hasSupplierApproval, hasRequiredClientApproval, hasClientApproval)) {
+                        $(element).addClass('d-none');
+                    }
+                });
+            }
+
+            function hasApprovalType(parentElement, approvalType) {
+                return $(parentElement).find(`[name="${approvalType}-approval"]`).length > 0;
+            }
+
+            function isApprovedBy(parentElement, approvalType) {
+                return $(parentElement).find(`[name="${approvalType}-approval"]`).hasClass('active');
+            }
+
+            function hasOnlySupplierApproval(hasSupplierRequiredApproval, hasSupplierApproval) {
+                return (hasSupplierRequiredApproval && hasSupplierApproval);
+            }
+
+            function hasSupplierAndClientApproval(hasSupplierRequiredApproval, hasSupplierApproval, hasClientRequiredApproval, hasClientApproval) {
+                return (hasSupplierRequiredApproval && hasSupplierApproval && hasClientRequiredApproval && hasClientApproval);
+            }
+
+            // Update the total counts in the filter buttons
+            function getFilterButtonCounts() {
+
+                let totalAll = $(`[name="${CHANNEL_PARENT}"]`).length;
+                let totalUntested = 0;
+                let totalInProgress = 0;
+                let totalPassed = 0;
+                let totalFailed = 0;
+
+                // Tally up the number of each type of Channel status
+                $('[name="channel-status"]').each(function(index, element) {
+                    let status = $(element).text();
+                    if (status == UNTESTED) {totalUntested += 1}
+                    if (status == IN_PROGRESS) {totalInProgress += 1}
+                    if (status == PASS) {totalPassed += 1}
+                    if (status == FAIL) {totalFailed += 1}
+                });
+
+                // Tally up the number of Channels which are not fully approved
+
+
+                return {
+                    totalAll: totalAll,
+                    totalUntested: totalUntested,
+                    totalInProgress: totalInProgress,
+                    totalPassed: totalPassed,
+                    totalFailed: totalFailed
+                }
+            }
+
+            function updateFilterButtonCounts() {
+
+                // Get the latest counts of the filtered items and unpack the data
+                let counts = getFilterButtonCounts();
+                let totalAll = counts["totalAll"];
+                let totalUntested = counts["totalUntested"];
+                let totalInProgress = counts["totalInProgress"];
+                let totalPassed = counts["totalPassed"];
+                let totalFailed = counts["totalFailed"];
+
+                $('#filter-all-count').text(totalAll);
+                $('#filter-untested-count').text(totalUntested);
+                $('#filter-in-progress-count').text(totalInProgress);
+                $('#filter-passed-count').text(totalPassed);
+                $('#filter-failed-count').text(totalFailed);                
             }
 
             // Listener function for the Injection Value fields
