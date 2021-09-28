@@ -78,11 +78,12 @@
         {% endif %}
     </td>
     <td class="align-middle" name="last-updated">{{ moment(testpoint.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
-    <td class="align-middle" width="">
-        {#
-        <button type="button" class="btn btn-sm btn-success" name="add-testpoint">Add</button>
-        <button type="button" class="btn btn-sm btn-danger" name="remove-testpoint">Remove</button>
-        #}
+    <td class="align-middle">
+        <div class="row px-1 justify-content-center">
+            <div class="col-auto">
+                <button type="button" class="btn-close" aria-label="Close" name="delete-testpoint" href="#delete-testpoint-dialog" data-toggle="modal"></button>
+            </div>            
+        </div>        
     </td>
 </tr>
 {% endblock %}

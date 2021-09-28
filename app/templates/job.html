@@ -29,14 +29,18 @@
     <td class="align-middle">{{ job.status }}</td>
     <td class="align-middle">{{ moment(job.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
     <td class="align-middle">
-        {# Button for seeing a list of all the job's groups #}
-        <button type="button" class="btn btn-info">
-            <a style="color:#FFFFFF;" href="{{ url_for('main.groups', job_id=job.id) }}">Group List</a>
-        </button>
-        {# Button for adding a new group to the job #}
-        <button type="button" class="btn btn-success">
-            <a style="color:#FFFFFF;" href="{{ url_for('main.add_group', job_id=job.id) }}">Add Group</a>
-        </button>
+        <div class="row justify-content-start px-1">
+            <div class="col-auto">
+                {# Button for seeing a list of all the job's groups #}
+                <button type="button" class="btn btn-info">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.groups', job_id=job.id) }}">Group List</a>
+                </button>
+                {# Button for adding a new group to the job #}
+                <button type="button" class="btn btn-success">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_group', job_id=job.id) }}">Add Group</a>
+                </button>
+            </div>
+        </div>
     </td>
 </tr>
 {% endblock %}

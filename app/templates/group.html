@@ -23,15 +23,19 @@
     </td>
     <td class="align-middle">{{ group.status }}</td>
     <td class="align-middle">{{ moment(group.last_updated).format("hh:mm A, DD-MMM-YYYY") }}</td>
-    <td>
-        {# Button for seeing a list of all the group's channels #}
-        <button type="button" class="btn btn-info">
-            <a style="color:#FFFFFF;" href="{{ url_for('main.channels', group_id=group.id) }}">Channel List</a>
-        </button>
-        {# Button for adding a new channel to the group #}
-        <button type="button" class="btn btn-success">
-            <a style="color:#FFFFFF;" href="{{ url_for('main.add_channel', group_id=group.id) }}">Add Channel</a>
-        </button>
+    <td class="align-middle">
+        <div class="row justify-content-start px-1">
+            <div class="col-auto">
+                {# Button for seeing a list of all the group's channels #}
+                <button type="button" class="btn btn-info">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.channels', group_id=group.id) }}">Channel List</a>
+                </button>
+                {# Button for adding a new channel to the group #}
+                <button type="button" class="btn btn-success">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_channel', group_id=group.id) }}">Add Channel</a>
+                </button>
+            </div>
+        </div>        
     </td>
 </tr>
 {% endblock %}

@@ -363,8 +363,9 @@ class ChannelModel(unittest.TestCase):
         self.assertEqual(c.equipment_records.all(), [])
         self.assertEqual(c.required_test_equipment.all(), [])
         self.assertEqual(c.approval_records.all(), [])
-    
-    def test_add_testpoint(self):
+
+    # Check that a User can be added and checked if it exists
+    def test_update_testpoint(self):
         c = Channel()
         t = TestPoint()
         db.session.add_all([c, t])
@@ -373,7 +374,17 @@ class ChannelModel(unittest.TestCase):
         # Add the TestPoint to the Channel
         c.add_testpoint(t)
         db.session.commit()
-        self.assertEqual(c.testpoints.count(), 1)
+        self.assertTrue(c.has_testpoint(t))
+
+        # Check to make sure a TestPoint can be removed
+        c.remove_testpoint(t)
+        db.session.commit()
+        self.assertFalse(c.has_testpoint(t))
+
+        # Check to make sure that non-linked TestPoints can't be removed
+        c.remove_testpoint(t)
+        db.session.commit()
+        self.assertFalse(c.has_testpoint(t))
 
     def test_num_testpoints(self):
         c = Channel()

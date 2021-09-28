@@ -93,6 +93,9 @@
 <div name="dialog-holder-5">
     {% include 'delete_channel_dialog.html' %}
 </div>
+<div name="dialog-holder-6">
+    {% include 'delete_testpoint_dialog.html' %}
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -116,6 +119,7 @@
             let UPDATE_TESTPOINT_URL = '/update_testpoint';
             let UPDATE_CHANNEL_URL = '/update_channel';
             let DELETE_CHANNEL_URL = '/delete_channel';
+            let DELETE_TESTPOINT_URL = '/delete_testpoint';
             let POST = 'POST';
             let PROGRESS = 'progress';
             let MESSAGE = 'message';
@@ -154,6 +158,7 @@
             let additionalChannelInfoData = {};
             let updateChannelUnitsData = {};
             let deleteChannelData = {};
+            let deleteTestPointData = {};
 
             // Update the progress bars as the page is loaded
             updateAllProgressBars(CHANNEL, TESTPOINT);
@@ -737,12 +742,43 @@
                 let data = {
                     channel_id: deleteChannelData["channelId"],
                 }
-                deleteChannel(data, channelElement)
+                deleteChannel(data, channelElement);
 
                 // Remove the Channel's Summary table, TestPoint rows and itself
-                $(channelElement).next().remove()
-                $(channelElement).nextUntil('[name="channel-parent"]').remove()
-                $(channelElement).remove()
+                $(channelElement).next().remove();
+                $(channelElement).nextUntil('[name="channel-parent"]').remove();
+                $(channelElement).remove();
+            });
+
+            // Listener for selecting the Close button on TestPoint to delete it
+            $(`[name="delete-testpoint"]`).click(function(event) {
+
+                // Get the selected TestPoint and Channel elements and their associated information
+                let testpointElement = $(this).parents('tr');
+                let testpointDataset = testpointElement[0].dataset;
+                let channelElement = $(testpointElement).prevAll(`[name="${CHANNEL_PARENT}"]`).first();
+                let channelDataset = channelElement[0].dataset;
+
+                // Prepare a data package for the TestPoint deletion                
+                deleteTestPointData = {
+                    testpointElement: testpointElement,
+                    testpointId: testpointDataset.testpointId,
+                    channelElement: channelElement,
+                    channelId: channelDataset.channelId,
+                }
+            });
+
+            // Listener for a confirmation of deleting a TestPoint from the dialog
+            $(`[name="delete-testpoint-submit"]`).click(function(event) {
+
+                let testpointElement = deleteTestPointData["testpointElement"];
+                let channelElement = deleteTestPointData["channelElement"];
+
+                let data = {
+                    channel_id: deleteTestPointData["channelId"],
+                    testpoint_id: deleteTestPointData["testpointId"]
+                }
+                deleteTestPoint(data, testpointElement, channelElement);
             });
 
             // Function for sending an ajax request to update Channel values in the database
@@ -775,6 +811,60 @@
                     },
                     error: function(error) {
                         console.log('Error deleting Channel.');
+                        console.log(error);
+                    }
+                });
+            }
+
+            function deleteTestPoint(data, testpointElement, channelElement) {
+
+                // Build the ajax request
+                $.ajax({
+                    type: POST,
+                    url: DELETE_TESTPOINT_URL,
+                    data: data,
+                    success: function(response) {
+                        console.log(response[MESSAGE]);     
+                        
+                        // TODO: Create sub-functions for each of these repetitive blocks
+
+                        // Remove the deleted TestPoint element
+                        $(testpointElement).remove()
+
+                        // Decrement the rowspan of the summary-parent element to account for the deleted TestPoint row
+                        let summaryElement = $(channelElement).next().children('td');
+                        let currentRowSpan = $(summaryElement).attr("rowspan");
+                        $(summaryElement).attr("rowspan", parseInt(currentRowSpan) - 1);
+
+                        // Update the Channel's progress bar widths
+                        let progress = response["progress"];
+                        let percentPassed = progress[PERCENT_PASSED];
+                        let percentFailed = progress[PERCENT_FAILED];
+                        updateProgressBar(channelElement, TESTPOINT, percentPassed, percentFailed, 0); 
+
+                        // Update the additional progress bar details
+                        let numPassed = response["num_passed"];
+                        let numTestPoints = response["num_testpoints"];                    
+                        updateFieldTextByName(channelElement, NUM_PASSED_NAME, numPassed);
+                        updateFieldTextByName(channelElement, NUM_TOTAL_NAME, numTestPoints);
+                        updateFieldTextByName(channelElement, PERCENT_PASSED_NAME, percentPassed + '%');
+
+                        // Update the Channel's latest status
+                        let status = response["status"];
+                        updateFieldTextByName(channelElement, CHANNEL_STATUS_NAME, status);
+                        let newStatusBadgeClass = getStatusBadgeClass(status);
+                        updateBadgeClass(channelElement, CHANNEL_STATUS_NAME, newStatusBadgeClass);
+
+                        // Update the last-updated for the Channel
+                        let lastUpdated = response["last_updated"];
+                        let lastUpdatedValue = moment(lastUpdated).format(LAST_UPDATED_FORMAT);
+                        updateFieldTextByName(channelElement, LAST_UPDATED_NAME, lastUpdatedValue);
+
+                        // Update the filter counts for the page
+                        updateFilterButtonCounts()
+                    },
+                    error: function(error) {
+                        console.log('Error deleting TestPoint.');
                         console.log(error);
                     }
                 });
@@ -864,6 +954,8 @@
                         let newTestPointElementSibling = traverseNextByNum(startingElement, newPosition);
                         $(newTestPointElementSibling).before(newTestPointElement);
 
+                        // Update the filter counts for the page
+                        updateFilterButtonCounts()
                     },
                     error: function(error) {
                         console.log('Error adding testpoint.');
@@ -909,6 +1001,9 @@
                         // Update the status badge
                         let newBadgeClass = getStatusBadgeClass(status);
                         updateBadgeClass(parentChannel, CHANNEL_STATUS_NAME, newBadgeClass); 
+
+                        // Update the filter counts for the page
+                        updateFilterButtonCounts()
                     },
                     error: function(error) {
                         console.log('Error updating testpoint.');

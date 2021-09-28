@@ -421,6 +421,44 @@ def delete_channel():
     }
     return jsonify(response)
 
+@bp.route('/delete_testpoint', methods=['POST'])
+@login_required
+def delete_testpoint():
+
+    # Extract the request's form dictionary
+    data = request.form.to_dict()
+    print(data)
+    CHANNEL_ID = 'channel_id'
+    TESTPOINT_ID = 'testpoint_id'
+
+    if CHANNEL_ID in data and TESTPOINT_ID in data:
+
+        # Get the Channel and TestPoint from the ajax request
+        channel = Channel.query.filter_by(id=data[CHANNEL_ID]).first()
+        testpoint = TestPoint.query.filter_by(id=data[TESTPOINT_ID]).first()
+
+        # Delete the TestPoint from the Channel
+        channel.remove_testpoint(testpoint)
+        db.session.commit()
+
+        # Update the Channel and its parent items
+        last_updated = datetime.utcnow()
+        channel.last_updated = last_updated
+        channel.update_each_parent_status()
+
+        response = {
+            "message": f'TestPoint for {channel} has been successfully deleted.',
+            "last_updated": last_updated,
+            "num_testpoints": channel.num_testpoints(),
+            "progress": channel.testpoint_progress(),
+            "num_passed": channel.testpoint_stats()[TestResult.PASS.value],
+            "status": channel.status
+        }
+        return jsonify(response)
+
+    else:
+        raise ValueError(f'{CHANNEL_ID} or {TESTPOINT_ID} not found in ajax request:\n{data}')
+
 
 @bp.route('/update_channel', methods=['POST'])
 @login_required

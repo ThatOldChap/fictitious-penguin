@@ -56,22 +56,26 @@
                         </div>
                     </td>
                     <td class="align-middle">
-                        {# Button for seeing a list of all a project's jobs #}
-                        <button type="button" class="btn btn-info">
-                            <a style="color:#FFFFFF;" href="{{ url_for('main.jobs', project_id=project.id) }}">View Jobs</a>
-                        </button>
-                        {# Button for adding a new job to the project #}
-                        <button type="button" class="btn btn-success">
-                            <a style="color:#FFFFFF;" href="{{ url_for('main.add_job', project_id=project.id) }}">Add Job</a>
-                        </button>
-                        {# Button for updating the members assigned to a project #}
-                        <button type="button" class="btn btn-warning">
-                            <a style="color:#FFFFFF;" href="{{ url_for('main.edit_project_members', project_id=project.id) }}">Edit Members</a>
-                        </button>
-                        {# Button for updating the test equipment assigned to a project #}
-                        <button type="button" class="btn btn-warning">
-                            <a style="color:#FFFFFF;" href="{{ url_for('main.edit_project_test_equipment', project_id=project.id) }}">Edit Test Equipment</a>
-                        </button>
+                        <div class="row justify-content-start px-1">
+                            <div class="col-auto">
+                                {# Button for seeing a list of all a project's jobs #}
+                                <button type="button" class="btn btn-info">
+                                    <a style="color:#FFFFFF;" href="{{ url_for('main.jobs', project_id=project.id) }}">View Jobs</a>
+                                </button>
+                                {# Button for adding a new job to the project #}
+                                <button type="button" class="btn btn-success">
+                                    <a style="color:#FFFFFF;" href="{{ url_for('main.add_job', project_id=project.id) }}">Add Job</a>
+                                </button>
+                                {# Button for updating the members assigned to a project #}
+                                <button type="button" class="btn btn-warning">
+                                    <a style="color:#FFFFFF;" href="{{ url_for('main.edit_project_members', project_id=project.id) }}">Edit Members</a>
+                                </button>
+                                {# Button for updating the test equipment assigned to a project #}
+                                <button type="button" class="btn btn-warning">
+                                    <a style="color:#FFFFFF;" href="{{ url_for('main.edit_project_test_equipment', project_id=project.id) }}">Edit Test Equipment</a>
+                                </button>
+                            </div>                            
+                        </div>                        
                     </td>
                 </tr>
             {% endfor %}

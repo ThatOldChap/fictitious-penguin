@@ -177,8 +177,15 @@ class Channel(db.Model):
     def injection_range(self):
         return self.max_injection_range - self.min_injection_range
 
+    def has_testpoint(self, testpoint):
+        return testpoint in self.testpoints
+
     def add_testpoint(self, testpoint):
         self.testpoints.append(testpoint)
+
+    def remove_testpoint(self, testpoint):
+        if self.has_testpoint(testpoint):
+            self.testpoints.remove(testpoint)
 
     def build_testpoint_list(self, num_testpoints, testpoint_list_type, injection_value_list, test_value_list):
         
