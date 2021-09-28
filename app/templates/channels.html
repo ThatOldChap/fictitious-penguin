@@ -204,21 +204,26 @@
                     $(element).removeClass('d-none');
                     $(element).nextUntil(`[name="${CHANNEL_PARENT}"`).removeClass('show');
 
-                    // Check the Channel Summary to see which approvals are required
+                    // Hide any channels which have their full, required approvals
                     let channelSummaryElement = $(element).next();
-                    let hasRequiredSupplierApproval = hasApprovalType(channelSummaryElement, SUPPLIER);
-                    let hasRequiredClientApproval = hasApprovalType(channelSummaryElement, CLIENT);
-
-                    // Check if the required approvals are signed by checking the buttons
-                    hasSupplierApproval = isApprovedBy(channelSummaryElement, SUPPLIER);
-                    hasClientApproval = isApprovedBy(channelSummaryElement, CLIENT);
-
-                    // Filter out the Channel if it has the required approvals
-                    if (hasOnlySupplierApproval(hasRequiredSupplierApproval, hasSupplierApproval) || 
-                    hasSupplierAndClientApproval(hasRequiredSupplierApproval, hasSupplierApproval, hasRequiredClientApproval, hasClientApproval)) {
-                        $(element).addClass('d-none');
-                    }
+                    if (isSignedChannel(channelSummaryElement)) {
+                        $(element).addClass('d-none')
+                    } 
                 });
+            }
+
+            function isSignedChannel(channelSummaryElement) {
+
+                // Check to see which approvals are required on the Channel
+                let hasRequiredSupplierApproval = hasApprovalType(channelSummaryElement, SUPPLIER);
+                let hasRequiredClientApproval = hasApprovalType(channelSummaryElement, CLIENT);
+
+                // Check if the required approvals are signed by checking if the buttons are active
+                let hasSupplierApproval = isApprovedBy(channelSummaryElement, SUPPLIER);
+                let hasClientApproval = isApprovedBy(channelSummaryElement, CLIENT);
+
+                return (hasOnlySupplierApproval(hasRequiredSupplierApproval, hasSupplierApproval, hasRequiredClientApproval) ||
+                    hasSupplierAndClientApproval(hasRequiredSupplierApproval, hasSupplierApproval, hasRequiredClientApproval, hasClientApproval))
             }
 
             function hasApprovalType(parentElement, approvalType) {
@@ -229,8 +234,8 @@
                 return $(parentElement).find(`[name="${approvalType}-approval"]`).hasClass('active');
             }
 
-            function hasOnlySupplierApproval(hasSupplierRequiredApproval, hasSupplierApproval) {
-                return (hasSupplierRequiredApproval && hasSupplierApproval);
+            function hasOnlySupplierApproval(hasSupplierRequiredApproval, hasSupplierApproval, hasClientRequiredApproval) {
+                return (hasSupplierRequiredApproval && hasSupplierApproval && !hasClientRequiredApproval);
             }
 
             function hasSupplierAndClientApproval(hasSupplierRequiredApproval, hasSupplierApproval, hasClientRequiredApproval, hasClientApproval) {
@@ -245,6 +250,7 @@
                 let totalInProgress = 0;
                 let totalPassed = 0;
                 let totalFailed = 0;
+                let totalUnsigned = 0;
 
                 // Tally up the number of each type of Channel status
                 $('[name="channel-status"]').each(function(index, element) {
@@ -256,14 +262,24 @@
                 });
 
                 // Tally up the number of Channels which are not fully approved
+                let hasRequiredSupplierApproval = false;
+                let hasRequiredClientApproval = false;
 
+                $(`[name="${SUMMARY_PARENT_NAME}"]`).each(function(index, element) {
+
+                    let hasSignedChannel = isSignedChannel(element);
+                    if (!hasSignedChannel) {
+                        totalUnsigned += 1;
+                    }
+                });
 
                 return {
                     totalAll: totalAll,
                     totalUntested: totalUntested,
                     totalInProgress: totalInProgress,
                     totalPassed: totalPassed,
-                    totalFailed: totalFailed
+                    totalFailed: totalFailed,
+                    totalUnsigned: totalUnsigned
                 }
             }
 
@@ -276,12 +292,14 @@
                 let totalInProgress = counts["totalInProgress"];
                 let totalPassed = counts["totalPassed"];
                 let totalFailed = counts["totalFailed"];
+                let totalUnsigned = counts["totalUnsigned"];
 
                 $('#filter-all-count').text(totalAll);
                 $('#filter-untested-count').text(totalUntested);
                 $('#filter-in-progress-count').text(totalInProgress);
                 $('#filter-passed-count').text(totalPassed);
                 $('#filter-failed-count').text(totalFailed);                
+                $('#filter-unsigned-count').text(totalUnsigned);                
             }
 
             // Listener function for the Injection Value fields
