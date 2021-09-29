@@ -7,7 +7,9 @@ from app.models import *
 from app.main.forms import *
 from app.utils import *
 from wtforms.fields.core import BooleanField
-import logging, math
+import logging, openpyxl, os
+from openpyxl.styles import Alignment, Font, Border, Side
+from pathlib import Path
 
 # Import the logger assigned to the application
 logger = logging.getLogger(__name__)
@@ -938,3 +940,128 @@ def test():
 def test2():
 
     return render_template('test2.html', title="Test Items")
+
+@bp.route('/generate_channel_report', methods=['GET', 'POST'])
+@login_required
+def generate_channel_report():
+
+    def apply_channel_border(sheet, border_style, row_num, start_col, end_col):
+
+        # Define the border formats
+        border = Side(border_style=border_style, color="000000")
+        top_border = Border(top=border)
+
+        # Apply the top_border
+        # Note: Adding +1 due to starting at index 1
+        for i in range(end_col - start_col + 1):
+            sheet.cell(row=row_num, column=start_col + i).border = top_border
+
+    def create_header_row(sheet, row_num):
+
+        # Fill the values into the cells
+        sheet[f'A{row_num}'] = '#'
+        sheet[f'B{row_num}'] = 'Channel Information'
+        sheet[f'D{row_num}'] = 'Injection Value'
+        sheet[f'E{row_num}'] = 'Lower Limit'
+        sheet[f'F{row_num}'] = 'Measurement Value'
+        sheet[f'G{row_num}'] = 'Upper Limit'
+        sheet[f'H{row_num}'] = 'Result'
+        sheet[f'I{row_num}'] = 'Notes'
+
+        # Format the cells
+        cols = ['A', 'B', 'D', 'E', 'F', 'G', 'H', 'I']
+        for col in cols:     
+            sheet[f'{col}{row_num}'].style = '20 % - Accent1'
+            sheet[f'{col}{row_num}'].alignment = Alignment(horizontal='center', vertical='center')
+            sheet[f'{col}{row_num}'].border = thin_border
+
+        sheet.merge_cells(f'B{row_num}:C{row_num}')
+        sheet.column_dimensions['I'].width = 20
+
+        return row_num + 1
+
+    def create_channel_row(sheet, channel, row_num):
+
+        # Change out the Eng Units type for the Channel's actual units
+        error_type = channel.error_type
+        if error_type == 'Eng Units':
+            error_type = channel.measurement_units
+
+        # Define some constants for the Channel border
+        START_COL = 1
+        END_COL = 9
+        apply_channel_border(sheet, "thin", row_num, START_COL, END_COL)
+
+        # Fill the values into the cells
+        sheet[f'A{row_num}'] = channel.id
+        sheet[f'B{row_num}'] = f'Name: {channel.name}'
+        sheet[f'C{row_num}'] = f'Tolerance: {channel.max_error} {error_type}'
+        sheet[f'B{row_num+1}'] = f'Drawing Ref: ___________________'
+        sheet[f'C{row_num+1}'] = f'Interface: ____________________'
+        sheet[f'B{row_num+2}'] = f'DC Voltage Source: _____________'
+        sheet[f'C{row_num+2}'] = f'Cal Due Date: ________________'
+        sheet[f'B{row_num+3}'] = f'MDS: _________________________'
+        sheet[f'C{row_num+3}'] = f'Rolls-Royce: _________________'
+
+        # Format the cells            
+        sheet[f'A{row_num}'].alignment = Alignment(horizontal='center', vertical='center')
+
+        return row_num
+
+    def create_testpoint_row(sheet, channel, testpoint, row_num):
+
+        # Fill the values into the cells
+        sheet[f'D{row_num}'] = f'{testpoint.nominal_injection_value} {channel.injection_units}'
+        sheet[f'E{row_num}'] = f'{testpoint.lower_limit()} {channel.measurement_units}'
+        sheet[f'F{row_num}'] = f'{channel.injection_units}'
+        sheet[f'G{row_num}'] = f'{testpoint.upper_limit()} {channel.measurement_units}'
+
+        # Format the cells
+        sheet[f'F{row_num}'].alignment = Alignment(horizontal='right', vertical='center', indent=1)
+        sheet[f'F{row_num}'].border = thin_border
+        cols = ['D', 'E', 'G', 'H']
+        for col in cols:
+            sheet[f'{col}{row_num}'].alignment = Alignment(horizontal='center', vertical='center')
+            sheet[f'{col}{row_num}'].border = thin_border   
+
+        return row_num + 1
+
+
+    # Get a Channel to test with
+    group = Group.query.filter_by(id=9).first()
+    channels = group.channels.all()
+
+    filepath = Path('/home/michael/Documents/test_report.xlsx')
+
+    # Create a workbook and sheet for the data
+    wb = openpyxl.Workbook()
+    sheet = wb.active
+    sheet.title = 'Report'
+    sheet = wb[sheet.title]
+
+    thin = Side(border_style="thin", color="000000")
+    thin_border = Border(top=thin, left=thin, right=thin, bottom=thin)
+
+    row_num = 1
+    row_num = create_header_row(sheet, row_num)
+
+    for channel in channels:
+        row_num = create_channel_row(sheet, channel, row_num)
+        for testpoint in channel.testpoints:
+            row_num = create_testpoint_row(sheet, channel, testpoint, row_num)
+
+        # Column formatting
+        sheet['A1'].alignment = Alignment(horizontal='center', vertical='center')
+        sheet['A1'].font = Font(bold=True)
+
+    wb.save(os.path.abspath(filepath))
+
+    # TODO: Get the job that the report is being generated for
+
+    # TODO: Determine the list of groups and channels in the job that are being added into the report
+
+    # TODO: Create a printable sheet template that has X amount of Testpoints that can fit on it. Determine the # of channels that can fit on the page
+    # TODO: Create a summary row for the page
+    # TODO: Create a header row for the table
+    # TODO: Populate the data for each channel
+    return redirect(url_for('main.index'))

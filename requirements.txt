@@ -10,6 +10,7 @@ cryptography==3.4.8
 dnspython==2.1.0
 dominate==2.6.0
 email-validator==1.1.2
+et-xmlfile==1.1.0
 Flask==1.1.2
 Flask-Babel==2.0.0
 Flask-HTTPAuth==4.2.0
@@ -26,6 +27,7 @@ itsdangerous==1.1.0
 Jinja2==2.11.3
 Mako==1.1.4
 MarkupSafe==1.1.1
+openpyxl==3.0.9
 psycopg2-binary==2.9.1
 pycparser==2.20
 Pygments==2.7.4

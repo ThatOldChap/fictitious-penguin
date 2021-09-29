@@ -85,5 +85,12 @@
                 {{ summary["calibration_records"] }}
             </td>
         </tr>
+        <tr>
+            <td>                
+                <button type="button" class="btn btn-info">
+                    <a style="color:#FFFFFF;" href="{{ url_for('main.generate_channel_report') }}">Create Report</a>
+                </button>
+            </td>
+        </tr>
     </table>     
 {% endblock %}
