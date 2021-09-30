@@ -30,6 +30,7 @@ from app.models import User, Company, CalibrationRecord, ApprovalRecord, Channel
 
 # Initializing the modules within the app
 def create_app(config_class=Config):
+    
     # Assign a config to the app instance
     app = Flask(__name__)
     app.config.from_object(config_class)
