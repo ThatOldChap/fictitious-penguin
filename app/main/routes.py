@@ -1093,6 +1093,6 @@ def generate_channel_report(job_id):
 
     # Send the report back to the user
     try:
-        return send_from_directory(directory, filename=filename, as_attachment=True)
+        return send_from_directory(directory=directory, filename=filename, as_attachment=True)
     except FileNotFoundError:
         return render_template('errors/404.html'), 404
