@@ -8,7 +8,7 @@ from app.models import *
 from app.main.forms import *
 from app.utils import *
 from wtforms.fields.core import BooleanField
-import logging, openpyxl
+import logging, openpyxl, os
 from openpyxl.styles import Alignment, Font, Border, Side
 
 # Import the logger assigned to the application
@@ -1089,7 +1089,8 @@ def generate_channel_report(job_id):
     # Save the new report to the static directory
     directory = current_app.config["CHANNEL_REPORT_DIRECTORY"]
     filename = 'Job_Report_' + datetime.now().strftime("%m-%d-%Y_%H%M%S") + '.xlsx'
-    wb.save(directory + filename)
+    print(filename + directory)
+    wb.save(os.path.abspath(directory + filename))
 
     # Send the report back to the user
     try:
