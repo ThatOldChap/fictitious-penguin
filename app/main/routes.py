@@ -1087,10 +1087,9 @@ def generate_channel_report(job_id):
                 row_num = start_row + NUM_CHANNEL_HEADER_ROWS
 
     # Save the new report to the static directory
-    directory = current_app.config["CHANNEL_REPORT_DIRECTORY"]
+    directory = current_app.config["TMP_DIRECTORY"]
     filename = 'Job_Report_' + datetime.now().strftime("%m-%d-%Y_%H%M%S") + '.xlsx'
-    print(directory + filename)
-    wb.save(os.path.abspath(directory + filename))
+    wb.save(directory + filename)
 
     # Send the report back to the user
     try:

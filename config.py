@@ -38,6 +38,6 @@ class Config(object):
     # File Directories
     if basedir == '/app':
         # Removes the additional '/app' from the basedir on Heroku
-        CHANNEL_REPORT_DIRECTORY = basedir + '/static/job_reports/'
+        TMP_DIRECTORY = basedir + '/tmp/'
     else:
-        CHANNEL_REPORT_DIRECTORY = basedir + '/app/static/job_reports/'
+        TMP_DIRECTORY = basedir + '/app/tmp/'
