@@ -1,4 +1,5 @@
-from flask import render_template, url_for, request, redirect, flash, jsonify
+from flask import render_template, url_for, request, redirect, flash, jsonify, current_app
+from flask.helpers import send_from_directory
 from flask_login import current_user, login_required
 from datetime import datetime
 from app import db
@@ -7,9 +8,8 @@ from app.models import *
 from app.main.forms import *
 from app.utils import *
 from wtforms.fields.core import BooleanField
-import logging, openpyxl, os
+import logging, openpyxl
 from openpyxl.styles import Alignment, Font, Border, Side
-from pathlib import Path
 
 # Import the logger assigned to the application
 logger = logging.getLogger(__name__)
@@ -941,20 +941,23 @@ def test2():
 
     return render_template('test2.html', title="Test Items")
 
-@bp.route('/generate_channel_report', methods=['GET', 'POST'])
+@bp.route('/generate_channel_report/<job_id>', methods=['GET', 'POST'])
 @login_required
-def generate_channel_report():
+def generate_channel_report(job_id):
 
-    def apply_channel_border(sheet, border_style, row_num, start_col, end_col):
+    def apply_horizontal_border(sheet, border_type, border_style, row_num, start_col, end_col):
 
         # Define the border formats
-        border = Side(border_style=border_style, color="000000")
-        top_border = Border(top=border)
+        side = Side(border_style=border_style, color="000000")        
+        if border_type == TOP_BORDER_TYPE:
+            border = Border(top=side)
+        elif border_type == BOTTOM_BORDER_TYPE:
+            border = Border(bottom=side)
 
-        # Apply the top_border
+        # Apply the border
         # Note: Adding +1 due to starting at index 1
         for i in range(end_col - start_col + 1):
-            sheet.cell(row=row_num, column=start_col + i).border = top_border
+            sheet.cell(row=row_num, column=start_col + i).border = border
 
     def create_header_row(sheet, row_num):
 
@@ -980,6 +983,23 @@ def generate_channel_report():
 
         return row_num + 1
 
+    def create_group_row(sheet, group, row_num):
+
+        # Define some constants for the formatting
+        START_COL = 1
+        END_COL = 9
+
+        # Merge all the cells in the row for an full divider
+        sheet.merge_cells(f'A{row_num}:I{row_num}')
+
+        # Create and format the row for the Group
+        sheet[f'A{row_num}'].style = '20 % - Accent3'
+        sheet[f'A{row_num}'] = group.name
+        sheet[f'A{row_num}'].alignment = Alignment(vertical='center')
+        sheet[f'A{row_num}'].font = Font(bold=True)
+
+        return row_num + 1
+
     def create_channel_row(sheet, channel, row_num):
 
         # Change out the Eng Units type for the Channel's actual units
@@ -990,7 +1010,7 @@ def generate_channel_report():
         # Define some constants for the Channel border
         START_COL = 1
         END_COL = 9
-        apply_channel_border(sheet, "thin", row_num, START_COL, END_COL)
+        apply_horizontal_border(sheet, TOP_BORDER_TYPE, "double", row_num, START_COL, END_COL)
 
         # Fill the values into the cells
         sheet[f'A{row_num}'] = channel.id
@@ -1013,7 +1033,7 @@ def generate_channel_report():
         # Fill the values into the cells
         sheet[f'D{row_num}'] = f'{testpoint.nominal_injection_value} {channel.injection_units}'
         sheet[f'E{row_num}'] = f'{testpoint.lower_limit()} {channel.measurement_units}'
-        sheet[f'F{row_num}'] = f'{channel.injection_units}'
+        sheet[f'F{row_num}'] = f'{channel.measurement_units}'
         sheet[f'G{row_num}'] = f'{testpoint.upper_limit()} {channel.measurement_units}'
 
         # Format the cells
@@ -1026,42 +1046,53 @@ def generate_channel_report():
 
         return row_num + 1
 
-
-    # Get a Channel to test with
-    group = Group.query.filter_by(id=9).first()
-    channels = group.channels.all()
-
-    filepath = Path('/home/michael/Documents/test_report.xlsx')
-
-    # Create a workbook and sheet for the data
+    # Setup the workbook to prepare for the report
     wb = openpyxl.Workbook()
     sheet = wb.active
     sheet.title = 'Report'
     sheet = wb[sheet.title]
 
+    # Constants
+    NUM_CHANNEL_HEADER_ROWS = 5
+    TOP_BORDER_TYPE = 1
+    BOTTOM_BORDER_TYPE = 2
+
+    # Setup some initial formatting for the report
     thin = Side(border_style="thin", color="000000")
     thin_border = Border(top=thin, left=thin, right=thin, bottom=thin)
-
     row_num = 1
-    row_num = create_header_row(sheet, row_num)
+    row_num = create_header_row(sheet, row_num)    
 
-    for channel in channels:
-        row_num = create_channel_row(sheet, channel, row_num)
-        for testpoint in channel.testpoints:
-            row_num = create_testpoint_row(sheet, channel, testpoint, row_num)
+    # Iterate through each Group and its Channels within the Job
+    job = Job.query.filter_by(id=job_id).first()
+    for group in job.groups.all():
+        row_num = create_group_row(sheet, group, row_num)
 
-        # Column formatting
-        sheet['A1'].alignment = Alignment(horizontal='center', vertical='center')
-        sheet['A1'].font = Font(bold=True)
+        for channel in group.channels.all():
+            row_num = create_channel_row(sheet, channel, row_num)
+            
+            # Column formatting
+            sheet['A1'].alignment = Alignment(horizontal='center', vertical='center')
+            sheet['A1'].font = Font(bold=True)
 
-    wb.save(os.path.abspath(filepath))
+            # Starting row
+            start_row = row_num
 
-    # TODO: Get the job that the report is being generated for
+            for testpoint in channel.testpoints.all():
+                row_num = create_testpoint_row(sheet, channel, testpoint, row_num)
 
-    # TODO: Determine the list of groups and channels in the job that are being added into the report
+            # Set the row for the next Channel if the number of TestPoints interferes with the Channel Information
+            num_testpoints = channel.num_testpoints()
+            if num_testpoints < NUM_CHANNEL_HEADER_ROWS:
+                row_num = start_row + NUM_CHANNEL_HEADER_ROWS
 
-    # TODO: Create a printable sheet template that has X amount of Testpoints that can fit on it. Determine the # of channels that can fit on the page
-    # TODO: Create a summary row for the page
-    # TODO: Create a header row for the table
-    # TODO: Populate the data for each channel
-    return redirect(url_for('main.index'))
+    # Save the new report to the static directory
+    directory = current_app.config["CHANNEL_REPORT_DIRECTORY"]
+    filename = 'Job_Report_' + datetime.now().strftime("%m-%d-%Y_%H%M%S") + '.xlsx'
+    wb.save(directory + filename)
+
+    # Send the report back to the user
+    try:
+        return send_from_directory(directory, filename=filename, as_attachment=True)
+    except FileNotFoundError:
+        return render_template('errors/404.html'), 404

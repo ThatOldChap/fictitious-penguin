@@ -33,4 +33,7 @@ class Config(object):
     ADMINS = ['michaeljchap@gmail.com']
 
     # Pre-emptive Pagination Setup
-    CHANNELS_PER_PAGE = 3
+    ITEMS_PER_PAGE = 3
+
+    # File Directories
+    CHANNEL_REPORT_DIRECTORY = basedir + '/app/static/job_reports/'

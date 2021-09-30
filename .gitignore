@@ -133,3 +133,4 @@ logs/
 icats.log*
 app.db
 app.db-journal
+Job_Report*.xlsx
