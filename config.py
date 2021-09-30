@@ -36,4 +36,8 @@ class Config(object):
     ITEMS_PER_PAGE = 3
 
     # File Directories
-    CHANNEL_REPORT_DIRECTORY = basedir + '/app/static/job_reports/'
+    heroku_app_dir = ''
+    if basedir == '/app':
+        CHANNEL_REPORT_DIRECTORY = basedir + '/static/job_reports/'
+    else:
+        CHANNEL_REPORT_DIRECTORY = basedir + '/app/static/job_reports/'
