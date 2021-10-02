@@ -3,7 +3,7 @@ from wtforms import StringField, SubmitField, IntegerField, SelectField, HiddenF
 from wtforms.fields.core import FieldList, FloatField, FormField
 from wtforms.fields.simple import TextAreaField
 from wtforms.fields.html5 import DateField
-from wtforms.validators import ValidationError, DataRequired
+from wtforms.validators import InputRequired, ValidationError, DataRequired
 from app.models import *
 from app.utils import *
 
@@ -108,18 +108,18 @@ class AddChannelForm(FlaskForm):
         choices=MEASUREMENT_TYPE_CHOICES, validators=[DataRequired()])
     measurement_units = SelectField('Engineering Units', render_kw=CUSTOM_SELECT_CLASS,
         choices=ENG_UNITS_CHOICES, validators=[DataRequired()])
-    min_range = FloatField('Minimum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
-    max_range = FloatField('Maximum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    min_range = FloatField('Minimum Range', render_kw=CUSTOM_FORM_CLASS, validators=[InputRequired()])
+    max_range = FloatField('Maximum Range', render_kw=CUSTOM_FORM_CLASS, validators=[InputRequired()])
     full_scale_range = FloatField('Full Scale Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
 
     # Tolerance Info
-    max_error = FloatField('Maximum Error', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    max_error = FloatField('Maximum Error', render_kw=CUSTOM_FORM_CLASS, validators=[InputRequired()])
     error_type = SelectField('Error Type', render_kw=CUSTOM_SELECT_CLASS,
         choices=ERROR_TYPE_CHOICES, validators=[DataRequired()])
 
     # Signal Injection Info
-    min_injection_range = FloatField('Minimum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
-    max_injection_range = FloatField('Maximum Range', render_kw=CUSTOM_FORM_CLASS, validators=[DataRequired()])
+    min_injection_range = FloatField('Minimum Range', render_kw=CUSTOM_FORM_CLASS, validators=[InputRequired()])
+    max_injection_range = FloatField('Maximum Range', render_kw=CUSTOM_FORM_CLASS, validators=[InputRequired()])
     injection_units = SelectField('Engineering Units', render_kw=CUSTOM_SELECT_CLASS,
         choices=ENG_UNITS_CHOICES, validators=[DataRequired()])
 

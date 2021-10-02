@@ -359,6 +359,16 @@ def add_channel(group_id):
     if len(form.errors.items()) > 0:
         print(form.errors.items())
 
+        # dict_items([('min_range', ['Not a valid float value'])])
+        # Clear the form and flash a message
+        message = 'Form reset due to the following errors:'
+        for error in form.errors.items():
+            message = message + f'\n{error[0]}: {error[1][0]}, '
+        
+        flash(message)
+
+        return redirect(url_for('main.add_channel', group_id=group_id))
+
     return render_template('add_channel.html', title='Add Channel', form=form, test_equipment_types=test_equipment_types)
 
 
