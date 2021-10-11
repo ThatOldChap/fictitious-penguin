@@ -56,8 +56,8 @@ def register():
     form = RegistrationForm()
 
     # Generate the list of SelectField choices to populate in the form
-    companies = Company.query.all()
-    form.company.choices = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in companies.sort()]
+    companies = Company.query.order_by('name').all()
+    form.company.choices = EMPTY_SELECT_CHOICE + [(c.id, c.name) for c in companies]
     
     if form.validate_on_submit():
 
