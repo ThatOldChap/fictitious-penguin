@@ -1,3 +1,4 @@
+from time import strptime
 from flask import render_template, url_for, request, redirect, flash, jsonify, current_app
 from flask.helpers import send_from_directory
 from flask_login import current_user, login_required
@@ -404,7 +405,7 @@ def channels(group_id):
         channels_form.channels.append_entry(channel_form)
 
     return render_template('channels.html', title='Channel List', channels=channels,
-        channels_form=channels_form, group=group)
+        channels_form=channels_form, group=group, timestamp=datetime.now())
 
 
 @bp.route('/delete_channel', methods=['POST'])
@@ -456,7 +457,7 @@ def delete_testpoint():
         # Update the Channel and its parent items
         last_updated = datetime.utcnow()
         channel.last_updated = last_updated
-        channel.update_each_parent_status()
+        channel.update_each_parent_status(last_updated)
 
         response = {
             "message": f'TestPoint for {channel} has been successfully deleted.',
@@ -591,7 +592,7 @@ def update_channel():
     
     # Update the status and last_updated time on each parent item
     channel.last_updated = last_updated
-    channel.update_each_parent_status()
+    channel.update_each_parent_status(last_updated)
 
     # Save the changes to the database
     db.session.commit()
@@ -709,7 +710,7 @@ def update_testpoint():
     # Update the status and last_update time of the updated channel, group, job and project
     if has_channel:
         channel.last_updated = last_updated
-        channel.update_each_parent_status()
+        channel.update_each_parent_status(last_updated)
 
     # Save the changes to the database
     db.session.commit()
@@ -721,6 +722,54 @@ def update_testpoint():
         PROGRESS: channel.testpoint_progress(),
         STATUS: channel.status,
         NUM_PASSED: channel.testpoint_stats()[TestResult.PASS.value]
+    }
+
+    return jsonify(response)
+
+
+@bp.route('/get_updated_group_data', methods=['GET', 'POST'])
+def get_updated_group_data():
+
+    # Extract the request's form dictionary
+    data = request.form.to_dict()
+    print(data)
+
+    # Extract the data from the request
+    group = Group.query.filter_by(id=data["group_id"]).first()
+    page_load_timestamp_raw = data["page_load_timestamp"]
+    page_load_timestamp = datetime.strptime(page_load_timestamp_raw, '%Y-%m-%d %H:%M:%S.%f')
+
+    # Dynamically compile a list of items updated by the current_user to exclude them from the query?
+    # May not be able to if another user edits a testpoint/channel after the current user has
+    # Should maybe add a last_updated_by_user field on each channel and testpoint?
+
+    channels_to_update = []
+    testpoints_to_update = []
+
+    # Find all the channels and testpoints which have been updated after the page was loaded
+    # Note: This intent is to find all changes from other users that are not visibile to the current_user
+    for channel in group.channels.all():
+
+        # Find all the channels which have been updated after the page was loaded
+        if channel.last_updated > page_load_timestamp:
+            channels_to_update.append(channel.id)
+        
+        for testpoint in channel.testpoints.all():
+            
+            # Find all testpoints which have been updated after the page was loaded
+            if testpoint.last_updated > page_load_timestamp:
+                testpoints_to_update.append(testpoint.id)
+
+                # Get: 
+
+    
+    print(f'Channel IDs to update: {channels_to_update}')
+    print(f'TestPoint IDs to update: {testpoints_to_update}')
+
+    response = {
+        'message': 'Successfully fetched for group data',
+        'group': group.name,
+        'page_load_timestamp': page_load_timestamp
     }
 
     return jsonify(response)
@@ -936,7 +985,6 @@ def edit_project_test_equipment(project_id):
 
 
 @bp.route('/test', methods=['GET', 'POST'])
-@login_required
 def test():
 
     project = Project.query.first()
@@ -946,13 +994,11 @@ def test():
         test_equipment_types=test_equipment_types)
 
 @bp.route('/test2', methods=['GET', 'POST'])
-@login_required
 def test2():
 
     return render_template('test2.html', title="Test Items")
 
 @bp.route('/generate_channel_report/<job_id>', methods=['GET', 'POST'])
-@login_required
 def generate_channel_report(job_id):
 
     def apply_horizontal_border(sheet, border_type, border_style, row_num, start_col, end_col):

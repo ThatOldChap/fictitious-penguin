@@ -23,10 +23,16 @@ class MeasurementType(enum.Enum):
     PRESSURE = "Pressure"
 
 class EngUnits(enum.Enum):
-    VOLTS = "V"
-    MILLIAMPS = "mA"
+    VOLTS_AC = "VAC"
+    VOLTS_DC = "VDC"
+    VOLTS_MILLI = "mV"
+    AMPS = "A"    
+    AMPS_MILLI = "mA"
     DEGREES_CELSIUS = "degC"
+    DEGREES_FAHRENHEIT = "degF"
+    KELVIN = "K"
     HERTZ = "Hz"
+    HERTZ_KILO = "kHz"
     OHMS = "Ohms"
     PSI = "psi"
 

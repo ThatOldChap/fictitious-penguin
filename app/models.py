@@ -283,11 +283,17 @@ class Channel(db.Model):
         # Save the results
         db.session.commit()
 
-    def update_each_parent_status(self):
+    def update_each_parent_status(self, timestamp):
+        
+        # Update the status of each item
         self.update_status()
         self.group.update_status()
         self.group.job.update_status()
         self.group.job.project.update_status()
+
+        # Update the last_updated timestamp of each item
+        self.group.last_updated = timestamp
+        self.group.job.last_updated = timestamp
 
     def testpoint_progress(self):
 
@@ -718,7 +724,7 @@ class TestEquipment(db.Model):
     
     def __repr__(self):
 	    return f'<TestEquipment {self.asset_id}: {self.manufacturer} {self.name}>'
-
+    
     def has_calibration_record(self, calibration_record):
         return calibration_record in self.calibration_records
 

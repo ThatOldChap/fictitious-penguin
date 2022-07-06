@@ -102,6 +102,33 @@
     {{ super() }}
 
     <script>
+
+        POLLING_INTERVAL_MILLISECONDS = 10000
+
+        // Function for polling the database for changes to the channels and testpoints on the page
+        $(function() {
+            let groupId = parseInt('{{ group.id }}');
+            let pageLoadTimestamp = '{{ timestamp }}';
+
+            setInterval(function() {
+                $.ajax({
+                    type: 'POST',
+                    url: '/get_updated_group_data',
+                    data: {
+                        group_id: groupId,
+                        page_load_timestamp: pageLoadTimestamp
+                    },
+                    success: function(response) {
+                        console.log(response)
+                    },
+                    error: function(error) {
+                        console.log(response)
+                    }
+                });
+
+            }, POLLING_INTERVAL_MILLISECONDS);
+        });
+
         $(document).ready(function() {
 
             // Value Constants
